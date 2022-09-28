@@ -3,17 +3,17 @@ import 'package:thefood/models/category.dart';
 import 'package:thefood/services/network_manager.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TheFood());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class TheFood extends StatefulWidget {
+  const TheFood({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<TheFood> createState() => _TheFoodState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _TheFoodState extends State<TheFood> {
   late final Future<List<MealCategory>?> categories;
 
   @override
@@ -25,9 +25,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'theFood',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
       ),
     );
   }

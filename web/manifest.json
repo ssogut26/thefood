@@ -1,6 +1,6 @@
 {
-    "name": "ecommerce",
-    "short_name": "ecommerce",
+    "name": "thefood",
+    "short_name": "thefood",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

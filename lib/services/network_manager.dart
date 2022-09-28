@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/category.dart';
 
@@ -11,11 +12,9 @@ class NetworkManager {
     return _instance!;
   }
 
-  final baseUrl = 'https://www.themealdb.com/api/json/v1/1/';
-
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://www.themealdb.com/api/json/v1/1/',
+      baseUrl: EndPoints().baseUrl,
     ),
   );
 
