@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_function_invocation
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:thefood/constants/endpoints.dart';
@@ -28,7 +30,24 @@ class NetworkManager {
       if (kDebugMode) {
         print(e);
       }
-      return null;
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getAreas() async {
+    try {
+      final response = await _dio.get('list.php?a=list');
+      if (response.statusCode == 200) {
+        final areas = response.data['meals'];
+        return areas as List;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return [];
     }
   }
 }
