@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thefood/constants/text_styles.dart';
 import 'package:thefood/models/category.dart';
 import 'package:thefood/services/network_manager.dart';
 import 'package:thefood/views/home_view.dart';
@@ -32,6 +33,7 @@ class _TheFoodState extends State<TheFood> {
       title: 'theFood',
       theme: ThemeData(
         useMaterial3: true,
+        textTheme: ProjectTextStyles().textTheme,
       ),
       home: const HomeView(),
     );
