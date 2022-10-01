@@ -1,8 +1,8 @@
 part of 'home_view.dart';
 
-FutureBuilder<Area?> _areaList() {
+FutureBuilder<Area?> _areaList(Future<Area?> area) {
   return FutureBuilder<Area?>(
-    future: NetworkManager.instance.getAreas(),
+    future: area,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         return Padding(

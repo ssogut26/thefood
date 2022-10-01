@@ -21,6 +21,18 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  late Future<List<MealCategory>?> _categories;
+  late Future<Area?> _areas;
+  late Future<Ingredients?> _ingredients;
+
+  @override
+  void initState() {
+    super.initState();
+    _categories = NetworkManager.instance.getCategories();
+    _areas = NetworkManager.instance.getAreas();
+    _ingredients = NetworkManager.instance.getIngredients();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,9 +41,9 @@ class _HomeViewState extends State<HomeView> {
         padding: ProjectPaddings().pageMedium,
         child: Column(
           children: [
-            _categoriesList(),
-            _areaList(),
-            _ingredientsList(),
+            _categoriesList(_categories),
+            _areaList(_areas),
+            _ingredientsList(_ingredients),
           ],
         ),
       ),

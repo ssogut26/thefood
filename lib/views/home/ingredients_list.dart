@@ -1,8 +1,8 @@
 part of 'home_view.dart';
 
-FutureBuilder<Ingredients?> _ingredientsList() {
+FutureBuilder<Ingredients?> _ingredientsList(Future<Ingredients?> ingredients) {
   return FutureBuilder<Ingredients?>(
-    future: NetworkManager.instance.getIngredients(),
+    future: ingredients,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         return Padding(

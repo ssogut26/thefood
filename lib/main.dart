@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thefood/constants/text_styles.dart';
-import 'package:thefood/views/home_view.dart';
+import 'package:thefood/views/home/home_view.dart';
 
 void main() {
   runApp(const TheFood());

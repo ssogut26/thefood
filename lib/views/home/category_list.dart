@@ -1,13 +1,14 @@
 part of 'home_view.dart';
 
-FutureBuilder<List<MealCategory>?> _categoriesList() {
+FutureBuilder<List<MealCategory>?> _categoriesList(
+    Future<List<MealCategory>?> categories) {
   return FutureBuilder<List<MealCategory>?>(
-    future: NetworkManager.instance.getCategories(),
+    future: categories,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         return Column(
           children: [
-            _AlignedText(text: ProjectTexts.categories),
+            const _AlignedText(text: ProjectTexts.categories),
             _CardBox(
               child: ListView.builder(
                 shrinkWrap: true,
