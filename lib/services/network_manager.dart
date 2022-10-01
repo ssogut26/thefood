@@ -3,26 +3,25 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:thefood/constants/endpoints.dart';
+import 'package:thefood/models/area.dart';
 import 'package:thefood/models/categories.dart';
-import 'package:thefood/models/category.dart';
+import 'package:thefood/models/ingredients.dart';
 
 class NetworkManager {
-  NetworkManager._init();
-  static NetworkManager? _instance;
-  static NetworkManager get instance {
-    _instance ??= NetworkManager._init();
-    return _instance!;
+  NetworkManager._() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: EndPoints().baseUrl,
+      ),
+    );
   }
-
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: EndPoints().baseUrl,
-    ),
-  );
+  late final Dio _dio;
+  static final NetworkManager instance = NetworkManager._();
+  Dio get service => _dio;
 
   Future<List<MealCategory>?> getCategories() async {
     try {
-      final response = await _dio.get('categories.php');
+      final response = await _dio.get(EndPoints().categories);
       final categories =
           Categories.fromJson(response.data as Map<String, dynamic>).categories;
       return categories;
@@ -34,20 +33,25 @@ class NetworkManager {
     }
   }
 
-  Future<List<dynamic>> getAreas() async {
-    try {
-      final response = await _dio.get('list.php?a=list');
-      if (response.statusCode == 200) {
-        final areas = response.data['meals'];
-        return areas as List;
-      } else {
-        return [];
+  Future<Area?> getAreas() async {
+    final response = await _dio.get(EndPoints().listByArea);
+    if (response.statusCode == 200) {
+      final area = response.data;
+      if (area is Map<String, dynamic>) {
+        return Area.fromJson(area);
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      return [];
     }
+    return null;
+  }
+
+  Future<Ingredients?> getIngredients() async {
+    final response = await _dio.get(EndPoints().listByIngredients);
+    if (response.statusCode == 200) {
+      final ingredients = response.data;
+      if (ingredients is Map<String, dynamic>) {
+        return Ingredients.fromJson(ingredients);
+      }
+    }
+    return null;
   }
 }
