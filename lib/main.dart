@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:thefood/constants/text_styles.dart';
+import 'package:thefood/views/details/details_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 
 void main() {
@@ -16,13 +18,39 @@ class TheFood extends StatefulWidget {
 class _TheFoodState extends State<TheFood> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'theFood',
       theme: ThemeData(
         useMaterial3: true,
         textTheme: ProjectTextStyles().textTheme,
       ),
-      home: const HomeView(),
+      routerConfig: _router,
     );
   }
+
+  final GoRouter _router = GoRouter(
+    routes: <GoRoute>[
+      GoRoute(
+        path: '/',
+        builder: (BuildContext context, GoRouterState state) {
+          return const HomeView();
+        },
+      ),
+      GoRoute(
+        path: '/details',
+        name: 'details',
+        builder: (BuildContext context, GoRouterState state) {
+          // final int id = state.params['id'] ?? 0;
+          final name = state.params['name'] ?? '';
+          final image = state.params['image'] ?? '';
+          final key = state.pageKey;
+          return DetailsView(
+            key: key,
+            name: name,
+            image: image,
+          );
+        },
+      ),
+    ],
+  );
 }

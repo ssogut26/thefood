@@ -16,15 +16,26 @@ FutureBuilder<Area?> _areaList(Future<Area?> area) {
                   scrollDirection: Axis.horizontal,
                   itemCount: snapshot.data?.meals?.length,
                   itemBuilder: (context, index) {
+                    final data = snapshot.data?.meals?[index];
                     return Card(
                       child: Column(
                         children: [
-                          _ImageBox(
-                            url: countryFlagMap[snapshot.data?.meals?[index].strArea] ??
-                                '',
+                          GestureDetector(
+                            onTap: () {
+                              context.go(
+                                '/details',
+                                extra: {
+                                  'name': data?.strArea,
+                                  'image': countryFlagMap[data?.strArea] ?? '',
+                                },
+                              );
+                            },
+                            child: _ImageBox(
+                              url: countryFlagMap[data?.strArea] ?? '',
+                            ),
                           ),
                           Text(
-                            snapshot.data?.meals?[index].strArea ?? '',
+                            data?.strArea ?? '',
                             style: Theme.of(context).textTheme.bodyText1,
                           ),
                         ],

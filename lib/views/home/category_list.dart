@@ -1,10 +1,12 @@
 part of 'home_view.dart';
 
 FutureBuilder<List<MealCategory>?> _categoriesList(
-    Future<List<MealCategory>?> categories) {
+  Future<List<MealCategory>?> categories,
+) {
   return FutureBuilder<List<MealCategory>?>(
     future: categories,
     builder: (context, snapshot) {
+      final key = GlobalKey();
       if (snapshot.hasData) {
         return Column(
           children: [
@@ -19,8 +21,20 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                   return Card(
                     child: Column(
                       children: [
-                        _ImageBox(
-                          url: data?.strCategoryThumb ?? '',
+                        GestureDetector(
+                          onTap: () {
+                            context.goNamed(
+                              'details',
+                              params: {
+                                'key': key.toString(),
+                                'name': data?.strCategory ?? '',
+                                'image': data?.strCategoryThumb ?? '',
+                              },
+                            );
+                          },
+                          child: _ImageBox(
+                            url: data?.strCategoryThumb ?? '',
+                          ),
                         ),
                         Text(
                           data?.strCategory ?? '',
