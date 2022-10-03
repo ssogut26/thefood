@@ -39,15 +39,13 @@ FutureBuilder<Ingredients?> _ingredientsList(Future<Ingredients?> ingredients) {
                     child: CircularProgressIndicator(),
                   ),
                   loadMore: () async {
-                    var increase = 20;
-                    for (var i = 20; i < 590; i++) {
-                      await Future.delayed(const Duration(milliseconds: 100));
-                      snapshot.data!.meals!.length + i;
+                    for (var i = 0; i < snapshot.data!.meals!.length; i++) {
+                      await Future.delayed(const Duration(seconds: 2)).then((value) {});
                     }
                   },
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  itemCount: snapshot.data!.meals!.length - 500,
+                  itemCount: snapshot.data!.meals!.length - 550,
                   itemBuilder: (context, index) {
                     final data = snapshot.data?.meals?[index];
                     return Card(
@@ -55,11 +53,11 @@ FutureBuilder<Ingredients?> _ingredientsList(Future<Ingredients?> ingredients) {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              context.go(
-                                '/details',
-                                extra: {
-                                  'id': data?.idIngredient,
-                                  'name': data?.strIngredient,
+                              context.pushNamed(
+                                'details',
+                                params: {
+                                  'id': data?.idIngredient ?? '',
+                                  'name': data?.strIngredient ?? '',
                                   'image':
                                       '${EndPoints().ingredientsImages}${data?.strIngredient ?? ''}.png',
                                 },

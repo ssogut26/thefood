@@ -23,10 +23,10 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.goNamed(
+                            context.pushNamed(
                               'details',
                               params: {
-                                'key': key.toString(),
+                                'id': data?.idCategory ?? '',
                                 'name': data?.strCategory ?? '',
                                 'image': data?.strCategoryThumb ?? '',
                               },
