@@ -26,7 +26,6 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                             context.pushNamed(
                               'details',
                               params: {
-                                'id': data?.idCategory ?? '',
                                 'name': data?.strCategory ?? '',
                                 'image': data?.strCategoryThumb ?? '',
                               },

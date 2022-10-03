@@ -4,6 +4,19 @@ import 'package:json_annotation/json_annotation.dart';
 part 'meals.g.dart';
 
 @JsonSerializable()
+class Meal with EquatableMixin {
+  Meal({
+    this.meals,
+  });
+  factory Meal.fromJson(Map<String, dynamic> json) => _$MealFromJson(json);
+  final List<Meals>? meals;
+  Map<String, dynamic> toJson() => _$MealToJson(this);
+
+  @override
+  List<Object?> get props => [meals];
+}
+
+@JsonSerializable()
 class Meals with EquatableMixin {
   Meals({
     this.idMeal,

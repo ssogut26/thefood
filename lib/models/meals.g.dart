@@ -6,6 +6,16 @@ part of 'meals.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+Meal _$MealFromJson(Map<String, dynamic> json) => Meal(
+      meals: (json['meals'] as List<dynamic>?)
+          ?.map((e) => Meals.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$MealToJson(Meal instance) => <String, dynamic>{
+      'meals': instance.meals,
+    };
+
 Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       idMeal: json['idMeal'] as String?,
       strMeal: json['strMeal'] as String?,

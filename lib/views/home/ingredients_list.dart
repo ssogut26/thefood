@@ -11,41 +11,10 @@ FutureBuilder<Ingredients?> _ingredientsList(Future<Ingredients?> ingredients) {
             children: [
               const _AlignedText(text: ProjectTexts.ingredients),
               _CardBox(
-                child: PaginableListView.builder(
-                  errorIndicatorWidget: (exception, tryAgain) => Container(
-                    color: Colors.redAccent,
-                    height: 130,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          exception.toString(),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(Colors.green),
-                          ),
-                          onPressed: () {},
-                          child: const Text('Try Again'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  progressIndicatorWidget: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  loadMore: () async {
-                    for (var i = 0; i < snapshot.data!.meals!.length; i++) {
-                      await Future.delayed(const Duration(seconds: 2)).then((value) {});
-                    }
-                  },
+                child: ListView.builder(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  itemCount: snapshot.data!.meals!.length - 550,
+                  itemCount: snapshot.data?.meals?.length,
                   itemBuilder: (context, index) {
                     final data = snapshot.data?.meals?[index];
                     return Card(
@@ -56,7 +25,6 @@ FutureBuilder<Ingredients?> _ingredientsList(Future<Ingredients?> ingredients) {
                               context.pushNamed(
                                 'details',
                                 params: {
-                                  'id': data?.idIngredient ?? '',
                                   'name': data?.strIngredient ?? '',
                                   'image':
                                       '${EndPoints().ingredientsImages}${data?.strIngredient ?? ''}.png',

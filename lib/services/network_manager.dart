@@ -6,6 +6,7 @@ import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/models/area.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/ingredients.dart';
+import 'package:thefood/models/meals.dart';
 
 class NetworkManager {
   NetworkManager._() {
@@ -50,6 +51,27 @@ class NetworkManager {
       final ingredients = response.data;
       if (ingredients is Map<String, dynamic>) {
         return Ingredients.fromJson(ingredients);
+      }
+    }
+    return null;
+  }
+
+  Future<Meal?> getMeals(String name) async {
+    final response = await _dio.get(
+      EndPoints().filterByCategory + name,
+    );
+    final response2 = await _dio.get(
+      EndPoints().filterByArea + name,
+    );
+    final response3 = await _dio.get(
+      EndPoints().filterByMainIngredients + name,
+    );
+    if (response.statusCode == 200 ||
+        response2.statusCode == 200 ||
+        response3.statusCode == 200) {
+      final meals = response.data;
+      if (meals is Map<String, dynamic>) {
+        return Meal.fromJson(meals);
       }
     }
     return null;

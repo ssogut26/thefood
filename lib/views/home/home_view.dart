@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:paginable/paginable.dart';
 import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
@@ -26,6 +25,7 @@ class _HomeViewState extends State<HomeView> {
   late Future<List<MealCategory>?> _categories;
   late Future<Area?> _areas;
   late Future<Ingredients?> _ingredients;
+  // late Future<Meals?> _meals;
 
   @override
   void initState() {
@@ -33,75 +33,23 @@ class _HomeViewState extends State<HomeView> {
     _categories = NetworkManager.instance.getCategories();
     _areas = NetworkManager.instance.getAreas();
     _ingredients = NetworkManager.instance.getIngredients();
+    // _meals = NetworkManager.instance.getMeals('Beef');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: Padding(
-        padding: ProjectPaddings().pageMedium,
-        child: Column(
-          children: [
-            _categoriesList(_categories),
-            _areaList(_areas),
-            FutureBuilder<Ingredients?>(
-              future: _ingredients,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Padding(
-                    padding: ProjectPaddings().cardMedium,
-                    child: Column(
-                      children: [
-                        const _AlignedText(text: ProjectTexts.ingredients),
-                        _CardBox(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: snapshot.data!.meals!.length,
-                            itemBuilder: (context, index) {
-                              final data = snapshot.data?.meals?[index];
-                              return Card(
-                                child: Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        context.pushNamed(
-                                          'details',
-                                          params: {
-                                            'id': data?.idIngredient ?? '',
-                                            'name': data?.strIngredient ?? '',
-                                            'image':
-                                                '${EndPoints().ingredientsImages}${data?.strIngredient ?? ''}.png',
-                                          },
-                                        );
-                                      },
-                                      child: _ImageBox(
-                                        url:
-                                            '${EndPoints().ingredientsImages}${data?.strIngredient ?? ''}.png',
-                                      ),
-                                    ),
-                                    Text(
-                                      data?.strIngredient ?? '',
-                                      style: Theme.of(context).textTheme.bodyText1,
-                                    )
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Text(snapshot.error.toString());
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: ProjectPaddings().pageMedium,
+          child: Column(
+            children: [
+              _categoriesList(_categories),
+              _areaList(_areas),
+              _ingredientsList(_ingredients),
+            ],
+          ),
         ),
       ),
     );

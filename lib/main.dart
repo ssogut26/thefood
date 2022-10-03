@@ -37,14 +37,12 @@ class _TheFoodState extends State<TheFood> {
         },
       ),
       GoRoute(
-        path: '/details/:id/:name/:image',
+        path: '/details/:name/:image',
         name: 'details',
         builder: (BuildContext context, GoRouterState state) {
-          final id = int.parse(state.params['id'] ?? '');
           final name = state.params['name'] ?? '';
           final image = state.params['image'] ?? '';
           return DetailsView(
-            id: id,
             name: name,
             image: image,
           );
