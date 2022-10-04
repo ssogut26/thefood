@@ -11,4 +11,8 @@ void main() {
     final areas = await NetworkManager.instance.getAreas();
     expect(areas, isNotEmpty);
   });
+  test('getByArea', () async {
+    final area = await NetworkManager.instance.getMeals('American');
+    expect(area, isNotEmpty);
+  });
 }

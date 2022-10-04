@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thefood/constants/text_styles.dart';
-import 'package:thefood/views/details/details_view.dart';
+import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 
 void main() {
