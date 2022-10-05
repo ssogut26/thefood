@@ -1,10 +1,9 @@
 import 'package:flutter/painting.dart';
 
 class ProjectColors {
-  static const ocher = Color(0xFFDB8213);
+  static const paleGrey = Color(0xFFF4F9F9);
   static const white = Color(0xFFFFFFFF);
-  static const black = Color(0xFF000000);
-  static const black50 = Color.fromRGBO(0, 0, 0, 0.5);
-  static const black25 = Color.fromRGBO(0, 0, 0, 0.25);
-  static const softGreen = Color(0xFF6FCC66);
+  static const black = Color(0xFF1A1A1A);
+  static const darkGrey = Color(0XFF444941);
+  static const yellow = Color(0xFFFFCC29);
 }

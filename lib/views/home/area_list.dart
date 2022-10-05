@@ -23,7 +23,7 @@ FutureBuilder<Area?> _areaList(Future<Area?> area) {
                           GestureDetector(
                             onTap: () {
                               context.pushNamed(
-                                'details',
+                                'category',
                                 params: {
                                   'name': data?.strArea ?? '',
                                   'image': countryFlagMap[data?.strArea] ?? '',

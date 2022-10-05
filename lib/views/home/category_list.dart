@@ -6,12 +6,12 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
   return FutureBuilder<List<MealCategory>?>(
     future: categories,
     builder: (context, snapshot) {
-      final key = GlobalKey();
       if (snapshot.hasData) {
         return Column(
           children: [
-            const _AlignedText(text: ProjectTexts.categories),
-            _CardBox(
+            SizedBox(
+              height: 64,
+              width: MediaQuery.of(context).size.width,
               child: ListView.builder(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
@@ -19,20 +19,22 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                 itemBuilder: (context, index) {
                   final data = snapshot.data?[index];
                   return Card(
-                    child: Column(
+                    child: Row(
                       children: [
                         GestureDetector(
                           onTap: () {
                             context.pushNamed(
-                              'details',
+                              'category',
                               params: {
                                 'name': data?.strCategory ?? '',
                                 'image': data?.strCategoryThumb ?? '',
                               },
                             );
                           },
-                          child: _ImageBox(
-                            url: data?.strCategoryThumb ?? '',
+                          child: Image.network(
+                            data?.strCategoryThumb ?? '',
+                            height: 32,
+                            width: 32,
                           ),
                         ),
                         Text(

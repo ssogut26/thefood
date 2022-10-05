@@ -7,5 +7,6 @@ class EndPoints {
   final String filterByMainIngredients = 'filter.php?i=';
   final String filterByCategory = 'filter.php?c=';
   final String filterByArea = 'filter.php?a=';
+  final String randomMeal = 'random.php';
   final String ingredientsImages = 'https://www.themealdb.com/images/ingredients/';
 }

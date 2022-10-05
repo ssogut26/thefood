@@ -70,7 +70,7 @@ class NetworkManager {
   //   return null;
   // }
 
-  Future<Meal?> getMeals(String name) async {
+  Future<Meal?> getMealsByCategory(String name) async {
     final response = await _dio.get(
       EndPoints().filterByArea + name,
     );
@@ -83,15 +83,43 @@ class NetworkManager {
     final rp1meals = response.data;
     final rp2meals = response2.data;
     final rp3meals = response3.data;
-    if (rp2meals is Map<String, dynamic> && rp2meals.entries.first.value == null) {
+    if (rp2meals is Map<String, dynamic> &&
+        rp2meals.entries.first.value == null &&
+        rp3meals is Map<String, dynamic> &&
+        rp3meals.entries.first.value == null) {
       if (rp1meals is Map<String, dynamic>) {
         return Meal.fromJson(rp1meals);
       }
       return Meal.fromJson(rp1meals as Map<String, dynamic>);
-    } else if (rp2meals is Map<String, dynamic>) {
+    } else if (rp2meals is Map<String, dynamic> &&
+        rp3meals is Map<String, dynamic> &&
+        rp3meals.entries.first.value == null) {
       return Meal.fromJson(rp2meals);
-    } else {
+    } else if (rp2meals is Map<String, dynamic>) {
       return Meal.fromJson(rp3meals as Map<String, dynamic>);
     }
+    return null;
+  }
+
+  Future<Meal?> getRandomMeal() async {
+    final response = await _dio.get(EndPoints().randomMeal);
+    if (response.statusCode == 200) {
+      final meals = response.data;
+      if (meals is Map<String, dynamic>) {
+        return Meal.fromJson(meals);
+      }
+    }
+    return null;
+  }
+
+  Future<Meal?> getMeal(int id) async {
+    final response = await _dio.get('${EndPoints().getMealDetail}$id');
+    if (response.statusCode == 200) {
+      final meals = response.data;
+      if (meals is Map<String, dynamic>) {
+        return Meal.fromJson(meals);
+      }
+    }
+    return null;
   }
 }

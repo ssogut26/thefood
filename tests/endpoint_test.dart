@@ -12,7 +12,7 @@ void main() {
     expect(areas, isNotEmpty);
   });
   test('getByArea', () async {
-    final area = await NetworkManager.instance.getMeals('American');
+    final area = await NetworkManager.instance.getMealsByCategory('American');
     expect(area, isNotEmpty);
   });
 }

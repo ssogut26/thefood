@@ -10,9 +10,10 @@ class _ImageBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.network(
+      fit: BoxFit.fill,
       url,
-      width: 100,
-      height: 100,
+      height: 150,
+      width: 150,
     );
   }
 }
@@ -43,7 +44,7 @@ class _CardBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 0.2,
+      height: MediaQuery.of(context).size.height * 0.25,
       child: child,
     );
   }
