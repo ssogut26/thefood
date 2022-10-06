@@ -56,20 +56,6 @@ class NetworkManager {
     return null;
   }
 
-  // Future<Meal?> getMealsByArea(String name) async {
-  //   final response = await _dio.get(
-  //     EndPoints().filterByArea + name,
-  //   );
-  //   print(response.toString());
-  //   if (response.statusCode == 200) {
-  //     final meals = response.data;
-  //     if (meals is Map<String, dynamic>) {
-  //       return Meal.fromJson(meals);
-  //     }
-  //   }
-  //   return null;
-  // }
-
   Future<Meal?> getMealsByCategory(String name) async {
     final response = await _dio.get(
       EndPoints.filterByArea + name,

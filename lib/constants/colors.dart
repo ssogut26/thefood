@@ -8,4 +8,5 @@ class ProjectColors {
   static const lightGrey = Color(0xFFC7C7C7);
   static const darkGrey = Color(0XFF444941);
   static const yellow = Color(0xFFFFCC29);
+  static const actionsBgColor = Color.fromARGB(200, 199, 199, 199);
 }

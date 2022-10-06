@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:kartal/kartal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:thefood/constants/assets_path.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/constants/paddings.dart';
+import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,14 +39,33 @@ class _DetailsViewState extends State<DetailsView> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: CircleAvatar(
+            backgroundColor: ProjectColors.actionsBgColor,
+            child: SvgPicture.asset(
+              AssetsPath.back,
+              color: ProjectColors.black,
+            ),
+          ),
           onPressed: () {
-            context.pop();
+            Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              backgroundColor: ProjectColors.actionsBgColor,
+              child: SvgPicture.asset(
+                AssetsPath.bookmark,
+                color: ProjectColors.black,
+              ),
+            ),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('id', widget.id.toString());
+            },
+          ),
+        ],
       ),
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -123,7 +146,7 @@ class _MealDetailsState extends State<_MealDetails> {
     if (!await launchUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Could not launch link'),
+          content: Text(ProjectTexts.linkError),
         ),
       );
     } else {
@@ -212,7 +235,7 @@ class _MealDetailsState extends State<_MealDetails> {
                       duration: const Duration(milliseconds: 300),
                       scale: (selectedIndex == 0) ? 1.2 : 1,
                       child: Text(
-                        'Ingredients',
+                        ProjectTexts.ingredients,
                         style: (selectedIndex == 0)
                             ? Theme.of(context).textTheme.headline3
                             : Theme.of(context).textTheme.bodyText2,
@@ -232,7 +255,7 @@ class _MealDetailsState extends State<_MealDetails> {
                       duration: const Duration(milliseconds: 300),
                       scale: (selectedIndex == 1) ? 1.2 : 1,
                       child: Text(
-                        'Instructions',
+                        ProjectTexts.instructions,
                         style: (selectedIndex == 1)
                             ? Theme.of(context).textTheme.headline3
                             : Theme.of(context).textTheme.bodyText2,
@@ -242,14 +265,6 @@ class _MealDetailsState extends State<_MealDetails> {
                 ),
               ],
             ),
-            // DecoratedBox(
-            //   decoration: const BoxDecoration(
-            //     color: ProjectColors.mainWhite,
-            //     borderRadius: BorderRadius.only(
-            //       topLeft: Radius.circular(20),
-            //       topRight: Radius.circular(20),
-            //     ),
-            //   ),
             if (selectedIndex == 0)
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -329,6 +344,6 @@ class _MealDetailsState extends State<_MealDetails> {
 
 extension StringExtension on String {
   String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
+    return '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
   }
 }

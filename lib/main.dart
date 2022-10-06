@@ -27,8 +27,8 @@ class _TheFoodState extends State<TheFood> {
         useMaterial3: true,
         textTheme: ProjectTextStyles().textTheme,
         appBarTheme: const AppBarTheme(
-          iconTheme: IconThemeData(color: ProjectColors.white),
           elevation: 0,
+          backgroundColor: Colors.transparent,
         ),
         cardTheme: const CardTheme(
           elevation: 0,

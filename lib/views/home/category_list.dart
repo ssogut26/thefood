@@ -31,10 +31,13 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                               },
                             );
                           },
-                          child: Image.network(
-                            data?.strCategoryThumb ?? '',
-                            height: 32,
-                            width: 32,
+                          child: Card(
+                            color: ProjectColors.mainWhite,
+                            child: Image.network(
+                              data?.strCategoryThumb ?? '',
+                              height: 32,
+                              width: 32,
+                            ),
                           ),
                         ),
                         Text(
