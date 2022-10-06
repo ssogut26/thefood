@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/area.dart';
 import 'package:thefood/models/categories.dart';
-import 'package:thefood/models/ingredients.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
 
 part 'area_list.dart';
 part 'category_list.dart';
-part 'ingredients_list.dart';
 part 'widgets.dart';
 
 class HomeView extends StatefulWidget {
@@ -26,7 +23,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late Future<List<MealCategory>?> _categories;
   late Future<Area?> _areas;
-  late Future<Ingredients?> _ingredients;
+
   late Future<Meal?> _random;
 
   @override
@@ -34,9 +31,7 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     _categories = NetworkManager.instance.getCategories();
     _areas = NetworkManager.instance.getAreas();
-    _ingredients = NetworkManager.instance.getIngredients();
     _random = NetworkManager.instance.getRandomMeal();
-    // _meals = NetworkManager.instance.getMeals('Beef');
   }
 
   @override
@@ -46,7 +41,7 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: ProjectPaddings().pageMedium,
+            padding: ProjectPaddings.pageMedium,
             child: Column(
               children: [
                 Row(
@@ -104,9 +99,11 @@ class _HomeViewState extends State<HomeView> {
                           return InkWell(
                             onTap: () {
                               context.pushNamed(
-                                'detail',
+                                'details',
                                 params: {
                                   'id': data?.idMeal ?? '',
+                                  'name': data?.strMeal ?? '',
+                                  'image': data?.strMealThumb ?? '',
                                 },
                               );
                             },
@@ -136,7 +133,6 @@ class _HomeViewState extends State<HomeView> {
                   },
                 ),
                 _areaList(_areas),
-                _ingredientsList(_ingredients),
               ],
             ),
           ),

@@ -1,11 +1,16 @@
 import 'package:flutter/widgets.dart';
 
 class ProjectPaddings {
-  EdgeInsets get pageSmall => const EdgeInsets.all(4);
-  EdgeInsets get pageMedium => const EdgeInsets.all(8);
-  EdgeInsets get pageLarge => const EdgeInsets.all(12);
+  ProjectPaddings._();
+  static const pageSmall = EdgeInsets.all(4);
+  static const pageMedium = EdgeInsets.all(8);
+  static const pageLarge = EdgeInsets.all(24);
 
-  EdgeInsets get cardSmall => const EdgeInsets.only(bottom: 4);
-  EdgeInsets get cardMedium => const EdgeInsets.only(bottom: 8);
-  EdgeInsets get cardLarge => const EdgeInsets.only(bottom: 12);
+  static const cardSmall = EdgeInsets.only(bottom: 4);
+  static const cardMedium = EdgeInsets.only(bottom: 8);
+  static const cardLarge = EdgeInsets.only(bottom: 12);
+
+  static const textSmall = EdgeInsets.only(left: 4);
+  static const textMedium = EdgeInsets.only(left: 8);
+  static const textLarge = EdgeInsets.only(left: 12);
 }

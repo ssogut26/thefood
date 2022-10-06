@@ -12,7 +12,7 @@ class NetworkManager {
   NetworkManager._() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: EndPoints().baseUrl,
+        baseUrl: EndPoints.baseUrl,
       ),
     );
   }
@@ -22,7 +22,7 @@ class NetworkManager {
 
   Future<List<MealCategory>?> getCategories() async {
     try {
-      final response = await _dio.get(EndPoints().categories);
+      final response = await _dio.get(EndPoints.categories);
       final categories =
           Categories.fromJson(response.data as Map<String, dynamic>).categories;
       return categories;
@@ -35,7 +35,7 @@ class NetworkManager {
   }
 
   Future<Area?> getAreas() async {
-    final response = await _dio.get(EndPoints().listByArea);
+    final response = await _dio.get(EndPoints.listByArea);
     if (response.statusCode == 200) {
       final area = response.data;
       if (area is Map<String, dynamic>) {
@@ -46,7 +46,7 @@ class NetworkManager {
   }
 
   Future<Ingredients?> getIngredients() async {
-    final response = await _dio.get(EndPoints().listByIngredients);
+    final response = await _dio.get(EndPoints.listByIngredients);
     if (response.statusCode == 200) {
       final ingredients = response.data;
       if (ingredients is Map<String, dynamic>) {
@@ -72,13 +72,13 @@ class NetworkManager {
 
   Future<Meal?> getMealsByCategory(String name) async {
     final response = await _dio.get(
-      EndPoints().filterByArea + name,
+      EndPoints.filterByArea + name,
     );
     final response2 = await _dio.get(
-      EndPoints().filterByCategory + name,
+      EndPoints.filterByCategory + name,
     );
     final response3 = await _dio.get(
-      EndPoints().filterByMainIngredients + name,
+      EndPoints.filterByMainIngredients + name,
     );
     final rp1meals = response.data;
     final rp2meals = response2.data;
@@ -102,7 +102,7 @@ class NetworkManager {
   }
 
   Future<Meal?> getRandomMeal() async {
-    final response = await _dio.get(EndPoints().randomMeal);
+    final response = await _dio.get(EndPoints.randomMeal);
     if (response.statusCode == 200) {
       final meals = response.data;
       if (meals is Map<String, dynamic>) {
@@ -113,7 +113,7 @@ class NetworkManager {
   }
 
   Future<Meal?> getMeal(int id) async {
-    final response = await _dio.get('${EndPoints().getMealDetail}$id');
+    final response = await _dio.get('${EndPoints.getMealDetail}$id');
     if (response.statusCode == 200) {
       final meals = response.data;
       if (meals is Map<String, dynamic>) {

@@ -23,6 +23,13 @@ class ProjectTextStyles extends TextTheme {
           fontWeight: FontWeight.w700,
           fontStyle: FontStyle.normal,
         ),
+        bodyText2: TextStyle(
+          fontFamily: 'Nunito',
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          fontStyle: FontStyle.normal,
+        ),
         headline4: TextStyle(
           fontFamily: 'Nunito',
           color: Colors.black,

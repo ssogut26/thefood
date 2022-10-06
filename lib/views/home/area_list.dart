@@ -6,7 +6,7 @@ FutureBuilder<Area?> _areaList(Future<Area?> area) {
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         return Padding(
-          padding: ProjectPaddings().cardMedium,
+          padding: ProjectPaddings.cardMedium,
           child: Column(
             children: [
               const _AlignedText(text: ProjectTexts.areas),

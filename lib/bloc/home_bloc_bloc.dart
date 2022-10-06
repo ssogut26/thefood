@@ -26,7 +26,7 @@ class HomeBloc extends Bloc<HomeBlocEvent, HomeBlocState> {
   }
 
   Future<Ingredients?> getIngredients() async {
-    final response = await _dio.get(EndPoints().listByIngredients);
+    final response = await _dio.get(EndPoints.listByIngredients);
     if (response.statusCode == 200) {
       final ingredients = response.data;
       if (ingredients is Map<String, dynamic>) {

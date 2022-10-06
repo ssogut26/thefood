@@ -40,7 +40,7 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
         ),
       ),
       body: Padding(
-        padding: ProjectPaddings().pageMedium,
+        padding: ProjectPaddings.pageMedium,
         child: SingleChildScrollView(
           child: Column(
             children: [

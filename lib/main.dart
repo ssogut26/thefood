@@ -23,6 +23,7 @@ class _TheFoodState extends State<TheFood> {
     return MaterialApp.router(
       title: 'theFood',
       theme: ThemeData(
+        scaffoldBackgroundColor: ProjectColors.mainWhite,
         useMaterial3: true,
         textTheme: ProjectTextStyles().textTheme,
         appBarTheme: const AppBarTheme(
@@ -61,7 +62,7 @@ class _TheFoodState extends State<TheFood> {
         },
       ),
       GoRoute(
-        path: '/details/:name/:image',
+        path: '/details/:name/:image/:id',
         name: 'details',
         builder: (BuildContext context, GoRouterState state) {
           final name = state.params['name'] ?? '';

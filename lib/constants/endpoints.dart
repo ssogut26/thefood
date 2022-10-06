@@ -1,12 +1,14 @@
 class EndPoints {
-  final String baseUrl = 'https://www.themealdb.com/api/json/v1/1/';
-  final String categories = 'categories.php';
-  final String listByCategories = 'list.php?c=list';
-  final String listByArea = 'list.php?a=list';
-  final String listByIngredients = 'list.php?i=list';
-  final String filterByMainIngredients = 'filter.php?i=';
-  final String filterByCategory = 'filter.php?c=';
-  final String filterByArea = 'filter.php?a=';
-  final String randomMeal = 'random.php';
-  final String ingredientsImages = 'https://www.themealdb.com/images/ingredients/';
+  EndPoints._();
+  static const String baseUrl = 'https://www.themealdb.com/api/json/v1/1/';
+  static const String categories = 'categories.php';
+  static const String listByCategories = 'list.php?c=list';
+  static const String listByArea = 'list.php?a=list';
+  static const String listByIngredients = 'list.php?i=list';
+  static const String filterByMainIngredients = 'filter.php?i=';
+  static const String filterByCategory = 'filter.php?c=';
+  static const String filterByArea = 'filter.php?a=';
+  static const String getMealDetail = 'lookup.php?i=';
+  static const String randomMeal = 'random.php';
+  static const String ingredientsImages = 'https://www.themealdb.com/images/ingredients/';
 }

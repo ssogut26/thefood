@@ -18,6 +18,8 @@ class Meal with EquatableMixin {
 
 @JsonSerializable()
 class Meals with EquatableMixin {
+  factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
+
   Meals({
     this.idMeal,
     this.strMeal,
@@ -73,8 +75,7 @@ class Meals with EquatableMixin {
     this.strCreativeCommonsConfirmed,
     this.dateModified,
   });
-
-  factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
+  String? ingredients;
   @JsonKey(name: 'idMeal')
   String? idMeal;
   @JsonKey(name: 'strMeal')
