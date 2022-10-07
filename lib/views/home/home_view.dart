@@ -23,8 +23,9 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late Future<List<MealCategory>?> _categories;
   late Future<Area?> _areas;
-  late final Future<Meal?> _categoryMeals;
+
   late Future<Meal?> _random;
+  late int selectedIndex;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _HomeViewState extends State<HomeView> {
     _categories = NetworkManager.instance.getCategories();
     _areas = NetworkManager.instance.getAreas();
     _random = NetworkManager.instance.getRandomMeal();
+    selectedIndex = 0;
   }
 
   @override
@@ -79,20 +81,15 @@ class _HomeViewState extends State<HomeView> {
                               itemCount: snapshot.data?.length,
                               itemBuilder: (context, index) {
                                 final data2 = snapshot.data?[index];
-                                return Card(
-                                  child: Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          context.pushNamed(
-                                            'category',
-                                            params: {
-                                              'name': _category(data2)?.strCategory ?? '',
-                                              'image': data2?.strCategoryThumb ?? '',
-                                            },
-                                          );
-                                        },
-                                        child: Card(
+                                return GestureDetector(
+                                  onTap: () {
+                                    selectedIndex = index;
+                                    print(selectedIndex);
+                                  },
+                                  child: Card(
+                                    child: Row(
+                                      children: [
+                                        Card(
                                           color: ProjectColors.mainWhite,
                                           child: Image.network(
                                             data2?.strCategoryThumb ?? '',
@@ -100,102 +97,20 @@ class _HomeViewState extends State<HomeView> {
                                             width: 32,
                                           ),
                                         ),
-                                      ),
-                                      Text(
-                                        data2?.strCategory ?? '',
-                                        style: Theme.of(context).textTheme.bodyText1,
-                                      ),
-                                    ],
+                                        Text(
+                                          data2?.strCategory ?? '',
+                                          style: Theme.of(context).textTheme.bodyText1,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
                             ),
                           ),
-                          FutureBuilder(
-                            future: NetworkManager.instance.getMealsByCategory(
-                              snapshot.data?.map((e) => e.strCategory).toList().first ??
-                                  '',
-                            ),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return SizedBox(
-                                  height: 450,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: GridView.builder(
-                                    physics: const ScrollPhysics(),
-                                    gridDelegate:
-                                        SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent:
-                                          MediaQuery.of(context).size.width / 1.5,
-                                      mainAxisExtent:
-                                          MediaQuery.of(context).size.height / 4,
-                                    ),
-                                    shrinkWrap: true,
-                                    itemCount: 4,
-                                    itemBuilder: (context, index) {
-                                      final data = snapshot.data?.meals?[index];
-                                      return Card(
-                                        child: Stack(
-                                          alignment: Alignment.topCenter,
-                                          children: <Widget>[
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 20),
-                                              child: Container(
-                                                width: 200,
-                                                height: 160,
-                                                margin: const EdgeInsets.all(16),
-                                                child: Card(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(20),
-                                                  ),
-                                                  color: Colors.white,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(18),
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.spaceEvenly,
-                                                      children: [
-                                                        Text(
-                                                          data?.strMeal ?? '',
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .headline5,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              height: 90,
-                                              width: 90,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: Colors.black12,
-                                                ),
-                                                color: Colors.transparent,
-                                                image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: NetworkImage(
-                                                    data?.strMealThumb ?? '',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
+                          CategoryPreview(
+                            selectedIndex: selectedIndex,
+                            categoryName: snapshot.data,
                           ),
                         ],
                       );
@@ -262,8 +177,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  MealCategory? _category(MealCategory? data2) => data2;
-
   AppBar _appBar() {
     return AppBar(
       title: Row(
@@ -286,6 +199,132 @@ class _HomeViewState extends State<HomeView> {
           const CircleAvatar(),
         ],
       ),
+    );
+  }
+}
+
+class CategoryPreview extends StatefulWidget {
+  const CategoryPreview({
+    super.key,
+    required this.selectedIndex,
+    required this.categoryName,
+  });
+
+  final int selectedIndex;
+  final List<MealCategory?>? categoryName;
+
+  @override
+  State<CategoryPreview> createState() => _CategoryPreviewState();
+}
+
+class _CategoryPreviewState extends State<CategoryPreview> {
+  int? itemCount() {
+    if (4 > widget.categoryName![widget.selectedIndex]!.strCategory!.length) {
+      widget.categoryName![widget.selectedIndex]!.strCategory!.length;
+    } else {
+      return 4;
+    }
+    return null;
+  }
+
+  @override
+  void didUpdateWidget(covariant CategoryPreview oldWidget) {
+    if (oldWidget.categoryName != widget.categoryName ||
+        oldWidget.selectedIndex != widget.selectedIndex) {
+      setState(() {
+        categoryMeals;
+      });
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  late final Future<Meal?> categoryMeals;
+  @override
+  void initState() {
+    categoryMeals = NetworkManager.instance.getMealsByCategory(
+      widget.categoryName![widget.selectedIndex]!.strCategory ?? '',
+    );
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Meal?>(
+      future: categoryMeals,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return SizedBox(
+            height: 450,
+            width: MediaQuery.of(context).size.width,
+            child: GridView.builder(
+              physics: const ScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: MediaQuery.of(context).size.width / 1.5,
+                mainAxisExtent: MediaQuery.of(context).size.height / 4,
+              ),
+              shrinkWrap: true,
+              itemCount: 4,
+              itemBuilder: (context, index) {
+                print(widget.categoryName);
+                final data = snapshot.data?.meals?[index];
+                return Card(
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Container(
+                          width: 200,
+                          height: 160,
+                          margin: const EdgeInsets.all(16),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                    data?.strMeal ?? '',
+                                    style: Theme.of(context).textTheme.headline5,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        height: 90,
+                        width: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.black12,
+                          ),
+                          color: Colors.transparent,
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage(
+                              data?.strMealThumb ?? '',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        }
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 }
