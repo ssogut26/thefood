@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/text_styles.dart';
@@ -29,6 +30,7 @@ class _TheFoodState extends State<TheFood> {
         appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: Colors.transparent,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
         cardTheme: const CardTheme(
           elevation: 0,

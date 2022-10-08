@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kartal/kartal.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
@@ -22,15 +24,13 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   late Future<List<MealCategory>?> _categories;
-  late Future<Meal?> categoryMeals1;
-  late Future<Area?> _areas;
-
+  late Future<Meal?> categoryMeals;
   late Future<Meal?> _random;
   late int selectedIndex;
   late String categoryName;
   late int dataLenght;
 
-  int itemLenght() {
+  int itemLength() {
     if (dataLenght < 4) {
       return dataLenght;
     }
@@ -39,7 +39,7 @@ class _HomeViewState extends State<HomeView> {
 
   bool isLoading = false;
 
-  changeLoading() {
+  void changeLoading() {
     setState(() {
       isLoading = !isLoading;
     });
@@ -47,306 +47,420 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
-    super.initState();
     dataLenght = 0;
-    itemLenght();
+    itemLength();
     categoryName = 'Beef';
-    categoryMeals1 = NetworkManager.instance.getMealsByCategory(categoryName);
+    categoryMeals = NetworkManager.instance.getMealsByCategory(categoryName);
     _categories = NetworkManager.instance.getCategories();
-    _areas = NetworkManager.instance.getAreas();
     _random = NetworkManager.instance.getRandomMeal();
     selectedIndex = 0;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: ProjectPaddings.pageMedium,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: 327,
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            fillColor: ProjectColors.white,
-                            suffixIcon: const InkWell(
-                              focusColor: ProjectColors.yellow,
-                              child: Card(
-                                clipBehavior: Clip.antiAlias,
-                                color: ProjectColors.yellow,
-                                child: Icon(Icons.search),
-                              ),
-                            ),
-                            hintText: 'Find recipe',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: ProjectPaddings.pageLarge,
+            child: Column(
+              children: [
+                const _SearchBar(),
+                _getCategories(),
+                _randomRecipe(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  FutureBuilder<List<MealCategory>?> _getCategories() {
+    return FutureBuilder<List<MealCategory>?>(
+      future: _categories,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CategoryShimmer();
+        }
+        if (snapshot.hasData) {
+          return Column(
+            children: [
+              SizedBox(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: snapshot.data?.length,
+                  itemBuilder: (context, index) {
+                    final data2 = snapshot.data?[index];
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            changeLoading();
+                            selectedIndex = index;
+                            setState(() {
+                              categoryMeals = NetworkManager.instance.getMealsByCategory(
+                                data2?.strCategory ?? '',
+                              );
+                            });
+                            changeLoading();
+                          },
+                          child: Card(
+                            color: selectedIndex == index
+                                ? ProjectColors.yellow
+                                : ProjectColors.white,
+                            child: Row(
+                              children: [
+                                Card(
+                                  color: ProjectColors.mainWhite,
+                                  child: Image.network(
+                                    data2?.strCategoryThumb ?? '',
+                                    height: 32,
+                                    width: 32,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: ProjectPaddings.textSmall,
+                                  child: Text(
+                                    data2?.strCategory ?? '',
+                                    style: Theme.of(context).textTheme.bodyText1,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ),
-                      FutureBuilder<List<MealCategory>?>(
-                        future: _categories,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Column(
-                              children: [
-                                SizedBox(
-                                  height: 50,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: snapshot.data?.length,
-                                    itemBuilder: (context, index) {
-                                      final data2 = snapshot.data?[index];
-                                      return Column(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              changeLoading();
-                                              selectedIndex = index;
-                                              final newCategory = NetworkManager.instance
-                                                  .getMealsByCategory(
-                                                data2?.strCategory ?? '',
-                                              );
-                                              setState(() {
-                                                categoryMeals1 = newCategory;
-                                              });
-                                            },
-                                            child: Card(
-                                              color: selectedIndex == index
-                                                  ? ProjectColors.yellow
-                                                  : ProjectColors.white,
-                                              child: Row(
-                                                children: [
-                                                  Card(
-                                                    color: ProjectColors.mainWhite,
-                                                    child: Image.network(
-                                                      data2?.strCategoryThumb ?? '',
-                                                      height: 32,
-                                                      width: 32,
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: ProjectPaddings.textSmall,
-                                                    child: Text(
-                                                      data2?.strCategory ?? '',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyText1,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                                SizedBox(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Recommended'),
-                                      TextButton(
-                                        child: Text(
-                                          'See all',
-                                          style: Theme.of(context).textTheme.headline5,
-                                        ),
-                                        onPressed: () {
-                                          context.pushNamed(
-                                            'category',
-                                            params: {
-                                              'name': snapshot.data!
-                                                      .elementAt(selectedIndex)
-                                                      .strCategory ??
-                                                  '',
-                                              'image': snapshot.data!
-                                                      .elementAt(selectedIndex)
-                                                      .strCategoryThumb ??
-                                                  '',
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                FutureBuilder<Meal?>(
-                                  future: categoryMeals1,
-                                  builder: (context, snapshot) {
-                                    dataLenght = snapshot.data?.meals?.length ?? 0;
-                                    if (snapshot.hasData) {
-                                      return GridView.builder(
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        gridDelegate:
-                                            SliverGridDelegateWithMaxCrossAxisExtent(
-                                          maxCrossAxisExtent:
-                                              MediaQuery.of(context).size.width * 0.5,
-                                          mainAxisExtent:
-                                              MediaQuery.of(context).size.height * 0.25,
-                                        ),
-                                        shrinkWrap: true,
-                                        itemCount: itemLenght(),
-                                        itemBuilder: (context, index) {
-                                          final main = snapshot.data?.meals?[index];
-                                          return Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 207,
-                                                width:
-                                                    MediaQuery.of(context).size.width / 2,
-                                                child: Column(
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        context.pushNamed(
-                                                          'details',
-                                                          params: {
-                                                            'name': main?.strMeal ?? '',
-                                                            'image':
-                                                                main?.strMealThumb ?? '',
-                                                            'id': main?.idMeal ?? '',
-                                                          },
-                                                        );
-                                                      },
-                                                      child: Stack(
-                                                        alignment: Alignment.topCenter,
-                                                        children: <Widget>[
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                              top: 30,
-                                                            ),
-                                                            child: SizedBox(
-                                                              width: 150,
-                                                              height: 170,
-                                                              child: Card(
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(20),
-                                                                ),
-                                                                color: Colors.white,
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                    top: 75,
-                                                                    left: 15,
-                                                                    right: 15,
-                                                                  ),
-                                                                  child: Text(
-                                                                    main?.strMeal ?? '',
-                                                                    style:
-                                                                        Theme.of(context)
-                                                                            .textTheme
-                                                                            .bodyText2,
-                                                                    textScaleFactor: 0.95,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Container(
-                                                            height: 90,
-                                                            width: 90,
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              border: Border.all(
-                                                                color: Colors.black12,
-                                                              ),
-                                                              color: Colors.transparent,
-                                                              image: DecorationImage(
-                                                                fit: BoxFit.cover,
-                                                                image: NetworkImage(
-                                                                  main?.strMealThumb ??
-                                                                      '',
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return Text(snapshot.error.toString());
-                                    } else {
-                                      return const SizedBox.shrink();
-                                    }
-                                  },
-                                ),
-                              ],
-                            );
-                          } else if (snapshot.hasError) {
-                            return Text(snapshot.error.toString());
-                          } else {
-                            return const SizedBox.shrink();
-                          }
-                        },
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const _AlignedText(text: 'Random Recipe'),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                changeLoading();
-                                _random = NetworkManager.instance.getRandomMeal();
-                                changeLoading();
-                              });
-                            },
-                            icon: const Icon(Icons.refresh),
-                          ),
-                        ],
-                      ),
-                      _GetRandomRecipe(random: _random),
-                    ],
-                  ),
+                      ],
+                    );
+                  },
                 ),
               ),
+              SizedBox(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Preview',
+                      style: Theme.of(context).textTheme.headline1,
+                    ),
+                    TextButton(
+                      child: Text(
+                        'See all',
+                        style: Theme.of(context).textTheme.headline5,
+                      ),
+                      onPressed: () {
+                        context.pushNamed(
+                          'category',
+                          params: {
+                            'name':
+                                snapshot.data!.elementAt(selectedIndex).strCategory ?? '',
+                            'image': snapshot.data!
+                                    .elementAt(selectedIndex)
+                                    .strCategoryThumb ??
+                                '',
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              _categoryMeals(),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        } else {
+          return const CategoryShimmer();
+        }
+      },
+    );
+  }
+
+  FutureBuilder<Meal?> _categoryMeals() {
+    return FutureBuilder<Meal?>(
+      future: categoryMeals,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CategoryMealShimmer(
+            itemCount: 4,
+          );
+        }
+        dataLenght = snapshot.data?.meals?.length ?? 0;
+        if (snapshot.hasData) {
+          return GridView.builder(
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: context.dynamicWidth(0.5),
+              mainAxisExtent: context.dynamicHeight(0.27),
             ),
+            shrinkWrap: true,
+            itemCount: itemLength(),
+            itemBuilder: (context, index) {
+              final main = snapshot.data?.meals?[index];
+              return Column(
+                children: [
+                  SizedBox(
+                    height: context.dynamicHeight(0.26),
+                    width: MediaQuery.of(context).size.width / 2,
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            context.pushNamed(
+                              'details',
+                              params: {
+                                'name': main?.strMeal ?? '',
+                                'image': main?.strMealThumb ?? '',
+                                'id': main?.idMeal ?? '',
+                              },
+                            );
+                          },
+                          child: Stack(
+                            alignment: Alignment.topCenter,
+                            children: <Widget>[
+                              Padding(
+                                padding: ProjectPaddings.cardImagePaddingSmall,
+                                child: SizedBox(
+                                  width: context.dynamicWidth(0.4),
+                                  height: context.dynamicHeight(0.22),
+                                  child: Card(
+                                    elevation: 1,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: context.lowBorderRadius,
+                                    ),
+                                    color: ProjectColors.secondWhite,
+                                    child: Padding(
+                                      padding: ProjectPaddings.cardImagePadding,
+                                      child: Text(
+                                        main?.strMeal ?? '',
+                                        style: context.textTheme.bodyText2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 90,
+                                width: 90,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(),
+                                  color: Colors.transparent,
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                      main?.strMealThumb ?? '',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Center(child: Text(snapshot.error.toString()));
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  Column _randomRecipe() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const _AlignedText(text: 'Random Recipe'),
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  changeLoading();
+                  _random = NetworkManager.instance.getRandomMeal();
+                  changeLoading();
+                });
+              },
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+        _GetRandomRecipe(random: _random),
+      ],
     );
   }
 
   AppBar _appBar() {
     return AppBar(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      title: Padding(
+        padding: ProjectPaddings.pageMedium,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            RichText(
+              text: TextSpan(
+                children: <TextSpan>[
+                  TextSpan(
+                    text: ProjectTexts.helloText,
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                  TextSpan(
+                    text: ProjectTexts.questionText,
+                    style: Theme.of(context).textTheme.headline1,
+                  ),
+                ],
+              ),
+            ),
+            const CircleAvatar(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryShimmer extends StatelessWidget {
+  const CategoryShimmer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: ProjectColors.lightGrey,
+      highlightColor: ProjectColors.secondWhite,
+      child: Column(
         children: [
-          RichText(
-            text: TextSpan(
-              children: <TextSpan>[
-                TextSpan(
-                  text: 'Hello will name\n',
-                  style: Theme.of(context).textTheme.headline4,
-                ),
-                TextSpan(
-                  text: 'Ready To Cook?',
-                  style: Theme.of(context).textTheme.headline1,
-                ),
-              ],
+          SizedBox(
+            height: 50,
+            width: MediaQuery.of(context).size.width,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 4,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: const [
+                    SizedBox(
+                      width: 84,
+                      height: 50,
+                      child: Card(),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
-          const CircleAvatar(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: context.width * 0.4,
+                height: context.height * 0.05,
+                child: const Card(),
+              ),
+              SizedBox(
+                width: context.width * 0.2,
+                height: context.height * 0.05,
+                child: const Card(),
+              ),
+            ],
+          ),
+          const CategoryMealShimmer(
+            itemCount: 4,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class CategoryMealShimmer extends StatelessWidget {
+  const CategoryMealShimmer({
+    super.key,
+    required this.itemCount,
+  });
+
+  final int? itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      period: const Duration(milliseconds: 1000),
+      baseColor: ProjectColors.lightGrey,
+      highlightColor: ProjectColors.secondWhite,
+      child: GridView.builder(
+        padding: EdgeInsets.zero,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: context.dynamicWidth(0.5),
+          mainAxisExtent: context.dynamicHeight(0.27),
+        ),
+        shrinkWrap: true,
+        itemCount: itemCount,
+        itemBuilder: (context, _) {
+          return SizedBox(
+            height: context.dynamicHeight(0.26),
+            width: MediaQuery.of(context).size.width / 2,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: ProjectPaddings.cardImagePaddingSmall,
+                child: SizedBox(
+                  width: context.dynamicWidth(0.4),
+                  height: context.dynamicHeight(0.22),
+                  child: Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: context.lowBorderRadius,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  const _SearchBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: ProjectPaddings.cardMedium,
+      child: TextFormField(
+        decoration: InputDecoration(
+          fillColor: ProjectColors.white,
+          suffixIcon: const InkWell(
+            focusColor: ProjectColors.yellow,
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              color: ProjectColors.yellow,
+              child: Icon(Icons.search),
+            ),
+          ),
+          hintText: ProjectTexts.searchText,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       ),
     );
   }
@@ -364,184 +478,103 @@ class _GetRandomRecipe extends StatelessWidget {
     return FutureBuilder<Meal?>(
       future: _random,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _RandomMealShimmer();
+        }
         if (snapshot.hasData) {
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: snapshot.data?.meals?.length,
-            itemBuilder: (context, index) {
-              final data = snapshot.data?.meals?[index];
-              return InkWell(
-                onTap: () {
-                  context.pushNamed(
-                    'details',
-                    params: {
-                      'id': data?.idMeal ?? '',
-                      'name': data?.strMeal ?? '',
-                      'image': data?.strMealThumb ?? '',
-                    },
-                  );
-                },
-                child: Card(
-                  child: Column(
-                    children: [
-                      Image.network(
-                        data?.strMealThumb ?? '',
-                        height: 100,
-                        width: 100,
+          return SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.2,
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: snapshot.data?.meals?.length,
+              itemBuilder: (context, index) {
+                final data = snapshot.data?.meals?[index];
+                return InkWell(
+                  onTap: () {
+                    context.pushNamed(
+                      'details',
+                      params: {
+                        'id': data?.idMeal ?? '',
+                        'name': data?.strMeal ?? '',
+                        'image': data?.strMealThumb ?? '',
+                      },
+                    );
+                  },
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.20,
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height,
+                            width: MediaQuery.of(context).size.width * 0.40,
+                            child: Image.network(
+                              loadingBuilder: (
+                                BuildContext context,
+                                Widget child,
+                                ImageChunkEvent? loadingProgress,
+                              ) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                              data?.strMealThumb ?? '',
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                          Flexible(
+                            child: Padding(
+                              padding: ProjectPaddings.textMedium,
+                              child: Text(
+                                softWrap: true,
+                                data?.strMeal ?? '',
+                                style: Theme.of(context).textTheme.bodyText2,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        data?.strMeal ?? '',
-                        style: Theme.of(context).textTheme.bodyText1,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         } else {
-          return const SizedBox.shrink();
+          return const _RandomMealShimmer();
         }
       },
     );
   }
 }
 
-// class CategoryPreview extends StatefulWidget {
-//   CategoryPreview({
-//     super.key,
-//     required this.selectedIndex,
-//     required this.categoryName,
-//   });
-//   final AsyncMemoizer<Meal?> _memoizer = AsyncMemoizer();
-//   final int selectedIndex;
-//   final List<MealCategory?>? categoryName;
+class _RandomMealShimmer extends StatelessWidget {
+  const _RandomMealShimmer();
 
-//   @override
-//   State<CategoryPreview> createState() => _CategoryPreviewState();
-// }
-
-// class _CategoryPreviewState extends State<CategoryPreview> {
-//   int? itemCount() {
-//     if (4 > widget.categoryName![widget.selectedIndex]!.strCategory!.length) {
-//       widget.categoryName![widget.selectedIndex]!.strCategory!.length;
-//     } else {
-//       return 4;
-//     }
-//     return null;
-//   }
-
-//   @override
-//   void didUpdateWidget(covariant CategoryPreview oldWidget) {
-//     if (oldWidget.categoryName != widget.categoryName &&
-//         oldWidget.selectedIndex != widget.selectedIndex) {
-//       setState(() {});
-//     }
-//     super.didUpdateWidget(oldWidget);
-//   }
-
-//   @override
-//   void initState() {
-//     categoryMeals;
-//     // getCategoryMeals();
-//     // getData();
-//     super.initState();
-//   }
-
-//   // Future<Meal?> getCategoryMeals() {
-//   //   return widget._memoizer.runOnce(() async* {
-//   //     yield NetworkManager.instance.getMealsByCategory(
-//   //       widget.categoryName![widget.selectedIndex]!.strCategory!,
-//   //     );
-//   //   });
-//   // }
-
-//   // Future<Meal?> getData({bool reload = false}) async* {
-//   //   if (reload) widget._memoizer = AsyncMemoizer();
-//   //   await widget._memoizer.runOnce(getCategoryMeals);
-//   //   yield null;
-//   // }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return FutureBuilder<Meal?>(
-//       future: categoryMeals,
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.done) {
-//           if (snapshot.hasData) {
-//             return SizedBox(
-//               height: 450,
-//               width: MediaQuery.of(context).size.width,
-//               child: GridView.builder(
-//                 physics: const ScrollPhysics(),
-//                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-//                   maxCrossAxisExtent: MediaQuery.of(context).size.width / 1.5,
-//                   mainAxisExtent: MediaQuery.of(context).size.height / 4,
-//                 ),
-//                 shrinkWrap: true,
-//                 itemCount: 4,
-//                 itemBuilder: (context, index) {
-//                   final data = snapshot.data?.meals?[index];
-//                   return Card(
-//                     child: Stack(
-//                       alignment: Alignment.topCenter,
-//                       children: <Widget>[
-//                         Padding(
-//                           padding: const EdgeInsets.only(top: 20),
-//                           child: Container(
-//                             width: 200,
-//                             height: 160,
-//                             margin: const EdgeInsets.all(16),
-//                             child: Card(
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(20),
-//                               ),
-//                               color: Colors.white,
-//                               child: Padding(
-//                                 padding: const EdgeInsets.all(18),
-//                                 child: Column(
-//                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                                   children: [
-//                                     Text(
-//                                       data?.strMeal ?? '',
-//                                       style: Theme.of(context).textTheme.headline5,
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                         Container(
-//                           height: 90,
-//                           width: 90,
-//                           decoration: BoxDecoration(
-//                             shape: BoxShape.circle,
-//                             border: Border.all(
-//                               color: Colors.black12,
-//                             ),
-//                             color: Colors.transparent,
-//                             image: DecorationImage(
-//                               fit: BoxFit.cover,
-//                               image: NetworkImage(
-//                                 data?.strMealThumb ?? '',
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   );
-//                 },
-//               ),
-//             );
-//           }
-//         }
-//         return const Center(
-//           child: CircularProgressIndicator(),
-//         );
-//       },
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: ProjectColors.lightGrey,
+      highlightColor: ProjectColors.secondWhite,
+      child: Row(
+        children: [
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.875,
+            height: MediaQuery.of(context).size.height * 0.20,
+            child: const Card(),
+          ),
+        ],
+      ),
+    );
+  }
+}

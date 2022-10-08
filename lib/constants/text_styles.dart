@@ -26,7 +26,7 @@ class ProjectTextStyles extends TextTheme {
         bodyText2: TextStyle(
           fontFamily: 'Nunito',
           color: Colors.black,
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: FontWeight.w500,
           fontStyle: FontStyle.normal,
         ),
