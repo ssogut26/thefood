@@ -60,29 +60,8 @@ class NetworkManager {
     final response = await _dio.get(
       EndPoints.filterByArea + name,
     );
-    final response2 = await _dio.get(
-      EndPoints.filterByCategory + name,
-    );
-    final response3 = await _dio.get(
-      EndPoints.filterByMainIngredients + name,
-    );
-    final rp1meals = response.data;
-    final rp2meals = response2.data;
-    final rp3meals = response3.data;
-    if (rp2meals is Map<String, dynamic> &&
-        rp2meals.entries.first.value == null &&
-        rp3meals is Map<String, dynamic> &&
-        rp3meals.entries.first.value == null) {
-      if (rp1meals is Map<String, dynamic>) {
-        return Meal.fromJson(rp1meals);
-      }
-      return Meal.fromJson(rp1meals as Map<String, dynamic>);
-    } else if (rp2meals is Map<String, dynamic> &&
-        rp3meals is Map<String, dynamic> &&
-        rp3meals.entries.first.value == null) {
-      return Meal.fromJson(rp2meals);
-    } else if (rp2meals is Map<String, dynamic>) {
-      return Meal.fromJson(rp3meals as Map<String, dynamic>);
+    if (response.data is Map<String, dynamic>) {
+      return Meal.fromJson(response.data as Map<String, dynamic>);
     }
     return null;
   }

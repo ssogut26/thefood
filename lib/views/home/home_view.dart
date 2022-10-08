@@ -3,15 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
-import 'package:thefood/models/area.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
 
-part 'area_list.dart';
 part 'category_list.dart';
 part 'widgets.dart';
 
