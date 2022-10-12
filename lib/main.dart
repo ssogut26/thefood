@@ -1,13 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/text_styles.dart';
+import 'package:thefood/firebase_options.dart';
+import 'package:thefood/views/auth/login_view.dart';
+import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const TheFood());
 }
 
@@ -44,6 +54,7 @@ class _TheFoodState extends State<TheFood> {
   }
 
   final GoRouter _router = GoRouter(
+    initialLocation: FirebaseAuth.instance.currentUser == null ? '/login' : '/',
     routes: <GoRoute>[
       GoRoute(
         path: '/',
@@ -64,6 +75,13 @@ class _TheFoodState extends State<TheFood> {
         },
       ),
       GoRoute(
+        path: '/home',
+        name: 'home',
+        builder: (BuildContext context, GoRouterState state) {
+          return const HomeView();
+        },
+      ),
+      GoRoute(
         path: '/details/:name/:image/:id',
         name: 'details',
         builder: (BuildContext context, GoRouterState state) {
@@ -75,6 +93,20 @@ class _TheFoodState extends State<TheFood> {
             name: name,
             image: image,
           );
+        },
+      ),
+      GoRoute(
+        path: '/singup',
+        name: 'singup',
+        builder: (BuildContext context, GoRouterState state) {
+          return const SingUpView();
+        },
+      ),
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (BuildContext context, GoRouterState state) {
+          return const LoginView();
         },
       )
     ],

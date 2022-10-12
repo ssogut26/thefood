@@ -132,81 +132,6 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
                   ),
                 ],
               );
-              //     Column(
-              //   children: [
-              //     SizedBox(
-              //       height: MediaQuery.of(context).size.height / 3.8,
-              //       width: MediaQuery.of(context).size.width / 2,
-              //       child: Column(
-              //         children: [
-              //           GestureDetector(
-              //             onTap: () {
-              //               context.pushNamed(
-              //                 'details',
-              //                 params: {
-              //                   'name': main?.strMeal ?? '',
-              //                   'image': main?.strMealThumb ?? '',
-              //                   'id': main?.idMeal ?? '',
-              //                 },
-              //               );
-              //             },
-              //             child: Stack(
-              //               alignment: Alignment.topCenter,
-              //               children: <Widget>[
-              //                 Padding(
-              //                   padding: const EdgeInsets.only(top: 20),
-              //                   child: Container(
-              //                     width: 200,
-              //                     height: 160,
-              //                     margin: const EdgeInsets.all(16),
-              //                     child: Card(
-              //                       shape: RoundedRectangleBorder(
-              //                         borderRadius: BorderRadius.circular(20),
-              //                       ),
-              //                       color: Colors.white,
-              //                       child: Padding(
-              //                         padding: const EdgeInsets.all(18),
-              //                         child: Column(
-              //                           mainAxisAlignment:
-              //                               MainAxisAlignment.spaceEvenly,
-              //                           children: [
-              //                             Text(
-              //                               main?.strMeal ?? '',
-              //                               style: Theme.of(context)
-              //                                   .textTheme
-              //                                   .headline5,
-              //                             ),
-              //                           ],
-              //                         ),
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ),
-              //                 Container(
-              //                   height: 90,
-              //                   width: 90,
-              //                   decoration: BoxDecoration(
-              //                     shape: BoxShape.circle,
-              //                     border: Border.all(
-              //                       color: Colors.black12,
-              //                     ),
-              //                     color: Colors.transparent,
-              //                     image: DecorationImage(
-              //                       fit: BoxFit.cover,
-              //                       image: NetworkImage(
-              //                         main?.strMealThumb ?? '',
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //   ],
-              // );
             },
           );
         } else if (snapshot.hasError) {
@@ -235,7 +160,6 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
 
 class _topCategory extends StatelessWidget {
   const _topCategory({
-    super.key,
     required this.widget,
   });
 

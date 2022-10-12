@@ -42,6 +42,8 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
+
   @override
   void initState() {
     dataLenght = 0;
@@ -57,7 +59,38 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _key,
       appBar: _appBar(),
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Drawer Header',
+                style: context.textTheme.headline6,
+              ),
+            ),
+            ListTile(
+              title: const Text('Item 1'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: const Text('Item 2'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -79,9 +112,6 @@ class _HomeViewState extends State<HomeView> {
     return FutureBuilder<List<MealCategory>?>(
       future: _categories,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CategoryShimmer();
-        }
         if (snapshot.hasData) {
           return Column(
             children: [
@@ -93,7 +123,7 @@ class _HomeViewState extends State<HomeView> {
                   scrollDirection: Axis.horizontal,
                   itemCount: snapshot.data?.length,
                   itemBuilder: (context, index) {
-                    final data2 = snapshot.data?[index];
+                    final data = snapshot.data?[index];
                     return Column(
                       children: [
                         GestureDetector(
@@ -102,7 +132,7 @@ class _HomeViewState extends State<HomeView> {
                             selectedIndex = index;
                             setState(() {
                               categoryMeals = NetworkManager.instance.getMealsByCategory(
-                                data2?.strCategory ?? '',
+                                data?.strCategory ?? '',
                               );
                             });
                             changeLoading();
@@ -116,7 +146,7 @@ class _HomeViewState extends State<HomeView> {
                                 Card(
                                   color: ProjectColors.mainWhite,
                                   child: Image.network(
-                                    data2?.strCategoryThumb ?? '',
+                                    data?.strCategoryThumb ?? '',
                                     height: 32,
                                     width: 32,
                                   ),
@@ -124,7 +154,7 @@ class _HomeViewState extends State<HomeView> {
                                 Padding(
                                   padding: ProjectPaddings.textSmall,
                                   child: Text(
-                                    data2?.strCategory ?? '',
+                                    data?.strCategory ?? '',
                                     style: Theme.of(context).textTheme.bodyText1,
                                   ),
                                 ),
@@ -183,11 +213,6 @@ class _HomeViewState extends State<HomeView> {
     return FutureBuilder<Meal?>(
       future: categoryMeals,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CategoryMealShimmer(
-            itemCount: 4,
-          );
-        }
         dataLenght = snapshot.data?.meals?.length ?? 0;
         if (snapshot.hasData) {
           return GridView.builder(
@@ -200,7 +225,7 @@ class _HomeViewState extends State<HomeView> {
             shrinkWrap: true,
             itemCount: itemLength(),
             itemBuilder: (context, index) {
-              final main = snapshot.data?.meals?[index];
+              final data = snapshot.data?.meals?[index];
               return Column(
                 children: [
                   SizedBox(
@@ -213,9 +238,9 @@ class _HomeViewState extends State<HomeView> {
                             context.pushNamed(
                               'details',
                               params: {
-                                'name': main?.strMeal ?? '',
-                                'image': main?.strMealThumb ?? '',
-                                'id': main?.idMeal ?? '',
+                                'name': data?.strMeal ?? '',
+                                'image': data?.strMealThumb ?? '',
+                                'id': data?.idMeal ?? '',
                               },
                             );
                           },
@@ -236,7 +261,7 @@ class _HomeViewState extends State<HomeView> {
                                     child: Padding(
                                       padding: ProjectPaddings.cardImagePadding,
                                       child: Text(
-                                        main?.strMeal ?? '',
+                                        data?.strMeal ?? '',
                                         style: context.textTheme.bodyText2,
                                       ),
                                     ),
@@ -253,7 +278,7 @@ class _HomeViewState extends State<HomeView> {
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
                                     image: NetworkImage(
-                                      main?.strMealThumb ?? '',
+                                      data?.strMealThumb ?? '',
                                     ),
                                   ),
                                 ),
@@ -303,6 +328,7 @@ class _HomeViewState extends State<HomeView> {
 
   AppBar _appBar() {
     return AppBar(
+      automaticallyImplyLeading: false,
       title: Padding(
         padding: ProjectPaddings.pageMedium,
         child: Row(
@@ -322,10 +348,24 @@ class _HomeViewState extends State<HomeView> {
                 ],
               ),
             ),
-            const CircleAvatar(),
           ],
         ),
       ),
+      actions: [
+        GestureDetector(
+          onTap: () {
+            // drawer
+            _key.currentState?.openEndDrawer();
+          },
+          child: Padding(
+            padding: context.horizontalPaddingLow,
+            child: const CircleAvatar(
+              backgroundColor: ProjectColors.black,
+              child: Icon(Icons.person),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

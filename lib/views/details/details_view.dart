@@ -26,6 +26,7 @@ class DetailsView extends StatefulWidget {
 }
 
 class _DetailsViewState extends State<DetailsView> {
+  late SharedPreferences prefs;
   late final Future<Meal?> _meals;
 
   @override
@@ -60,10 +61,7 @@ class _DetailsViewState extends State<DetailsView> {
                 color: ProjectColors.black,
               ),
             ),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('id', widget.id.toString());
-            },
+            onPressed: () async {},
           ),
         ],
       ),
