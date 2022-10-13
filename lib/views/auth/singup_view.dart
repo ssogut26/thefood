@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/constants/colors.dart';
 
 class SingUpView extends StatefulWidget {
   const SingUpView({super.key});
@@ -30,7 +31,18 @@ class _SingUpViewState extends State<SingUpView> {
             key: _formKey,
             child: Column(
               children: [
-                const Text('Sing Up'),
+                AnimatedContainer(
+                  duration: context.durationLow,
+                  height: context.isKeyBoardOpen ? 0 : context.dynamicHeight(0.10),
+                  width: context.dynamicWidth(0.3),
+                ),
+                Text(
+                  'the Food',
+                  style: context.textTheme.headline1,
+                ),
+                SizedBox(
+                  height: context.dynamicHeight(0.08),
+                ),
                 Padding(
                   padding: context.verticalPaddingLow,
                   child: TextFormField(
@@ -39,6 +51,8 @@ class _SingUpViewState extends State<SingUpView> {
                       hintText: 'Name',
                     ),
                     controller: _nameController,
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'Please enter your name';
@@ -56,6 +70,8 @@ class _SingUpViewState extends State<SingUpView> {
                       border: OutlineInputBorder(),
                       hintText: 'Email',
                     ),
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.emailAddress,
                     controller: _emailController,
                     validator: (value) {
                       if (value!.isEmpty) {
@@ -74,6 +90,8 @@ class _SingUpViewState extends State<SingUpView> {
                       border: OutlineInputBorder(),
                       hintText: 'Password',
                     ),
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.visiblePassword,
                     controller: _passwordController,
                     validator: (value) {
                       if (value!.isEmpty) {
@@ -93,6 +111,8 @@ class _SingUpViewState extends State<SingUpView> {
                       hintText: 'Confirm Password',
                     ),
                     controller: _confirmPasswordController,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.done,
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'Please enter your password again';
@@ -103,31 +123,60 @@ class _SingUpViewState extends State<SingUpView> {
                     },
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    context.goNamed('login');
-                  },
-                  child: const Text('Already have an account? Login'),
-                ),
                 Padding(
                   padding: context.onlyTopPaddingLow,
                   child: SizedBox(
-                    width: 300,
-                    height: 50,
+                    height: context.dynamicHeight(0.06),
+                    width: context.dynamicWidth(0.6),
                     child: ElevatedButton(
-                      onPressed: () {
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ProjectColors.yellow,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: context.normalBorderRadius,
+                        ),
+                      ),
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          FirebaseAuth.instance.createUserWithEmailAndPassword(
+                          await FirebaseAuth.instance.createUserWithEmailAndPassword(
                             email: _emailController.text,
                             password: _passwordController.text,
                           );
                           if (FirebaseAuth.instance.currentUser != null) {
+                            setState(() {
+                              FirebaseAuth.instance.authStateChanges();
+                            });
                             context.goNamed('home');
                           }
                         }
                       },
-                      child: const Text('Sing Up'),
+                      child: Text(
+                        'Sing Up',
+                        style: context.textTheme.bodyText2,
+                      ),
                     ),
+                  ),
+                ),
+                SizedBox(
+                  height: context.dynamicHeight(0.12),
+                ),
+                Padding(
+                  padding: context.verticalPaddingLow,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Already have an account?'),
+                      TextButton(
+                        onPressed: () {
+                          context.goNamed('login');
+                        },
+                        child: const Text(
+                          'Login',
+                        ),
+                      ),
+                      SizedBox(
+                        height: context.dynamicHeight(0.02),
+                      )
+                    ],
                   ),
                 ),
               ],

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
@@ -43,6 +44,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -70,22 +72,15 @@ class _HomeViewState extends State<HomeView> {
                 color: Colors.blue,
               ),
               child: Text(
-                'Drawer Header',
+                _auth.currentUser?.displayName ?? 'User',
                 style: context.textTheme.headline6,
               ),
             ),
             ListTile(
-              title: const Text('Item 1'),
+              title: const Text('Sign Out'),
               onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),
-            ListTile(
-              title: const Text('Item 2'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
+                _auth.signOut();
+                context.go('/login');
               },
             ),
           ],
