@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:thefood/constants/assets_path.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/endpoints.dart';
@@ -26,12 +26,13 @@ class DetailsView extends StatefulWidget {
 }
 
 class _DetailsViewState extends State<DetailsView> {
-  late SharedPreferences prefs;
   late final Future<Meal?> _meals;
-
+  bool isFavorite = false;
+  late final Box<Meals?> detailBox;
   @override
   void initState() {
     _meals = NetworkManager.instance.getMeal(widget.id);
+    detailBox = Hive.box('favoriteStorages');
     super.initState();
   }
 
@@ -61,7 +62,17 @@ class _DetailsViewState extends State<DetailsView> {
                 color: ProjectColors.black,
               ),
             ),
-            onPressed: () async {},
+            onPressed: () async {
+              await detailBox.put(
+                widget.id,
+                Meals(
+                  idMeal: widget.id.toString(),
+                  strMeal: widget.name,
+                  strMealThumb: widget.image,
+                ),
+              );
+              print('Meal : ${detailBox.get(widget.id)}');
+            },
           ),
         ],
       ),

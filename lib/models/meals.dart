@@ -1,14 +1,17 @@
 import 'package:equatable/equatable.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'meals.g.dart';
 
 @JsonSerializable()
+@HiveType(typeId: 0)
 class Meal with EquatableMixin {
   Meal({
     this.meals,
   });
   factory Meal.fromJson(Map<String, dynamic> json) => _$MealFromJson(json);
+  @HiveField(0)
   final List<Meals>? meals;
   Map<String, dynamic> toJson() => _$MealToJson(this);
 
@@ -16,10 +19,9 @@ class Meal with EquatableMixin {
   List<Object?> get props => [meals];
 }
 
+@HiveType(typeId: 1)
 @JsonSerializable()
 class Meals with EquatableMixin {
-  factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
-
   Meals({
     this.idMeal,
     this.strMeal,
@@ -75,112 +77,167 @@ class Meals with EquatableMixin {
     this.strCreativeCommonsConfirmed,
     this.dateModified,
   });
+  factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
+  @HiveField(0)
   String? ingredients;
   @JsonKey(name: 'idMeal')
+  @HiveField(1)
   String? idMeal;
   @JsonKey(name: 'strMeal')
+  @HiveField(2)
   String? strMeal;
   @JsonKey(name: 'strDrinkAlternate')
+  @HiveField(3)
   String? strDrinkAlternate;
   @JsonKey(name: 'strCategory')
+  @HiveField(4)
   String? strCategory;
   @JsonKey(name: 'strArea')
+  @HiveField(5)
   String? strArea;
   @JsonKey(name: 'strInstructions')
+  @HiveField(6)
   String? strInstructions;
   @JsonKey(name: 'strMealThumb')
+  @HiveField(7)
   String? strMealThumb;
   @JsonKey(name: 'strTags')
+  @HiveField(8)
   String? strTags;
   @JsonKey(name: 'strYoutube')
+  @HiveField(9)
   String? strYoutube;
   @JsonKey(name: 'strIngredient1')
+  @HiveField(10)
   String? strIngredient1;
   @JsonKey(name: 'strIngredient2')
+  @HiveField(11)
   String? strIngredient2;
   @JsonKey(name: 'strIngredient3')
+  @HiveField(12)
   String? strIngredient3;
   @JsonKey(name: 'strIngredient4')
+  @HiveField(13)
   String? strIngredient4;
   @JsonKey(name: 'strIngredient5')
+  @HiveField(14)
   String? strIngredient5;
   @JsonKey(name: 'strIngredient6')
+  @HiveField(15)
   String? strIngredient6;
   @JsonKey(name: 'strIngredient7')
+  @HiveField(16)
   String? strIngredient7;
   @JsonKey(name: 'strIngredient8')
+  @HiveField(17)
   String? strIngredient8;
   @JsonKey(name: 'strIngredient9')
+  @HiveField(18)
   String? strIngredient9;
   @JsonKey(name: 'strIngredient10')
+  @HiveField(19)
   String? strIngredient10;
   @JsonKey(name: 'strIngredient11')
+  @HiveField(20)
   String? strIngredient11;
   @JsonKey(name: 'strIngredient12')
+  @HiveField(21)
   String? strIngredient12;
   @JsonKey(name: 'strIngredient13')
+  @HiveField(22)
   String? strIngredient13;
   @JsonKey(name: 'strIngredient14')
+  @HiveField(23)
   String? strIngredient14;
   @JsonKey(name: 'strIngredient15')
+  @HiveField(24)
   String? strIngredient15;
   @JsonKey(name: 'strIngredient16')
+  @HiveField(25)
   String? strIngredient16;
   @JsonKey(name: 'strIngredient17')
+  @HiveField(26)
   String? strIngredient17;
   @JsonKey(name: 'strIngredient18')
+  @HiveField(27)
   String? strIngredient18;
   @JsonKey(name: 'strIngredient19')
+  @HiveField(28)
   String? strIngredient19;
   @JsonKey(name: 'strIngredient20')
+  @HiveField(29)
   String? strIngredient20;
   @JsonKey(name: 'strMeasure1')
+  @HiveField(30)
   String? strMeasure1;
   @JsonKey(name: 'strMeasure2')
+  @HiveField(31)
   String? strMeasure2;
   @JsonKey(name: 'strMeasure3')
+  @HiveField(32)
   String? strMeasure3;
   @JsonKey(name: 'strMeasure4')
+  @HiveField(33)
   String? strMeasure4;
   @JsonKey(name: 'strMeasure5')
+  @HiveField(34)
   String? strMeasure5;
   @JsonKey(name: 'strMeasure6')
+  @HiveField(35)
   String? strMeasure6;
   @JsonKey(name: 'strMeasure7')
+  @HiveField(36)
   String? strMeasure7;
   @JsonKey(name: 'strMeasure8')
+  @HiveField(37)
   String? strMeasure8;
   @JsonKey(name: 'strMeasure9')
+  @HiveField(38)
   String? strMeasure9;
   @JsonKey(name: 'strMeasure10')
+  @HiveField(39)
   String? strMeasure10;
   @JsonKey(name: 'strMeasure11')
+  @HiveField(40)
   String? strMeasure11;
   @JsonKey(name: 'strMeasure12')
+  @HiveField(41)
   String? strMeasure12;
   @JsonKey(name: 'strMeasure13')
+  @HiveField(42)
   String? strMeasure13;
   @JsonKey(name: 'strMeasure14')
+  @HiveField(43)
   String? strMeasure14;
   @JsonKey(name: 'strMeasure15')
+  @HiveField(44)
   String? strMeasure15;
   @JsonKey(name: 'strMeasure16')
+  @HiveField(45)
   String? strMeasure16;
   @JsonKey(name: 'strMeasure17')
+  @HiveField(46)
   String? strMeasure17;
   @JsonKey(name: 'strMeasure18')
+  @HiveField(47)
   String? strMeasure18;
   @JsonKey(name: 'strMeasure19')
+  @HiveField(48)
   String? strMeasure19;
   @JsonKey(name: 'strMeasure20')
+  @HiveField(49)
   String? strMeasure20;
   @JsonKey(name: 'strSource')
+  @HiveField(50)
   String? strSource;
   @JsonKey(name: 'strImageSource')
+  @HiveField(51)
   String? strImageSource;
   @JsonKey(name: 'strCreativeCommonsConfirmed')
+  @HiveField(52)
   String? strCreativeCommonsConfirmed;
   @JsonKey(name: 'dateModified')
+  @HiveField(53)
   String? dateModified;
 
   Map<String, dynamic> toJson() => _$MealsToJson(this);

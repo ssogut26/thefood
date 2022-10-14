@@ -3,9 +3,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/text_styles.dart';
 import 'package:thefood/firebase_options.dart';
+import 'package:thefood/models/meals.dart';
+import 'package:thefood/views/auth/forgot_password_view.dart';
 import 'package:thefood/views/auth/login_view.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
@@ -17,7 +20,9 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  await Hive.initFlutter();
+  Hive.registerAdapter(MealsAdapter());
+  await Hive.openBox('favoriteStorages');
   runApp(const TheFood());
 }
 
@@ -107,6 +112,13 @@ class _TheFoodState extends State<TheFood> {
         name: 'login',
         builder: (BuildContext context, GoRouterState state) {
           return const LoginView();
+        },
+      ),
+      GoRoute(
+        path: '/forgot',
+        name: 'forgot',
+        builder: (BuildContext context, GoRouterState state) {
+          return const ForgotPassView();
         },
       )
     ],

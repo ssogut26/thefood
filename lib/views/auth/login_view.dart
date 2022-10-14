@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
 
@@ -15,6 +16,27 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isChecked = false;
+  late Box<String> rememberBox;
+  @override
+  void initState() {
+    createOpenBox();
+    super.initState();
+  }
+
+  Future<void> createOpenBox() async {
+    rememberBox = await Hive.openBox('logindata');
+    await getdata();
+  }
+
+  Future<void> getdata() async {
+    if (rememberBox.get('email') != null) {
+      _emailController.text = rememberBox.get('email')!;
+      isChecked = true;
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +106,13 @@ class _LoginViewState extends State<LoginView> {
                   padding: context.onlyBottomPaddingLow,
                   child: Row(
                     children: [
-                      Checkbox(value: false, onChanged: (value) {}),
+                      Checkbox(
+                        value: isChecked,
+                        onChanged: (value) {
+                          isChecked = !isChecked;
+                          setState(() {});
+                        },
+                      ),
                       const Text('Remember me'),
                     ],
                   ),
@@ -112,6 +140,7 @@ class _LoginViewState extends State<LoginView> {
                         });
                         context.goNamed('home');
                       }
+                      login();
                     },
                     child: Text(
                       'Login',
@@ -123,7 +152,9 @@ class _LoginViewState extends State<LoginView> {
                   height: context.dynamicHeight(0.02),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    context.goNamed('forgot');
+                  },
                   child: const Text('Forgot Password?'),
                 ),
                 SizedBox(
@@ -150,5 +181,11 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
     );
+  }
+
+  void login() {
+    if (isChecked) {
+      rememberBox.put('email', _emailController.value.text);
+    }
   }
 }
