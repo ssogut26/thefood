@@ -16,11 +16,14 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool isChecked = false;
   late Box<String> rememberBox;
+  bool isChecked = false;
+  late var loginData;
+
   @override
   void initState() {
     createOpenBox();
+    loginData = login();
     super.initState();
   }
 
@@ -34,6 +37,14 @@ class _LoginViewState extends State<LoginView> {
       _emailController.text = rememberBox.get('email')!;
       isChecked = true;
       setState(() {});
+    }
+  }
+
+  login() async {
+    if (isChecked) {
+      await rememberBox.put('email', _emailController.value.text);
+    } else {
+      await rememberBox.put('email', '');
     }
   }
 
@@ -117,36 +128,40 @@ class _LoginViewState extends State<LoginView> {
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: context.dynamicHeight(0.06),
-                  width: context.dynamicWidth(0.6),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ProjectColors.yellow,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: context.normalBorderRadius,
-                      ),
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await FirebaseAuth.instance.signInWithEmailAndPassword(
-                          email: _emailController.text,
-                          password: _passwordController.text,
-                        );
-                      }
-                      if (FirebaseAuth.instance.currentUser != null) {
-                        setState(() {
-                          FirebaseAuth.instance.authStateChanges();
-                        });
-                        context.goNamed('home');
-                      }
-                      login();
-                    },
-                    child: Text(
-                      'Login',
-                      style: context.textTheme.bodyText2,
-                    ),
-                  ),
+                // SizedBox(
+                //   height: context.dynamicHeight(0.06),
+                //   width: context.dynamicWidth(0.6),
+                //   child: ElevatedButton(
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: ProjectColors.yellow,
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: context.normalBorderRadius,
+                //       ),
+                //     ),
+                //     onPressed: () async {
+                //       if (_formKey.currentState!.validate()) {
+                //         await FirebaseAuth.instance.signInWithEmailAndPassword(
+                //           email: _emailController.text,
+                //           password: _passwordController.text,
+                //         );
+                //       }
+                //       if (FirebaseAuth.instance.currentUser != null) {
+                //         FirebaseAuth.instance.authStateChanges();
+                //         context.goNamed('home');
+                //       }
+                //       login();
+                //     },
+                //     child: Text(
+                //       'Login',
+                //       style: context.textTheme.bodyText2,
+                //     ),
+                //   ),
+                // ),
+                LoginButton(
+                  formKey: _formKey,
+                  emailController: _emailController,
+                  passwordController: _passwordController,
+                  data: loginData,
                 ),
                 SizedBox(
                   height: context.dynamicHeight(0.02),
@@ -182,10 +197,51 @@ class _LoginViewState extends State<LoginView> {
       ),
     );
   }
+}
 
-  void login() {
-    if (isChecked) {
-      rememberBox.put('email', _emailController.value.text);
-    }
+class LoginButton extends StatelessWidget {
+  LoginButton({
+    super.key,
+    required this.formKey,
+    required this.data,
+    required this.emailController,
+    required this.passwordController,
+  });
+  late final dynamic data;
+  late GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  late TextEditingController emailController = TextEditingController();
+  late TextEditingController passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: context.dynamicHeight(0.06),
+      width: context.dynamicWidth(0.6),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: ProjectColors.yellow,
+          shape: RoundedRectangleBorder(
+            borderRadius: context.normalBorderRadius,
+          ),
+        ),
+        onPressed: () async {
+          if (formKey.currentState!.validate()) {
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: emailController.text,
+              password: passwordController.text,
+            );
+          }
+          if (FirebaseAuth.instance.currentUser != null) {
+            FirebaseAuth.instance.authStateChanges();
+            context.goNamed('home');
+          }
+          data;
+        },
+        child: Text(
+          'Login',
+          style: context.textTheme.bodyText2,
+        ),
+      ),
+    );
   }
 }

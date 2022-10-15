@@ -15,6 +15,7 @@ import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 
+const favoritesBox = 'favorite_meals';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -22,7 +23,7 @@ Future<void> main() async {
   );
   await Hive.initFlutter();
   Hive.registerAdapter(MealsAdapter());
-  await Hive.openBox('favoriteStorages');
+  await Hive.openBox<String>(favoritesBox);
   runApp(const TheFood());
 }
 
@@ -94,9 +95,9 @@ class _TheFoodState extends State<TheFood> {
           final image = state.params['image'] ?? '';
           final id = int.parse(state.params['id'] ?? '');
           return DetailsView(
-            id: id,
             name: name,
             image: image,
+            id: id,
           );
         },
       ),

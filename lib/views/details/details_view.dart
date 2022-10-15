@@ -11,6 +11,8 @@ import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const favoritesBox = 'favorite_meals';
+
 class DetailsView extends StatefulWidget {
   const DetailsView({
     this.image,
@@ -28,12 +30,40 @@ class DetailsView extends StatefulWidget {
 class _DetailsViewState extends State<DetailsView> {
   late final Future<Meal?> _meals;
   bool isFavorite = false;
-  late final Box<Meals?> detailBox;
+  late Box<String> favoriteMealBox;
   @override
   void initState() {
     _meals = NetworkManager.instance.getMeal(widget.id);
-    detailBox = Hive.box('favoriteStorages');
+    favoriteMealBox = Hive.box(favoritesBox);
     super.initState();
+  }
+
+  Future<void> onFavoritePress(
+    String id,
+    String name,
+    String? image,
+  ) async {
+    await favoriteMealBox.put(
+      'id',
+      id,
+    );
+    await favoriteMealBox.put(
+      'name',
+      name,
+    );
+    await favoriteMealBox.put(
+      'image',
+      image ?? '',
+    );
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+    await favoriteMealBox.putAll({
+      'id': id,
+      'name': name,
+      'image': image ?? '',
+    });
+    print(favoriteMealBox.get('image'));
   }
 
   @override
@@ -62,68 +92,65 @@ class _DetailsViewState extends State<DetailsView> {
                 color: ProjectColors.black,
               ),
             ),
-            onPressed: () async {
-              await detailBox.put(
-                widget.id,
-                Meals(
-                  idMeal: widget.id.toString(),
-                  strMeal: widget.name,
-                  strMealThumb: widget.image,
-                ),
-              );
-              print('Meal : ${detailBox.get(widget.id)}');
+            onPressed: () {
+              onFavoritePress(widget.id.toString(), widget.name, widget.image);
             },
           ),
         ],
       ),
       extendBodyBehindAppBar: true,
       extendBody: true,
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.4,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(widget.image ?? ''),
-                  fit: BoxFit.fitWidth,
+      body: ValueListenableBuilder(
+        valueListenable: favoriteMealBox.listenable(),
+        builder: (context, Box box, _) {
+          return Stack(
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(widget.image ?? ''),
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.7,
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(
-                color: ProjectColors.mainWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(
+                    color: ProjectColors.mainWhite,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: ProjectPaddings.pageLarge,
+                    child: FutureBuilder<Meal?>(
+                      future: _meals,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return _MealDetails(
+                            widget: widget,
+                            items: snapshot.data?.meals ?? [],
+                          );
+                        } else if (snapshot.hasError) {}
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-              child: Padding(
-                padding: ProjectPaddings.pageLarge,
-                child: FutureBuilder<Meal?>(
-                  future: _meals,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return _MealDetails(
-                        widget: widget,
-                        items: snapshot.data?.meals ?? [],
-                      );
-                    } else if (snapshot.hasError) {}
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -280,7 +307,12 @@ class _MealDetailsState extends State<_MealDetails> {
                 children: [
                   for (int index = 0; index < ingList.length && index.isFinite; index++)
                     ingList[index].isNotNullOrNoEmpty
-                        ? _ingredients(ingList, index, context, measureList)
+                        ? _ingredients(
+                            ingList,
+                            index,
+                            context,
+                            measureList,
+                          )
                         : const SizedBox.shrink(),
                 ],
               )
@@ -320,30 +352,38 @@ class _MealDetailsState extends State<_MealDetails> {
       width: 325,
       child: Row(
         children: [
-          Card(
-            color: ProjectColors.lightGrey,
-            child: Image.network(
-              excludeFromSemantics: true,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.error);
-              },
-              width: 60,
-              height: 60,
-              '${EndPoints.ingredientsImages}${ingList[index]}-small.png',
+          Expanded(
+            flex: 2,
+            child: Card(
+              color: ProjectColors.lightGrey,
+              child: Image.network(
+                excludeFromSemantics: true,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.error);
+                },
+                width: 60,
+                height: 60,
+                '${EndPoints.ingredientsImages}${ingList[index]}-small.png',
+              ),
             ),
           ),
-          Padding(
-            padding: ProjectPaddings.textLarge,
-            child: Text(
-              '${ingList[index]}'.capitalize(),
-              style: Theme.of(context).textTheme.headline3,
-            ).toVisible(
-              ingList[index] != null,
+          Expanded(
+            flex: 7,
+            child: Padding(
+              padding: ProjectPaddings.textLarge,
+              child: Text(
+                '${ingList[index]}'.capitalize(),
+                style: Theme.of(context).textTheme.headline3,
+              ).toVisible(
+                ingList[index] != null,
+              ),
             ),
           ),
-          const Spacer(),
-          Text('${measureList[index]}').toVisible(
-            measureList[index] != null,
+          Expanded(
+            flex: 3,
+            child: Text('${measureList[index]}').toVisible(
+              measureList[index] != null,
+            ),
           ),
         ],
       ),

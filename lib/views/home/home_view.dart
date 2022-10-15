@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:thefood/constants/colors.dart';
@@ -27,6 +28,7 @@ class _HomeViewState extends State<HomeView> {
   late int selectedIndex;
   late String categoryName;
   late int dataLenght;
+  late Box<String> favoriteMealBox;
 
   int itemLength() {
     if (dataLenght < 4) {
@@ -45,9 +47,10 @@ class _HomeViewState extends State<HomeView> {
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   final _auth = FirebaseAuth.instance;
-
+  late int favoritesIndex;
   @override
   void initState() {
+    favoriteMealBox = Hive.box('favorite_meals');
     dataLenght = 0;
     itemLength();
     categoryName = 'Beef';
@@ -56,6 +59,7 @@ class _HomeViewState extends State<HomeView> {
     _random = NetworkManager.instance.getRandomMeal();
     selectedIndex = 0;
     super.initState();
+    favoritesIndex = favoriteMealBox.length;
   }
 
   @override
@@ -95,6 +99,50 @@ class _HomeViewState extends State<HomeView> {
                 const _SearchBar(),
                 _getCategories(),
                 _randomRecipe(),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text('Favorite Meals', style: context.textTheme.headline2),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 200,
+                      width: 500,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: favoritesIndex,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () => context.pushNamed(
+                              'details',
+                              params: {
+                                'name': favoriteMealBox.get('name') ?? '',
+                                'image': favoriteMealBox.get('image') ?? '',
+                                'id': favoriteMealBox.get('id') ?? '',
+                              },
+                            ),
+                            child: Card(
+                              child: Row(
+                                children: [
+                                  Image.network(
+                                    height: 100,
+                                    width: 100,
+                                    favoriteMealBox.get('image') ?? '',
+                                  ),
+                                  Text(
+                                    favoriteMealBox.getAt(index) ?? 'No Favorites yet',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -297,27 +345,30 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Column _randomRecipe() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const _AlignedText(text: 'Random Recipe'),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  changeLoading();
-                  _random = NetworkManager.instance.getRandomMeal();
-                  changeLoading();
-                });
-              },
-              icon: const Icon(Icons.refresh),
-            ),
-          ],
-        ),
-        _GetRandomRecipe(random: _random),
-      ],
+  Padding _randomRecipe() {
+    return Padding(
+      padding: ProjectPaddings.cardMedium,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const _AlignedText(text: 'Random Recipe'),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    changeLoading();
+                    _random = NetworkManager.instance.getRandomMeal();
+                    changeLoading();
+                  });
+                },
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
+          ),
+          _GetRandomRecipe(random: _random),
+        ],
+      ),
     );
   }
 
