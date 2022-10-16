@@ -11,17 +11,15 @@ import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const favoritesBox = 'favorite_meals';
-
 class DetailsView extends StatefulWidget {
   const DetailsView({
     this.image,
     required this.id,
     super.key,
-    required this.name,
+    this.name,
   });
   final String? image;
-  final String name;
+  final String? name;
   final int id;
   @override
   State<DetailsView> createState() => _DetailsViewState();
@@ -30,40 +28,38 @@ class DetailsView extends StatefulWidget {
 class _DetailsViewState extends State<DetailsView> {
   late final Future<Meal?> _meals;
   bool isFavorite = false;
-  late Box<String> favoriteMealBox;
+  late Box<Meals> favoriteMealBox;
+
   @override
   void initState() {
     _meals = NetworkManager.instance.getMeal(widget.id);
-    favoriteMealBox = Hive.box(favoritesBox);
+    favoriteMealBox = Hive.box('Favorites');
     super.initState();
   }
 
-  Future<void> onFavoritePress(
-    String id,
+  void onFavoritePress(
+    int id,
     String name,
-    String? image,
-  ) async {
-    await favoriteMealBox.put(
-      'id',
-      id,
+    String image,
+  ) {
+    final meals = Meals(
+      idMeal: '',
+      strMeal: '',
+      strMealThumb: '',
     );
-    await favoriteMealBox.put(
-      'name',
-      name,
+    favoriteMealBox.put(
+      '$id',
+      meals.copyWith(
+        idMeal: id.toString(),
+        strMeal: name,
+        strMealThumb: image,
+      ),
     );
-    await favoriteMealBox.put(
-      'image',
-      image ?? '',
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Added to Favorites'),
+      ),
     );
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-    await favoriteMealBox.putAll({
-      'id': id,
-      'name': name,
-      'image': image ?? '',
-    });
-    print(favoriteMealBox.get('image'));
   }
 
   @override
@@ -93,7 +89,11 @@ class _DetailsViewState extends State<DetailsView> {
               ),
             ),
             onPressed: () {
-              onFavoritePress(widget.id.toString(), widget.name, widget.image);
+              onFavoritePress(
+                widget.id,
+                widget.name ?? '',
+                widget.image ?? '',
+              );
             },
           ),
         ],
@@ -247,7 +247,7 @@ class _MealDetailsState extends State<_MealDetails> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.widget.name,
+              widget.widget.name ?? '',
               style: Theme.of(context).textTheme.headline1,
             ),
             Padding(

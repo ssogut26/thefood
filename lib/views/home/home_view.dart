@@ -28,7 +28,7 @@ class _HomeViewState extends State<HomeView> {
   late int selectedIndex;
   late String categoryName;
   late int dataLenght;
-  late Box<String> favoriteMealBox;
+  late Box<Meals> favoriteMealBox;
 
   int itemLength() {
     if (dataLenght < 4) {
@@ -48,9 +48,13 @@ class _HomeViewState extends State<HomeView> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   final _auth = FirebaseAuth.instance;
   late int favoritesIndex;
+  List<String> favorites = [];
+  late bool isFavorite;
   @override
   void initState() {
-    favoriteMealBox = Hive.box('favorite_meals');
+    favoriteMealBox = Hive.box('Favorites');
+    favorites.add(favoriteMealBox.values.toList().toString());
+    isFavorite = favorites.isNotEmpty;
     dataLenght = 0;
     itemLength();
     categoryName = 'Beef';
@@ -59,7 +63,6 @@ class _HomeViewState extends State<HomeView> {
     _random = NetworkManager.instance.getRandomMeal();
     selectedIndex = 0;
     super.initState();
-    favoritesIndex = favoriteMealBox.length;
   }
 
   @override
@@ -99,50 +102,6 @@ class _HomeViewState extends State<HomeView> {
                 const _SearchBar(),
                 _getCategories(),
                 _randomRecipe(),
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        Text('Favorite Meals', style: context.textTheme.headline2),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 200,
-                      width: 500,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: favoritesIndex,
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onTap: () => context.pushNamed(
-                              'details',
-                              params: {
-                                'name': favoriteMealBox.get('name') ?? '',
-                                'image': favoriteMealBox.get('image') ?? '',
-                                'id': favoriteMealBox.get('id') ?? '',
-                              },
-                            ),
-                            child: Card(
-                              child: Row(
-                                children: [
-                                  Image.network(
-                                    height: 100,
-                                    width: 100,
-                                    favoriteMealBox.get('image') ?? '',
-                                  ),
-                                  Text(
-                                    favoriteMealBox.getAt(index) ?? 'No Favorites yet',
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -384,7 +343,8 @@ class _HomeViewState extends State<HomeView> {
               text: TextSpan(
                 children: <TextSpan>[
                   TextSpan(
-                    text: ProjectTexts.helloText,
+                    text:
+                        '${ProjectTexts.helloText} ${_auth.currentUser?.displayName} \n',
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   TextSpan(

@@ -7,6 +7,6 @@ class ProjectTexts {
   static const linkError = 'Could not launch link';
   static const searchText = 'Find recipe';
   static const questionText = 'Ready To Cook?';
-  static const helloText = 'Hello there!\n';
+  static const helloText = 'Hello';
   static const recipiesFor = 'Here is the recipies for';
 }

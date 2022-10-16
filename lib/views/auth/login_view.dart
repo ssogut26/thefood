@@ -16,7 +16,7 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late Box<String> rememberBox;
+  late final Box<String> rememberBox;
   bool isChecked = false;
   late var loginData;
 

@@ -13,9 +13,10 @@ import 'package:thefood/views/auth/login_view.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
+import 'package:thefood/views/favorites/favorite_view.dart';
 import 'package:thefood/views/home/home_view.dart';
+import 'package:thefood/views/home/navigator.dart';
 
-const favoritesBox = 'favorite_meals';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -23,7 +24,7 @@ Future<void> main() async {
   );
   await Hive.initFlutter();
   Hive.registerAdapter(MealsAdapter());
-  await Hive.openBox<String>(favoritesBox);
+  await Hive.openBox<Meals>('Favorites');
   runApp(const TheFood());
 }
 
@@ -61,11 +62,11 @@ class _TheFoodState extends State<TheFood> {
 
   final GoRouter _router = GoRouter(
     initialLocation: FirebaseAuth.instance.currentUser == null ? '/login' : '/',
-    routes: <GoRoute>[
+    routes: [
       GoRoute(
         path: '/',
         builder: (BuildContext context, GoRouterState state) {
-          return const HomeView();
+          return const NavigatorView();
         },
       ),
       GoRoute(
@@ -88,7 +89,14 @@ class _TheFoodState extends State<TheFood> {
         },
       ),
       GoRoute(
-        path: '/details/:name/:image/:id',
+        path: '/favorites',
+        name: 'favorites',
+        builder: (BuildContext context, GoRouterState state) {
+          return const FavoriteView();
+        },
+      ),
+      GoRoute(
+        path: '/details/:id/:name/:image',
         name: 'details',
         builder: (BuildContext context, GoRouterState state) {
           final name = state.params['name'] ?? '';
@@ -106,6 +114,13 @@ class _TheFoodState extends State<TheFood> {
         name: 'singup',
         builder: (BuildContext context, GoRouterState state) {
           return const SingUpView();
+        },
+      ),
+      GoRoute(
+        path: '/navigator',
+        name: 'navigator',
+        builder: (BuildContext context, GoRouterState state) {
+          return const NavigatorView();
         },
       ),
       GoRoute(
