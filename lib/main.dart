@@ -25,6 +25,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(MealsAdapter());
   await Hive.openBox<Meals>('Favorites');
+  await Hive.openBox<String>('rememberCrendential');
   runApp(const TheFood());
 }
 

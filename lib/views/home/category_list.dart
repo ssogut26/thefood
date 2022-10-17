@@ -33,8 +33,8 @@ FutureBuilder<List<MealCategory>?> _categoriesList(
                           },
                           child: Card(
                             color: ProjectColors.mainWhite,
-                            child: Image.network(
-                              data?.strCategoryThumb ?? '',
+                            child: CachedNetworkImage(
+                              imageUrl: data?.strCategoryThumb ?? '',
                               height: 32,
                               width: 32,
                             ),

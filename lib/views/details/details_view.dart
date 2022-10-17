@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -356,14 +357,11 @@ class _MealDetailsState extends State<_MealDetails> {
             flex: 2,
             child: Card(
               color: ProjectColors.lightGrey,
-              child: Image.network(
-                excludeFromSemantics: true,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.error);
-                },
+              child: CachedNetworkImage(
+                errorWidget: (context, url, error) => const Icon(Icons.error),
                 width: 60,
                 height: 60,
-                '${EndPoints.ingredientsImages}${ingList[index]}-small.png',
+                imageUrl: '${EndPoints.ingredientsImages}${ingList[index]}-small.png',
               ),
             ),
           ),

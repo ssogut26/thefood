@@ -9,9 +9,9 @@ class _ImageBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
+    return CachedNetworkImage(
       fit: BoxFit.fill,
-      url,
+      imageUrl: toString(),
       height: 150,
       width: 150,
     );

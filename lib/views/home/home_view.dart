@@ -1,15 +1,19 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
+import 'package:thefood/views/home/shimmers.dart';
 
 part 'category_list.dart';
 part 'widgets.dart';
@@ -29,6 +33,7 @@ class _HomeViewState extends State<HomeView> {
   late String categoryName;
   late int dataLenght;
   late Box<Meals> favoriteMealBox;
+  late StreamSubscription subscription;
 
   int itemLength() {
     if (dataLenght < 4) {
@@ -45,6 +50,31 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
+  Future<void> checkConnectivity() async {
+    final result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('No internet access. Check your connection'),
+          duration: const Duration(seconds: 100),
+          action: SnackBarAction(
+            label: 'Dissmiss',
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
+    } else if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      setState(() {
+        _categories;
+        _random;
+        categoryMeals;
+      });
+    }
+  }
+
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   final _auth = FirebaseAuth.instance;
   late int favoritesIndex;
@@ -52,6 +82,10 @@ class _HomeViewState extends State<HomeView> {
   late bool isFavorite;
   @override
   void initState() {
+    subscription =
+        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      checkConnectivity();
+    });
     favoriteMealBox = Hive.box('Favorites');
     favorites.add(favoriteMealBox.values.toList().toString());
     isFavorite = favorites.isNotEmpty;
@@ -114,6 +148,9 @@ class _HomeViewState extends State<HomeView> {
     return FutureBuilder<List<MealCategory>?>(
       future: _categories,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CategoryShimmer();
+        }
         if (snapshot.hasData) {
           return Column(
             children: [
@@ -121,6 +158,7 @@ class _HomeViewState extends State<HomeView> {
                 height: 50,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.builder(
+                  padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
                   itemCount: snapshot.data?.length,
@@ -147,8 +185,8 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 Card(
                                   color: ProjectColors.mainWhite,
-                                  child: Image.network(
-                                    data?.strCategoryThumb ?? '',
+                                  child: CachedNetworkImage(
+                                    imageUrl: data?.strCategoryThumb ?? '',
                                     height: 32,
                                     width: 32,
                                   ),
@@ -205,7 +243,7 @@ class _HomeViewState extends State<HomeView> {
         } else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         } else {
-          return const CategoryShimmer();
+          return const CircularProgressIndicator();
         }
       },
     );
@@ -216,11 +254,16 @@ class _HomeViewState extends State<HomeView> {
       future: categoryMeals,
       builder: (context, snapshot) {
         dataLenght = snapshot.data?.meals?.length ?? 0;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CategoryMealShimmer(itemCount: 4);
+        }
         if (snapshot.hasData) {
           return GridView.builder(
             padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              crossAxisSpacing: context.dynamicWidth(0.05),
+              mainAxisSpacing: context.dynamicWidth(0.02),
               maxCrossAxisExtent: context.dynamicWidth(0.5),
               mainAxisExtent: context.dynamicHeight(0.27),
             ),
@@ -231,8 +274,7 @@ class _HomeViewState extends State<HomeView> {
               return Column(
                 children: [
                   SizedBox(
-                    height: context.dynamicHeight(0.26),
-                    width: MediaQuery.of(context).size.width / 2,
+                    height: context.dynamicHeight(0.27),
                     child: Column(
                       children: [
                         GestureDetector(
@@ -252,8 +294,8 @@ class _HomeViewState extends State<HomeView> {
                               Padding(
                                 padding: ProjectPaddings.cardImagePaddingSmall,
                                 child: SizedBox(
-                                  width: context.dynamicWidth(0.4),
-                                  height: context.dynamicHeight(0.22),
+                                  width: context.dynamicWidth(0.5),
+                                  height: context.dynamicHeight(0.23),
                                   child: Card(
                                     elevation: 1,
                                     shape: RoundedRectangleBorder(
@@ -263,6 +305,8 @@ class _HomeViewState extends State<HomeView> {
                                     child: Padding(
                                       padding: ProjectPaddings.cardImagePadding,
                                       child: Text(
+                                        maxLines: 4,
+                                        overflow: TextOverflow.ellipsis,
                                         data?.strMeal ?? '',
                                         style: context.textTheme.bodyText2,
                                       ),
@@ -376,111 +420,6 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
-class CategoryShimmer extends StatelessWidget {
-  const CategoryShimmer({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: ProjectColors.lightGrey,
-      highlightColor: ProjectColors.secondWhite,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 50,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: const [
-                    SizedBox(
-                      width: 84,
-                      height: 50,
-                      child: Card(),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: context.width * 0.4,
-                height: context.height * 0.05,
-                child: const Card(),
-              ),
-              SizedBox(
-                width: context.width * 0.2,
-                height: context.height * 0.05,
-                child: const Card(),
-              ),
-            ],
-          ),
-          const CategoryMealShimmer(
-            itemCount: 4,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CategoryMealShimmer extends StatelessWidget {
-  const CategoryMealShimmer({
-    super.key,
-    required this.itemCount,
-  });
-
-  final int? itemCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      period: const Duration(milliseconds: 1000),
-      baseColor: ProjectColors.lightGrey,
-      highlightColor: ProjectColors.secondWhite,
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: context.dynamicWidth(0.5),
-          mainAxisExtent: context.dynamicHeight(0.27),
-        ),
-        shrinkWrap: true,
-        itemCount: itemCount,
-        itemBuilder: (context, _) {
-          return SizedBox(
-            height: context.dynamicHeight(0.26),
-            width: MediaQuery.of(context).size.width / 2,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: ProjectPaddings.cardImagePaddingSmall,
-                child: SizedBox(
-                  width: context.dynamicWidth(0.4),
-                  height: context.dynamicHeight(0.22),
-                  child: Card(
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: context.lowBorderRadius,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _SearchBar extends StatelessWidget {
   const _SearchBar();
 
@@ -522,7 +461,7 @@ class _GetRandomRecipe extends StatelessWidget {
       future: _random,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const _RandomMealShimmer();
+          return const RandomMealShimmer();
         }
         if (snapshot.hasData) {
           return SizedBox(
@@ -555,23 +494,8 @@ class _GetRandomRecipe extends StatelessWidget {
                           SizedBox(
                             height: MediaQuery.of(context).size.height,
                             width: MediaQuery.of(context).size.width * 0.40,
-                            child: Image.network(
-                              loadingBuilder: (
-                                BuildContext context,
-                                Widget child,
-                                ImageChunkEvent? loadingProgress,
-                              ) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              data?.strMealThumb ?? '',
+                            child: CachedNetworkImage(
+                              imageUrl: data?.strMealThumb ?? '',
                               fit: BoxFit.fill,
                             ),
                           ),
@@ -594,30 +518,9 @@ class _GetRandomRecipe extends StatelessWidget {
             ),
           );
         } else {
-          return const _RandomMealShimmer();
+          return const RandomMealShimmer();
         }
       },
-    );
-  }
-}
-
-class _RandomMealShimmer extends StatelessWidget {
-  const _RandomMealShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: ProjectColors.lightGrey,
-      highlightColor: ProjectColors.secondWhite,
-      child: Row(
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.875,
-            height: MediaQuery.of(context).size.height * 0.20,
-            child: const Card(),
-          ),
-        ],
-      ),
     );
   }
 }

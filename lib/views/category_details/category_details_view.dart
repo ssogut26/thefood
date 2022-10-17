@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
@@ -6,7 +7,7 @@ import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
-import 'package:thefood/views/home/home_view.dart';
+import 'package:thefood/views/home/shimmers.dart';
 
 class CategoryDetailsView extends StatefulWidget {
   const CategoryDetailsView({
@@ -40,7 +41,7 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _topCategory(
+              TopCategory(
                 widget: widget,
               ),
               const SizedBox(height: 20),
@@ -158,8 +159,8 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
   }
 }
 
-class _topCategory extends StatelessWidget {
-  const _topCategory({
+class TopCategory extends StatelessWidget {
+  const TopCategory({
     required this.widget,
   });
 
@@ -170,8 +171,9 @@ class _topCategory extends StatelessWidget {
     return Card(
       child: Row(
         children: [
-          Image.network(
-            widget.image ?? '',
+          CachedNetworkImage(
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+            imageUrl: widget.image ?? '',
             width: 100,
             height: 100,
           ),

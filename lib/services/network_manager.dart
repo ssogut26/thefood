@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/models/area.dart';
 import 'package:thefood/models/categories.dart';
@@ -26,12 +27,17 @@ class NetworkManager {
       final categories =
           Categories.fromJson(response.data as Map<String, dynamic>).categories;
       return categories;
+    } on DioError catch (e) {
+      SnackBar(
+        content: Text(e.response.toString()),
+      );
     } catch (e) {
       if (kDebugMode) {
         print(e);
       }
       return [];
     }
+    return null;
   }
 
   Future<Area?> getAreas() async {

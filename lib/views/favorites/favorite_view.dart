@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -68,23 +69,8 @@ class _FavoriteViewState extends State<FavoriteView> {
                               SizedBox(
                                 height: MediaQuery.of(context).size.height,
                                 width: MediaQuery.of(context).size.width * 0.40,
-                                child: Image.network(
-                                  loadingBuilder: (
-                                    BuildContext context,
-                                    Widget child,
-                                    ImageChunkEvent? loadingProgress,
-                                  ) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
-                                  favoriteBox.getAt(index)?.strMealThumb ?? '',
+                                child: CachedNetworkImage(
+                                  imageUrl: favoriteBox.getAt(index)?.strMealThumb ?? '',
                                   fit: BoxFit.fill,
                                 ),
                               ),
@@ -113,52 +99,6 @@ class _FavoriteViewState extends State<FavoriteView> {
                 },
               ),
             );
-            // ListView.builder(
-            //   itemCount: favoriteBox.length,
-            //   itemBuilder: (context, index) {
-            //     return Row(
-            //       children: [
-            //         Image.network(
-            //           favoriteBox.getAt(index)!.strMealThumb ?? '',
-            //           width: 100,
-            //           height: 100,
-            //           fit: BoxFit.cover,
-            //         ),
-            //         Text(favoriteBox.getAt(index)?.strMeal ?? ''),
-            //         IconButton(
-            //           onPressed: () {
-            //             favoriteBox.deleteAt(index);
-            //           },
-            //           icon: const Icon(Icons.delete),
-            //         ),
-            //       ],
-            //     );
-            //   },
-
-            // child: ListView.builder(
-            //   itemCount: favoriteBox.values.length,
-            //   itemBuilder: (context, index) {
-            //     return Row(
-            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //       children: [
-            //         // Image.network(
-            //         //   height: 100,
-            //         //   width: 100,
-            //         //    favoriteBox.getAt(index)?? '',
-            //         // ),
-            //         Text(favoriteBox.getAt(index) ?? ''),
-            //         IconButton(
-            //           onPressed: () {
-            //             favoriteBox.deleteAt(index);
-            //             setState(() {});
-            //           },
-            //           icon: const Icon(Icons.favorite_outline_outlined),
-            //         )
-            //       ],
-            //     );
-            //   },
-            // ),
-            // );
           },
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
+import 'package:thefood/constants/texts.dart';
 
 class ForgotPassView extends StatefulWidget {
   const ForgotPassView({super.key});
@@ -17,7 +18,14 @@ class _ForgotPassViewState extends State<ForgotPassView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Padding(
         padding: context.horizontalPaddingMedium,
         child: Form(
@@ -31,7 +39,7 @@ class _ForgotPassViewState extends State<ForgotPassView> {
                   width: context.dynamicWidth(0.3),
                 ),
                 Text(
-                  'theFood',
+                  ProjectTexts.appName,
                   style: context.textTheme.headline1,
                 ),
                 SizedBox(
@@ -45,12 +53,12 @@ class _ForgotPassViewState extends State<ForgotPassView> {
                     child: TextFormField(
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Email',
+                        labelText: ProjectTexts.email,
                       ),
                       controller: _emailController,
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please enter your email';
+                          return ProjectTexts.emailError;
                         }
                         return null;
                       },
@@ -75,7 +83,7 @@ class _ForgotPassViewState extends State<ForgotPassView> {
                       }
                     },
                     child: Text(
-                      'Send',
+                      ProjectTexts.send,
                       style: context.textTheme.bodyText2,
                     ),
                   ),
