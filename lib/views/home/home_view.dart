@@ -67,11 +67,7 @@ class _HomeViewState extends State<HomeView> {
       );
     } else if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      setState(() {
-        _categories;
-        _random;
-        categoryMeals;
-      });
+      setState(() {});
     }
   }
 

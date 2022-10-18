@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart' as pathProvider;
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/text_styles.dart';
 import 'package:thefood/firebase_options.dart';
@@ -22,8 +23,9 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await Hive.initFlutter();
   Hive.registerAdapter(MealsAdapter());
+  final directory = await pathProvider.getApplicationDocumentsDirectory();
+  Hive.init(directory.path);
   await Hive.openBox<Meals>('Favorites');
   await Hive.openBox<String>('rememberCrendential');
   runApp(const TheFood());
