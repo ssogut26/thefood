@@ -20,7 +20,7 @@ class ProjectTexts {
   static const confirmPassword = 'Confirm Password';
   static const password6CharError = 'Password must be at least 6 characters';
   static const passwordEmptyError = 'Passwords do not match';
-
+  static const noFavoritesYet = 'No Favorites yet';
   static const emailError = 'Please enter a valid email';
   static const nameError = 'Please enter your name';
   static const nameValidError = 'Please enter a valid name';
@@ -33,6 +33,7 @@ class ProjectTexts {
   static const forgotPasswordError = 'Please enter your email';
   static const forgotPasswordSuccess = 'Password reset email sent';
   static const logout = 'Logout';
+  static const favoriteBoxName = 'Favorites';
   static const logoutError = 'Could not log out';
   static const logoutSuccess = 'Logged out';
 }

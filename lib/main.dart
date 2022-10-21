@@ -14,7 +14,6 @@ import 'package:thefood/views/auth/login_view.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
-import 'package:thefood/views/favorites/favorite_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 import 'package:thefood/views/home/navigator.dart';
 
@@ -23,10 +22,11 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  Hive.registerAdapter(MealsAdapter());
+  final mealAdapter = Hive.registerAdapter(MealAdapter());
+  final mealsAdapter = Hive.registerAdapter(MealsAdapter());
   final directory = await pathProvider.getApplicationDocumentsDirectory();
   Hive.init(directory.path);
-  await Hive.openBox<Meals>('Favorites');
+  await Hive.openBox<Meal>('Favorites');
   await Hive.openBox<String>('rememberCrendential');
   runApp(const TheFood());
 }
@@ -50,7 +50,7 @@ class _TheFoodState extends State<TheFood> {
         appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: Colors.transparent,
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
         cardTheme: const CardTheme(
           elevation: 0,
@@ -91,13 +91,13 @@ class _TheFoodState extends State<TheFood> {
           return const HomeView();
         },
       ),
-      GoRoute(
-        path: '/favorites',
-        name: 'favorites',
-        builder: (BuildContext context, GoRouterState state) {
-          return const FavoriteView();
-        },
-      ),
+      // GoRoute(
+      //   path: '/favorites',
+      //   name: 'favorites',
+      //   builder: (BuildContext context, GoRouterState state) {
+      //     return const FavoriteView();
+      //   },
+      // ),
       GoRoute(
         path: '/details/:id/:name/:image',
         name: 'details',

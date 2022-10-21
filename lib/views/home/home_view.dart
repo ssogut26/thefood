@@ -32,7 +32,7 @@ class _HomeViewState extends State<HomeView> {
   late int selectedIndex;
   late String categoryName;
   late int dataLenght;
-  late Box<Meals> favoriteMealBox;
+  late Box<Meal> favoriteMealBox;
   late StreamSubscription subscription;
 
   int itemLength() {
@@ -52,23 +52,41 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> checkConnectivity() async {
     final result = await Connectivity().checkConnectivity();
-    if (result == ConnectivityResult.none) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No internet access. Check your connection'),
-          duration: const Duration(seconds: 100),
-          action: SnackBarAction(
-            label: 'Dissmiss',
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            },
+    Future.delayed(const Duration(seconds: 10), () {
+      if (result == ConnectivityResult.none) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No internet access. Check your connection'),
+            duration: const Duration(seconds: 100),
+            action: SnackBarAction(
+              label: 'Dissmiss',
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
           ),
-        ),
-      );
-    } else if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      setState(() {});
-    }
+        );
+      } else if (result == ConnectivityResult.wifi ||
+          result == ConnectivityResult.mobile) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Internet access is available'),
+            duration: const Duration(seconds: 100),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () {
+                setState(() {
+                  _categories = NetworkManager.instance.getCategories();
+                  _random = NetworkManager.instance.getRandomMeal();
+                  categoryMeals =
+                      NetworkManager.instance.getMealsByCategory(categoryName);
+                });
+              },
+            ),
+          ),
+        );
+      }
+    });
   }
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
@@ -239,7 +257,7 @@ class _HomeViewState extends State<HomeView> {
         } else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         } else {
-          return const CircularProgressIndicator();
+          return const CategoryShimmer();
         }
       },
     );

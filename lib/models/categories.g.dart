@@ -22,6 +22,7 @@ MealCategory _$MealCategoryFromJson(Map<String, dynamic> json) => MealCategory(
       strCategory: json['strCategory'] as String?,
       strCategoryThumb: json['strCategoryThumb'] as String?,
       strCategoryDescription: json['strCategoryDescription'] as String?,
+      statusCode: $enumDecodeNullable(_$StatusCodeEnumMap, json['statusCode']),
     );
 
 Map<String, dynamic> _$MealCategoryToJson(MealCategory instance) =>
@@ -30,4 +31,12 @@ Map<String, dynamic> _$MealCategoryToJson(MealCategory instance) =>
       'strCategory': instance.strCategory,
       'strCategoryThumb': instance.strCategoryThumb,
       'strCategoryDescription': instance.strCategoryDescription,
+      'statusCode': _$StatusCodeEnumMap[instance.statusCode],
     };
+
+const _$StatusCodeEnumMap = {
+  StatusCode.success: 200,
+  StatusCode.failed: 500,
+  StatusCode.notFound: 404,
+  StatusCode.invalidKey: 101,
+};

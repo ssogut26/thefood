@@ -3,23 +3,23 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/assets_path.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/endpoints.dart';
+import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/network_manager.dart';
-import 'package:thefood/views/details/deneme.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+part 'details_view_model.dart';
 
 class DetailsView extends StatefulWidget {
   DetailsView({
-    this.onPressed,
     this.image,
     required this.id,
     super.key,
@@ -28,98 +28,82 @@ class DetailsView extends StatefulWidget {
   final String? image;
   final String? name;
   final int id;
-  late Function? onPressed;
+  late bool isOnline = false;
   @override
   State<DetailsView> createState() => _DetailsViewState();
 }
 
 class _DetailsViewState extends State<DetailsView> {
   late final Future<Meal?> _meals;
-  bool isFavorite = false;
-  late Box<Meals> favoriteMealBox;
-  late List<Meals?> items;
-  late StreamSubscription subscription;
-  late bool isOnline;
-  Meals meals = MealList().meals;
+  late Box<Meal> favoriteMealBox;
+  late StreamSubscription _subscription;
+
+  bool checkIsOnline() {
+    checkConnectivity();
+    return widget.isOnline;
+  }
+
   Future<void> checkConnectivity() async {
     final result = await Connectivity().checkConnectivity();
-    if (result == ConnectivityResult.none) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No internet access. Check your connection'),
-          duration: const Duration(seconds: 100),
-          action: SnackBarAction(
-            label: 'Dissmiss',
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            },
+    Future.delayed(const Duration(seconds: 1), () {
+      if (result == ConnectivityResult.none) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No internet access. Check your connection ${widget.isOnline}'),
+            duration: const Duration(seconds: 100),
+            action: SnackBarAction(
+              label: 'Dissmiss',
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                setState(() {
+                  widget.isOnline = false;
+                });
+              },
+            ),
           ),
-        ),
-      );
-      isOnline = false;
-    } else if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      setState(() {});
-    }
-    isOnline = true;
+        );
+      } else if (result == ConnectivityResult.wifi ||
+          result == ConnectivityResult.mobile) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        setState(() {
+          widget.isOnline = true;
+        });
+      }
+    });
   }
 
   @override
   void initState() {
-    isOnline = false;
     _meals = NetworkManager.instance.getMeal(widget.id);
-    favoriteMealBox = Hive.box('Favorites');
-    items = favoriteMealBox.values.toList();
-    subscription =
+    favoriteMealBox = Hive.box(ProjectTexts.favoriteBoxName);
+    widget.isOnline = checkIsOnline();
+    _subscription =
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       checkConnectivity();
     });
     super.initState();
   }
 
-  Function? onFavoritePress(
-    int id,
-    String name,
-    String image, {
-    List<String?> ingredients = const <String>[],
-    List<String?> measures = const <String>[],
-    String instructions = '',
-    String youtube = '',
-    String source = '',
-    String tags = '',
-    String category = '',
-    String area = '',
-  }) {
-    favoriteMealBox.put(
-      '$id',
-      meals.copyWith(
-        idMeal: id.toString(),
-        strMeal: name,
-        strMealThumb: image,
-      ),
-    );
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: _appBar(context),
       extendBodyBehindAppBar: true,
       extendBody: true,
+      appBar: _appBar(context),
       body: Stack(
         children: [
           Align(
             alignment: Alignment.topCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.4,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(widget.image ?? ''),
-                  fit: BoxFit.fitWidth,
+            child: Stack(
+              children: [
+                SizedBox(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.image ?? '',
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           Align(
@@ -136,18 +120,14 @@ class _DetailsViewState extends State<DetailsView> {
               ),
               child: Padding(
                 padding: ProjectPaddings.pageLarge,
-                child: isOnline
+                child: widget.isOnline
                     ? FutureBuilder<Meal?>(
                         future: _meals,
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             return _MealDetails(
-                              meal: meals,
-                              onFavoritePress: DetailsView(
-                                id: widget.id,
-                              ).onPressed,
                               widget: widget,
-                              items: snapshot.data?.meals ?? [],
+                              items: snapshot.data,
                             );
                           } else if (!snapshot.hasData) {
                             return const Center(
@@ -160,18 +140,18 @@ class _DetailsViewState extends State<DetailsView> {
                           }
                         },
                       )
-                    : ValueListenableBuilder(
+                    : ValueListenableBuilder<Box<Meal>>(
                         valueListenable: favoriteMealBox.listenable(),
-                        builder: (context, Box box, _) {
+                        builder: (context, Box<Meal> box, _) {
+                          final meals = box.get('${widget.id}');
                           return _MealDetails(
-                            meal: meals,
-                            onFavoritePress: DetailsView(
-                              id: widget.id,
-                            ).onPressed,
                             widget: widget,
-                            items: items,
+                            items: meals,
                           );
                         },
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       ),
               ),
             ),
@@ -195,28 +175,6 @@ class _DetailsViewState extends State<DetailsView> {
           Navigator.pop(context);
         },
       ),
-      actions: [
-        IconButton(
-          icon: CircleAvatar(
-            backgroundColor: ProjectColors.actionsBgColor,
-            child: SvgPicture.asset(
-              AssetsPath.bookmark,
-              color: ProjectColors.black,
-            ),
-          ),
-          onPressed: () {
-            onFavoritePress(
-              widget.id,
-              widget.name ?? '',
-              widget.image ?? '',
-              source: favoriteMealBox.get(widget.id.toString())?.strSource ?? '',
-              youtube: favoriteMealBox.get(widget.id.toString())?.strYoutube ?? '',
-              instructions:
-                  favoriteMealBox.get(widget.id.toString())?.strInstructions ?? '',
-            );
-          },
-        ),
-      ],
     );
   }
 }
@@ -225,16 +183,10 @@ class _MealDetails extends StatefulWidget {
   const _MealDetails({
     required this.widget,
     required this.items,
-    required Meals meal,
-    required Function? onFavoritePress,
-  })  : _onFavoritePress = onFavoritePress,
-        _meal = meal;
+  });
 
   final DetailsView widget;
-  final List<Meals?> items;
-  final _onFavoritePress;
-  final Meals _meal;
-
+  final Meal? items;
   @override
   State<_MealDetails> createState() => _MealDetailsState();
 }
@@ -242,7 +194,6 @@ class _MealDetails extends StatefulWidget {
 class _MealDetailsState extends State<_MealDetails> {
   late int selectedIndex;
   int index = 0;
-
   Future<void> launch(Uri url) async {
     if (!await launchUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -255,38 +206,12 @@ class _MealDetailsState extends State<_MealDetails> {
     }
   }
 
-  final measureList = MeasureList().measureList;
-  final favoriteMealBox = Hive.box<Meals>('Favorites');
+  final favoriteMealBox = Hive.box<Meal>(ProjectTexts.favoriteBoxName);
   final meals = Meals();
-  Function? onFavoritePresss(
-    int id,
-    String name,
-    String image, {
-    List<String?> ingredients = const <String>[],
-    List<String?> measures = const <String>[],
-    String instructions = '',
-    String youtube = '',
-    String source = '',
-    String tags = '',
-    String category = '',
-    String area = '',
-  }) {
-    favoriteMealBox.put(
-      '$id',
-      meals.copyWith(
-        idMeal: id.toString(),
-        strMeal: name,
-        strMealThumb: image,
-      ),
-    );
-    return null;
-  }
 
   @override
   void initState() {
     selectedIndex = 0;
-    SchedulerBinding.instance.addPostFrameCallback((_) => onFavoritePresss);
-
     super.initState();
   }
 
@@ -296,168 +221,197 @@ class _MealDetailsState extends State<_MealDetails> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
-      itemCount: widget.items.length,
+      itemCount: widget.items?.meals?.length ?? 0,
       itemBuilder: (context, index) {
-        final meals = widget.items[index];
+        final meals = widget.items?.meals?[index];
         final ingList = [
-          meals?.strIngredient1,
-          meals?.strIngredient2,
-          meals?.strIngredient3,
-          meals?.strIngredient4,
-          meals?.strIngredient5,
-          meals?.strIngredient6,
-          meals?.strIngredient7,
-          meals?.strIngredient8,
-          meals?.strIngredient9,
-          meals?.strIngredient10,
-          meals?.strIngredient11,
-          meals?.strIngredient12,
-          meals?.strIngredient13,
-          meals?.strIngredient14,
-          meals?.strIngredient15,
-          meals?.strIngredient16,
-          meals?.strIngredient17,
-          meals?.strIngredient18,
-          meals?.strIngredient19,
-          meals?.strIngredient20,
+          meals?.strIngredient1 ?? '',
+          meals?.strIngredient2 ?? '',
+          meals?.strIngredient3 ?? '',
+          meals?.strIngredient4 ?? '',
+          meals?.strIngredient5 ?? '',
+          meals?.strIngredient6 ?? '',
+          meals?.strIngredient7 ?? '',
+          meals?.strIngredient8 ?? '',
+          meals?.strIngredient9 ?? '',
+          meals?.strIngredient10 ?? '',
+          meals?.strIngredient11 ?? '',
+          meals?.strIngredient12 ?? '',
+          meals?.strIngredient13 ?? '',
+          meals?.strIngredient14 ?? '',
+          meals?.strIngredient15 ?? '',
+          meals?.strIngredient16 ?? '',
+          meals?.strIngredient17 ?? '',
+          meals?.strIngredient18 ?? '',
+          meals?.strIngredient19 ?? '',
+          meals?.strIngredient20 ?? '',
         ];
         final measureList = <String?>[
-          meals?.strMeasure1,
-          meals?.strMeasure2,
-          meals?.strMeasure3,
-          meals?.strMeasure4,
-          meals?.strMeasure5,
-          meals?.strMeasure6,
-          meals?.strMeasure7,
-          meals?.strMeasure8,
-          meals?.strMeasure9,
-          meals?.strMeasure10,
-          meals?.strMeasure11,
-          meals?.strMeasure12,
-          meals?.strMeasure13,
-          meals?.strMeasure14,
-          meals?.strMeasure15,
-          meals?.strMeasure16,
-          meals?.strMeasure17,
-          meals?.strMeasure18,
-          meals?.strMeasure19,
-          meals?.strMeasure20,
+          meals?.strMeasure1 ?? '',
+          meals?.strMeasure2 ?? '',
+          meals?.strMeasure3 ?? '',
+          meals?.strMeasure4 ?? '',
+          meals?.strMeasure5 ?? '',
+          meals?.strMeasure6 ?? '',
+          meals?.strMeasure7 ?? '',
+          meals?.strMeasure8 ?? '',
+          meals?.strMeasure9 ?? '',
+          meals?.strMeasure10 ?? '',
+          meals?.strMeasure11 ?? '',
+          meals?.strMeasure12 ?? '',
+          meals?.strMeasure13 ?? '',
+          meals?.strMeasure14 ?? '',
+          meals?.strMeasure15 ?? '',
+          meals?.strMeasure16 ?? '',
+          meals?.strMeasure17 ?? '',
+          meals?.strMeasure18 ?? '',
+          meals?.strMeasure19 ?? '',
+          meals?.strMeasure20 ?? '',
         ];
 
-        return ValueListenableBuilder(
-          valueListenable: favoriteMealBox.listenable(),
-          builder: (context, Box box, _) {
-            return ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              itemCount: 1,
-              itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          itemCount: 1,
+          itemBuilder: (context, index) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      widget.widget.name ?? '',
-                      style: Theme.of(context).textTheme.headline1,
-                    ),
-                    Padding(
-                      padding: ProjectPaddings.cardLarge,
-                      child: Text('in ${meals?.strCategory}').toVisible(
-                        meals?.strCategory != null,
+                    Expanded(
+                      flex: 12,
+                      child: Text(
+                        widget.widget.name ?? '',
+                        style: Theme.of(context).textTheme.headline1,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 50,
-                          child: TextButton(
-                            autofocus: true,
-                            onPressed: () async {
-                              setState(() {
-                                selectedIndex = 0;
-                              });
-                            },
-                            child: AnimatedScale(
-                              duration: const Duration(milliseconds: 300),
-                              scale: (selectedIndex == 0) ? 1.2 : 1,
-                              child: Text(
-                                ProjectTexts.ingredients,
-                                style: (selectedIndex == 0)
-                                    ? Theme.of(context).textTheme.headline3
-                                    : Theme.of(context).textTheme.bodyText2,
-                              ),
-                            ),
+                    Expanded(
+                      flex: 2,
+                      child: IconButton(
+                        icon: CircleAvatar(
+                          backgroundColor: ProjectColors.actionsBgColor,
+                          child: SvgPicture.asset(
+                            AssetsPath.bookmark,
+                            color: ProjectColors.black,
                           ),
                         ),
-                        Expanded(
-                          flex: 50,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                selectedIndex = 1;
-                              });
-                            },
-                            child: AnimatedScale(
-                              duration: const Duration(milliseconds: 300),
-                              scale: (selectedIndex == 1) ? 1.2 : 1,
-                              child: Text(
-                                ProjectTexts.instructions,
-                                style: (selectedIndex == 1)
-                                    ? Theme.of(context).textTheme.headline3
-                                    : Theme.of(context).textTheme.bodyText2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (selectedIndex == 0)
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (int index = 0;
-                              index < ingList.length && index.isFinite;
-                              index++)
-                            ingList[index].isNotNullOrNoEmpty
-                                ? _ingredients(
-                                    ingList,
-                                    index,
-                                    context,
-                                    measureList,
-                                  )
-                                : const SizedBox.shrink(),
-                        ],
-                      )
-                    else
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(meals?.strInstructions ?? ''),
-                          TextButton(
-                            onPressed: () {
-                              launch(
-                                Uri.parse(
-                                  meals?.strYoutube ?? '',
-                                ),
-                              );
-                            },
-                            child: const Text('Watch Video'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              launch(
-                                Uri.parse(
-                                  meals?.strSource ?? '',
-                                ),
-                              );
-                            },
-                            child: const Text('Source'),
-                          ),
-                        ],
+                        onPressed: () async {
+                          await DetailModels().onFavoritePress(
+                            widget.widget.id,
+                            widget.widget.name ?? '',
+                            widget.widget.image ?? '',
+                            ingList,
+                            meals?.strInstructions ?? '',
+                            meals?.strYoutube ?? '',
+                            meals?.strCategory ?? '',
+                            meals?.strSource ?? '',
+                            measureList,
+                            countryFlagMap[meals?.strArea] ?? '',
+                          );
+                        },
                       ),
+                    ),
                   ],
-                );
-              },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CategoryName(meals: meals),
+                    AreaImage(meals: meals),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 50,
+                      child: TextButton(
+                        autofocus: true,
+                        onPressed: () async {
+                          setState(() {
+                            selectedIndex = 0;
+                          });
+                        },
+                        child: AnimatedScale(
+                          duration: const Duration(milliseconds: 300),
+                          scale: (selectedIndex == 0) ? 1.2 : 1,
+                          child: Text(
+                            ProjectTexts.ingredients,
+                            style: (selectedIndex == 0)
+                                ? Theme.of(context).textTheme.headline3
+                                : Theme.of(context).textTheme.bodyText2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 50,
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedIndex = 1;
+                          });
+                        },
+                        child: AnimatedScale(
+                          duration: const Duration(milliseconds: 300),
+                          scale: (selectedIndex == 1) ? 1.2 : 1,
+                          child: Text(
+                            ProjectTexts.instructions,
+                            style: (selectedIndex == 1)
+                                ? Theme.of(context).textTheme.headline3
+                                : Theme.of(context).textTheme.bodyText2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (selectedIndex == 0)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (int index = 0;
+                          index < ingList.length && index.isFinite;
+                          index++)
+                        ingList[index].isNotNullOrNoEmpty
+                            ? _ingredients(
+                                ingList,
+                                index,
+                                context,
+                                measureList,
+                              )
+                            : const SizedBox.shrink(),
+                    ],
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(meals?.strInstructions ?? ''),
+                      TextButton(
+                        onPressed: () {
+                          launch(
+                            Uri.parse(
+                              meals?.strYoutube ?? '',
+                            ),
+                          );
+                        },
+                        child: const Text('Watch Video'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          launch(
+                            Uri.parse(
+                              meals?.strSource ?? '',
+                            ),
+                          );
+                        },
+                        child: const Text('Source'),
+                      ),
+                    ],
+                  ),
+              ],
             );
           },
         );
@@ -507,6 +461,61 @@ class _MealDetailsState extends State<_MealDetails> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CategoryName extends StatelessWidget {
+  const CategoryName({
+    super.key,
+    required this.meals,
+  });
+
+  final Meals? meals;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 12,
+      child: Padding(
+        padding: ProjectPaddings.cardLarge,
+        child: Text('in ${meals?.strCategory}').toVisible(
+          meals?.strCategory != null,
+        ),
+      ),
+    );
+  }
+}
+
+class AreaImage extends StatelessWidget {
+  const AreaImage({
+    super.key,
+    required this.meals,
+  });
+
+  final Meals? meals;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 2,
+      child: CachedNetworkImage(
+        imageUrl: countryFlagMap[meals?.strArea] ?? '',
+        height: 32,
+        width: 32,
+        errorWidget: (context, url, error) => const Icon(
+          Icons.error,
+        ),
+        progressIndicatorBuilder: (context, url, downloadProgress) => SizedBox(
+          height: 32,
+          width: 32,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: downloadProgress.progress,
+            ),
+          ),
+        ),
       ),
     );
   }
