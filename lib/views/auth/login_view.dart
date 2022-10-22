@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/views/auth/auth_models.dart';
 
@@ -22,12 +23,12 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    rememberCrendentialBox = Hive.box<String>('rememberCrendential');
+    rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
     createOpenBox();
   }
 
   Future<void> createOpenBox() async {
-    rememberCrendentialBox = Hive.box<String>('rememberCrendential');
+    rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
     await getdata();
   }
 

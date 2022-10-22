@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'categories.g.dart';
 
 @JsonSerializable()
+@HiveType(typeId: 2)
 class Categories with EquatableMixin {
   Categories({
     this.categories,
@@ -11,6 +13,7 @@ class Categories with EquatableMixin {
   factory Categories.fromJson(Map<String, dynamic> json) => _$CategoriesFromJson(json);
   @JsonKey(name: 'categories')
   Map<String, dynamic> toJson() => _$CategoriesToJson(this);
+  @HiveField(0)
   final List<MealCategory>? categories;
 
   @override
@@ -26,6 +29,7 @@ class Categories with EquatableMixin {
 }
 
 @JsonSerializable()
+@HiveType(typeId: 3)
 class MealCategory with EquatableMixin {
   MealCategory({
     this.idCategory,
@@ -36,10 +40,15 @@ class MealCategory with EquatableMixin {
   });
   factory MealCategory.fromJson(Map<String, dynamic> json) =>
       _$MealCategoryFromJson(json);
+  @HiveField(0)
   String? idCategory;
+  @HiveField(1)
   String? strCategory;
+  @HiveField(2)
   String? strCategoryThumb;
+  @HiveField(3)
   String? strCategoryDescription;
+  @HiveField(4)
   final StatusCode? statusCode;
   Map<String, dynamic> toJson() => _$MealCategoryToJson(this);
 

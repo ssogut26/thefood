@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
+import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/texts.dart';
 
 class NameField extends StatelessWidget {
@@ -82,7 +83,7 @@ class PasswordField extends StatefulWidget {
     required TextEditingController passwordController,
   }) : _passwordController = passwordController;
 
-  static bool isVisible = false;
+  static bool isVisible = true;
   final TextEditingController _passwordController;
 
   @override
@@ -254,7 +255,7 @@ class LoginButton extends StatelessWidget {
   final TextEditingController _passwordController;
   late final bool _isChecked;
 
-  Box<String> rememberCrendentialBox = Hive.box<String>('rememberCrendential');
+  Box<String> rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
 
   Future<void> login() async {
     if (_isChecked) {

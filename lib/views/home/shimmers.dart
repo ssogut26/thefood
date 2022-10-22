@@ -121,9 +121,6 @@ class CategoryShimmer extends StatelessWidget {
               ),
             ],
           ),
-          const CategoryMealShimmer(
-            itemCount: 4,
-          ),
         ],
       ),
     );

@@ -6,28 +6,28 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as pathProvider;
 import 'package:thefood/constants/colors.dart';
+import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/text_styles.dart';
+import 'package:thefood/constants/texts.dart';
 import 'package:thefood/firebase_options.dart';
-import 'package:thefood/models/meals.dart';
 import 'package:thefood/views/auth/forgot_password_view.dart';
 import 'package:thefood/views/auth/login_view.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
+import 'package:thefood/views/favorites/favorite_view.dart';
 import 'package:thefood/views/home/home_view.dart';
 import 'package:thefood/views/home/navigator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final mealAdapter = Hive.registerAdapter(MealAdapter());
-  final mealsAdapter = Hive.registerAdapter(MealsAdapter());
   final directory = await pathProvider.getApplicationDocumentsDirectory();
   Hive.init(directory.path);
-  await Hive.openBox<Meal>('Favorites');
-  await Hive.openBox<String>('rememberCrendential');
+  await Hive.openBox<String>(HiveConstants.loginCredentials);
   runApp(const TheFood());
 }
 
@@ -42,7 +42,7 @@ class _TheFoodState extends State<TheFood> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'theFood',
+      title: ProjectTexts.appName,
       theme: ThemeData(
         scaffoldBackgroundColor: ProjectColors.mainWhite,
         useMaterial3: true,
@@ -91,13 +91,13 @@ class _TheFoodState extends State<TheFood> {
           return const HomeView();
         },
       ),
-      // GoRoute(
-      //   path: '/favorites',
-      //   name: 'favorites',
-      //   builder: (BuildContext context, GoRouterState state) {
-      //     return const FavoriteView();
-      //   },
-      // ),
+      GoRoute(
+        path: '/favorites',
+        name: 'favorites',
+        builder: (BuildContext context, GoRouterState state) {
+          return const FavoriteView();
+        },
+      ),
       GoRoute(
         path: '/details/:id/:name/:image',
         name: 'details',

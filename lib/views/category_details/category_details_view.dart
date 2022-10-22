@@ -6,7 +6,7 @@ import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/network_manager.dart';
+import 'package:thefood/services/managers/network_manager.dart';
 import 'package:thefood/views/home/shimmers.dart';
 
 class CategoryDetailsView extends StatefulWidget {

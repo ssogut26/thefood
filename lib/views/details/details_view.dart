@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/assets_path.dart';
 import 'package:thefood/constants/colors.dart';
@@ -13,13 +11,12 @@ import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/network_manager.dart';
+import 'package:thefood/services/managers/cache_manager.dart';
+import 'package:thefood/services/managers/network_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-part 'details_view_model.dart';
-
 class DetailsView extends StatefulWidget {
-  DetailsView({
+  const DetailsView({
     this.image,
     required this.id,
     super.key,
@@ -28,59 +25,28 @@ class DetailsView extends StatefulWidget {
   final String? image;
   final String? name;
   final int id;
-  late bool isOnline = false;
   @override
   State<DetailsView> createState() => _DetailsViewState();
 }
 
 class _DetailsViewState extends State<DetailsView> {
-  late final Future<Meal?> _meals;
-  late Box<Meal> favoriteMealBox;
-  late StreamSubscription _subscription;
+  late final ICacheManager<Meal> favoriteCacheManager;
+  Meal? favoriteMealDetail;
 
-  bool checkIsOnline() {
-    checkConnectivity();
-    return widget.isOnline;
-  }
-
-  Future<void> checkConnectivity() async {
-    final result = await Connectivity().checkConnectivity();
-    Future.delayed(const Duration(seconds: 1), () {
-      if (result == ConnectivityResult.none) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('No internet access. Check your connection ${widget.isOnline}'),
-            duration: const Duration(seconds: 100),
-            action: SnackBarAction(
-              label: 'Dissmiss',
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                setState(() {
-                  widget.isOnline = false;
-                });
-              },
-            ),
-          ),
-        );
-      } else if (result == ConnectivityResult.wifi ||
-          result == ConnectivityResult.mobile) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        setState(() {
-          widget.isOnline = true;
-        });
-      }
-    });
+  Future<void> fetchData() async {
+    await favoriteCacheManager.init();
+    if (favoriteCacheManager.getItem(widget.id.toString())?.meals?.isNotEmpty ?? false) {
+      favoriteMealDetail = favoriteCacheManager.getItem(widget.id.toString());
+    } else {
+      favoriteMealDetail = await NetworkManager.instance.getMeal(widget.id);
+    }
+    setState(() {});
   }
 
   @override
   void initState() {
-    _meals = NetworkManager.instance.getMeal(widget.id);
-    favoriteMealBox = Hive.box(ProjectTexts.favoriteBoxName);
-    widget.isOnline = checkIsOnline();
-    _subscription =
-        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      checkConnectivity();
-    });
+    favoriteCacheManager = FavoriteMealDetailCacheManager('mealDetails');
+    fetchData();
     super.initState();
   }
 
@@ -90,90 +56,69 @@ class _DetailsViewState extends State<DetailsView> {
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: _appBar(context),
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Stack(
-              children: [
-                SizedBox(
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            leading: Padding(
+              padding: ProjectPaddings.cardSmall,
+              child: IconButton(
+                icon: CircleAvatar(
+                  backgroundColor: ProjectColors.actionsBgColor,
+                  child: SvgPicture.asset(
+                    AssetsPath.back,
+                    color: ProjectColors.black,
+                  ),
+                ),
+                onPressed: () {
+                  context.pop();
+                },
+              ),
+            ),
+            pinned: true,
+            expandedHeight: 200,
+            flexibleSpace: Stack(
+              children: <Widget>[
+                Positioned.fill(
                   child: CachedNetworkImage(
                     imageUrl: widget.image ?? '',
-                    fit: BoxFit.fitWidth,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ],
             ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.7,
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(
-                color: ProjectColors.mainWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => Padding(
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  // height: MediaQuery.of(context).size.height * 0.7,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(
+                    color: ProjectColors.mainWhite,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: ProjectPaddings.pageLarge,
+                    child: favoriteMealDetail?.meals?.isNotEmpty ?? false
+                        ? _MealDetails(
+                            widget: widget,
+                            items: favoriteMealDetail,
+                            favoriteCacheManager: favoriteCacheManager,
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                  ),
                 ),
               ),
-              child: Padding(
-                padding: ProjectPaddings.pageLarge,
-                child: widget.isOnline
-                    ? FutureBuilder<Meal?>(
-                        future: _meals,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return _MealDetails(
-                              widget: widget,
-                              items: snapshot.data,
-                            );
-                          } else if (!snapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else {
-                            return const Center(
-                              child: Text('Error'),
-                            );
-                          }
-                        },
-                      )
-                    : ValueListenableBuilder<Box<Meal>>(
-                        valueListenable: favoriteMealBox.listenable(),
-                        builder: (context, Box<Meal> box, _) {
-                          final meals = box.get('${widget.id}');
-                          return _MealDetails(
-                            widget: widget,
-                            items: meals,
-                          );
-                        },
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-              ),
+              childCount: 1,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  AppBar _appBar(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        icon: CircleAvatar(
-          backgroundColor: ProjectColors.actionsBgColor,
-          child: SvgPicture.asset(
-            AssetsPath.back,
-            color: ProjectColors.black,
-          ),
-        ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
       ),
     );
   }
@@ -183,10 +128,12 @@ class _MealDetails extends StatefulWidget {
   const _MealDetails({
     required this.widget,
     required this.items,
+    required this.favoriteCacheManager,
   });
 
   final DetailsView widget;
   final Meal? items;
+  final ICacheManager<Meal> favoriteCacheManager;
   @override
   State<_MealDetails> createState() => _MealDetailsState();
 }
@@ -206,7 +153,6 @@ class _MealDetailsState extends State<_MealDetails> {
     }
   }
 
-  final favoriteMealBox = Hive.box<Meal>(ProjectTexts.favoriteBoxName);
   final meals = Meals();
 
   @override
@@ -218,7 +164,7 @@ class _MealDetailsState extends State<_MealDetails> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       itemCount: widget.items?.meals?.length ?? 0,
@@ -298,18 +244,11 @@ class _MealDetailsState extends State<_MealDetails> {
                           ),
                         ),
                         onPressed: () async {
-                          await DetailModels().onFavoritePress(
-                            widget.widget.id,
-                            widget.widget.name ?? '',
-                            widget.widget.image ?? '',
-                            ingList,
-                            meals?.strInstructions ?? '',
-                            meals?.strYoutube ?? '',
-                            meals?.strCategory ?? '',
-                            meals?.strSource ?? '',
-                            measureList,
-                            countryFlagMap[meals?.strArea] ?? '',
-                          );
+                          widget.favoriteCacheManager.getValues();
+                          if (widget.items?.meals?.isNotEmpty ?? false) {
+                            await widget.favoriteCacheManager
+                                .putItem('${widget.widget.id}', widget.items!);
+                          }
                         },
                       ),
                     ),
