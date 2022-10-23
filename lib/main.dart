@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as pathProvider;
@@ -10,12 +11,16 @@ import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/text_styles.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/firebase_options.dart';
+import 'package:thefood/services/home_service.dart';
+import 'package:thefood/services/managers/network_manager.dart';
 import 'package:thefood/views/auth/forgot_password_view.dart';
 import 'package:thefood/views/auth/login_view.dart';
+import 'package:thefood/views/auth/repository/authentication.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
 import 'package:thefood/views/favorites/favorite_view.dart';
+import 'package:thefood/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/views/home/home_view.dart';
 import 'package:thefood/views/home/navigator.dart';
 
@@ -28,6 +33,7 @@ Future<void> main() async {
   final directory = await pathProvider.getApplicationDocumentsDirectory();
   Hive.init(directory.path);
   await Hive.openBox<String>(HiveConstants.loginCredentials);
+  final authenticationRepository = AuthenticationRepository();
   runApp(const TheFood());
 }
 
@@ -88,7 +94,10 @@ class _TheFoodState extends State<TheFood> {
         path: '/home',
         name: 'home',
         builder: (BuildContext context, GoRouterState state) {
-          return const HomeView();
+          return BlocProvider(
+            create: (_) => HomeCubit(HomeService(NetworkManager.instance)),
+            child: const HomeView(),
+          );
         },
       ),
       GoRoute(

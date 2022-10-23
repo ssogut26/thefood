@@ -35,9 +35,7 @@ class _FavoriteViewState extends State<FavoriteView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(ProjectTexts.favoriteBoxName),
-      ),
+      appBar: _appBar(),
       body: Padding(
         padding: ProjectPaddings.pageMedium,
         child: (favoriteBox?.isNotEmpty ?? false)
@@ -80,40 +78,11 @@ class _FavoriteViewState extends State<FavoriteView> {
                             },
                           );
                         },
-                        child:
-                            // CardBox(
-                            //   meal: meal,
-                            //   favoriteBox: favoriteBox,
-                            //   deleteIndex: deleteIndex,
-                            // ),
-                            SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.20,
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            child: Row(
-                              children: [
-                                ImageBox(meal: meal),
-                                MealText(meal: meal),
-                                IconButton(
-                                  onPressed: () {
-                                    favoriteCacheManager.removeItem(
-                                      meal?.map((e) => e.idMeal).toString().substring(
-                                                1,
-                                                meal
-                                                        .map((e) => e.idMeal)
-                                                        .toString()
-                                                        .length -
-                                                    1,
-                                              ) ??
-                                          '',
-                                    );
-                                  },
-                                  icon: const Icon(Icons.delete_outline_outlined),
-                                ),
-                              ],
-                            ),
-                          ),
+                        child: CardBox(
+                          favoriteCacheManager: favoriteCacheManager,
+                          meal: meal,
+                          favoriteBox: favoriteBox,
+                          deleteIndex: deleteIndex,
                         ),
                       ),
                     );
@@ -126,6 +95,39 @@ class _FavoriteViewState extends State<FavoriteView> {
       ),
     );
   }
+
+  AppBar _appBar() {
+    return AppBar(
+      title: const Text(ProjectTexts.favoriteBoxName),
+    );
+  }
+}
+
+class DeleteButton extends StatelessWidget {
+  const DeleteButton({
+    super.key,
+    required this.favoriteCacheManager,
+    required this.meal,
+  });
+
+  final ICacheManager<Meal> favoriteCacheManager;
+  final List<Meals>? meal;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        favoriteCacheManager.removeItem(
+          meal?.map((e) => e.idMeal).toString().substring(
+                    1,
+                    meal!.map((e) => e.idMeal).toString().length - 1,
+                  ) ??
+              '',
+        );
+      },
+      icon: const Icon(Icons.delete_outline_outlined),
+    );
+  }
 }
 
 class GoToDetails extends StatelessWidget {
@@ -134,11 +136,13 @@ class GoToDetails extends StatelessWidget {
     required this.meal,
     required this.favoriteBox,
     required this.deleteIndex,
+    required this.favoriteCacheManager,
   });
 
   final List<Meals>? meal;
   final List<Meal>? favoriteBox;
   final int deleteIndex;
+  final ICacheManager<Meal> favoriteCacheManager;
 
   @override
   Widget build(BuildContext context) {
@@ -165,30 +169,11 @@ class GoToDetails extends StatelessWidget {
           },
         );
       },
-      child:
-          // CardBox(
-          //   meal: meal,
-          //   favoriteBox: favoriteBox,
-          //   deleteIndex: deleteIndex,
-          // ),
-          SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.20,
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          child: Row(
-            children: [
-              ImageBox(meal: meal),
-              MealText(meal: meal),
-              // IconButton(
-              //   onPressed: () {
-              //     favoriteCacheManager(deleteIndex);
-              //   },
-              //   icon: const Icon(Icons.delete_outline_outlined),
-              // ),
-            ],
-          ),
-        ),
+      child: CardBox(
+        favoriteCacheManager: favoriteCacheManager,
+        meal: meal,
+        favoriteBox: favoriteBox,
+        deleteIndex: deleteIndex,
       ),
     );
   }
@@ -200,11 +185,13 @@ class CardBox extends StatelessWidget {
     required this.meal,
     required this.favoriteBox,
     required this.deleteIndex,
+    required this.favoriteCacheManager,
   });
 
   final List<Meals>? meal;
   final List<Meal>? favoriteBox;
   final int deleteIndex;
+  final ICacheManager<Meal> favoriteCacheManager;
 
   @override
   Widget build(BuildContext context) {
@@ -217,37 +204,13 @@ class CardBox extends StatelessWidget {
           children: [
             ImageBox(meal: meal),
             MealText(meal: meal),
-            // DeleteButton(
-            //   favoriteBox: favoriteBox,
-            //   deleteIndex: deleteIndex,
-            // ),
+            DeleteButton(favoriteCacheManager: favoriteCacheManager, meal: meal)
           ],
         ),
       ),
     );
   }
 }
-
-// class DeleteButton extends StatelessWidget {
-//   const DeleteButton({
-//     super.key,
-//     required this.favoriteBox,
-//     required this.deleteIndex,
-//   });
-
-//   final List<Meal>? favoriteBox;
-//   final int deleteIndex;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return IconButton(
-//       onPressed: () {
-//         favoriteCacheManager(deleteIndex);
-//       },
-//       icon: const Icon(Icons.delete_outline_outlined),
-//     );
-//   }
-// }
 
 class ImageBox extends StatelessWidget {
   const ImageBox({

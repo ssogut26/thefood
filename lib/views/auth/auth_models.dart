@@ -1,11 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/texts.dart';
+import 'package:thefood/views/auth/bloc/cubit/login_cubit.dart';
 
 class NameField extends StatelessWidget {
   const NameField({
@@ -54,25 +57,32 @@ class EmailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: context.verticalPaddingLow,
-      child: SizedBox(
-        width: context.dynamicWidth(0.8),
-        height: context.dynamicHeight(0.10),
-        child: TextFormField(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: ProjectTexts.email,
+    return BlocBuilder<LoginCubit, LoginState>(
+      buildWhen: (previous, current) => previous.email != current.email,
+      builder: (context, state) {
+        return Padding(
+          padding: context.verticalPaddingLow,
+          child: SizedBox(
+            width: context.dynamicWidth(0.8),
+            height: context.dynamicHeight(0.10),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: ProjectTexts.email,
+              ),
+              controller: _emailController,
+              key: const Key('loginForm_emailInput_textField'),
+              onChanged: (email) => context.read<LoginCubit>().emailChanged(email),
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return ProjectTexts.emailError;
+                }
+                return null;
+              },
+            ),
           ),
-          controller: _emailController,
-          validator: (value) {
-            if (value!.isEmpty) {
-              return ProjectTexts.emailError;
-            }
-            return null;
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -93,38 +103,46 @@ class PasswordField extends StatefulWidget {
 class _PasswordFieldState extends State<PasswordField> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: context.verticalPaddingLow,
-      child: SizedBox(
-        width: context.dynamicWidth(0.8),
-        height: context.dynamicHeight(0.10),
-        child: TextFormField(
-          obscureText: PasswordField.isVisible,
-          decoration: InputDecoration(
-            suffixIcon: IconButton(
-              onPressed: () {
-                setState(() {
-                  PasswordField.isVisible = !PasswordField.isVisible;
-                });
+    return BlocBuilder<LoginCubit, LoginState>(
+      buildWhen: (previous, current) => previous.password != current.password,
+      builder: (context, state) {
+        return Padding(
+          padding: context.verticalPaddingLow,
+          child: SizedBox(
+            width: context.dynamicWidth(0.8),
+            height: context.dynamicHeight(0.10),
+            child: TextFormField(
+              key: const Key('loginForm_passwordInput_textField'),
+              onChanged: (password) =>
+                  context.read<LoginCubit>().passwordChanged(password),
+              obscureText: PasswordField.isVisible,
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      PasswordField.isVisible = !PasswordField.isVisible;
+                    });
+                  },
+                  icon: PasswordField.isVisible
+                      ? const Icon(Icons.visibility)
+                      : const Icon(Icons.visibility_off),
+                ),
+                border: const OutlineInputBorder(),
+                labelText: ProjectTexts.password,
+              ),
+              controller: widget._passwordController,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return ProjectTexts.passwordEmptyError;
+                } else if (value.length < 6) {
+                  return ProjectTexts.password6CharError;
+                }
+                return null;
               },
-              icon: PasswordField.isVisible
-                  ? const Icon(Icons.visibility)
-                  : const Icon(Icons.visibility_off),
             ),
-            border: const OutlineInputBorder(),
-            labelText: ProjectTexts.password,
           ),
-          controller: widget._passwordController,
-          validator: (value) {
-            if (value!.isEmpty) {
-              return ProjectTexts.passwordEmptyError;
-            } else if (value.length < 6) {
-              return ProjectTexts.password6CharError;
-            }
-            return null;
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -270,29 +288,29 @@ class LoginButton extends StatelessWidget {
     return SizedBox(
       height: context.dynamicHeight(0.06),
       width: context.dynamicWidth(0.6),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ProjectColors.yellow,
-          shape: RoundedRectangleBorder(
-            borderRadius: context.normalBorderRadius,
-          ),
-        ),
-        onPressed: () async {
-          if (_formKey.currentState!.validate()) {
-            await FirebaseAuth.instance.signInWithEmailAndPassword(
-              email: _emailController.text,
-              password: _passwordController.text,
-            );
-          }
-          if (FirebaseAuth.instance.currentUser != null) {
-            context.goNamed('navigator');
-          }
-          await login();
+      child: BlocBuilder<LoginCubit, LoginState>(
+        buildWhen: (previous, current) => previous.status != current.status,
+        builder: (context, state) {
+          return state.status.isSubmissionInProgress
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ProjectColors.yellow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: context.normalBorderRadius,
+                    ),
+                  ),
+                  onPressed: () {
+                    state.status.isValidated
+                        ? () => context.read<LoginCubit>().logInWithCredentials()
+                        : null;
+                  },
+                  child: Text(
+                    ProjectTexts.login,
+                    style: context.textTheme.bodyText2,
+                  ),
+                );
         },
-        child: Text(
-          ProjectTexts.login,
-          style: context.textTheme.bodyText2,
-        ),
       ),
     );
   }

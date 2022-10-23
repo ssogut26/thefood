@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
@@ -12,8 +13,10 @@ import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/meals.dart';
+import 'package:thefood/services/home_service.dart';
 import 'package:thefood/services/managers/cache_manager.dart';
 import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/views/home/shimmers.dart';
 
 part 'category_list.dart';
@@ -27,12 +30,11 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  late Future<Meal?> categoryMeals;
-  late Future<Meal?> _random;
   late int selectedIndex;
-  late String categoryName;
   late int dataLenght;
+  late String categoryName;
   late StreamSubscription subscription;
+
   List<MealCategory>? _categoryItems;
   Meal? categoryMealItems;
   Meal? randomMealItems;
@@ -106,11 +108,7 @@ class _HomeViewState extends State<HomeView> {
             action: SnackBarAction(
               label: 'Retry',
               onPressed: () {
-                setState(() {
-                  _random = NetworkManager.instance.getRandomMeal();
-                  categoryMeals =
-                      NetworkManager.instance.getMealsByCategory(categoryName);
-                });
+                setState(() {});
               },
             ),
           ),
@@ -130,70 +128,49 @@ class _HomeViewState extends State<HomeView> {
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       checkConnectivity();
     });
+    categoryName = 'Beef';
     isFavorite = favorites.isNotEmpty;
     dataLenght = 0;
-    itemLength();
+    selectedIndex = 0;
     categoryCacheManager = MealCategoryCacheManager('mealCategory');
     mealCacheManager = CategoryMealsCacheManager('categoryMeal');
     randomMealCacheManager = RandomMealCacheManager('randomMeal');
+    itemLength();
     fetchData();
-    categoryName = 'Beef';
-    categoryMeals = NetworkManager.instance.getMealsByCategory(categoryName);
-    _random = NetworkManager.instance.getRandomMeal();
-    selectedIndex = 0;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _key,
-      appBar: _appBar(),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.blue,
+    return BlocProvider(
+      create: (context) => HomeCubit(HomeService(NetworkManager.instance)),
+      child: Scaffold(
+        key: _key,
+        appBar: _appBar(),
+        endDrawer: _Drawer(auth: _auth),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: ProjectPaddings.pageLarge,
+              child: Column(
+                children: [
+                  const _SearchBar(),
+                  if (_categoryItems?.isNotEmpty ?? false)
+                    _getCategories(context)
+                  else
+                    const CategoryShimmer(),
+                  if (categoryMealItems?.meals?.isNotEmpty ?? false)
+                    _categoryMeals()
+                  else
+                    const CategoryMealShimmer(
+                      itemCount: 4,
+                    ),
+                  if (randomMealItems?.meals?.isNotEmpty ?? false)
+                    _randomRecipe()
+                  else
+                    const RandomMealShimmer(),
+                ],
               ),
-              child: Text(
-                _auth.currentUser?.displayName ?? 'User',
-                style: context.textTheme.headline6,
-              ),
-            ),
-            ListTile(
-              title: const Text('Sign Out'),
-              onTap: () {
-                _auth.signOut();
-                context.go('/login');
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: ProjectPaddings.pageLarge,
-            child: Column(
-              children: [
-                const _SearchBar(),
-                if (_categoryItems?.isNotEmpty ?? false)
-                  _getCategories(context)
-                else
-                  const CategoryShimmer(),
-                if (categoryMealItems?.meals?.isNotEmpty ?? false)
-                  _categoryMeals()
-                else
-                  const CategoryMealShimmer(
-                    itemCount: 4,
-                  ),
-                if (randomMealItems?.meals?.isNotEmpty ?? false)
-                  _randomRecipe()
-                else
-                  const RandomMealShimmer(),
-              ],
             ),
           ),
         ),
@@ -207,59 +184,65 @@ class _HomeViewState extends State<HomeView> {
         SizedBox(
           height: 50,
           width: MediaQuery.of(context).size.width,
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            scrollDirection: Axis.horizontal,
-            itemCount: _categoryItems?.length,
-            itemBuilder: (context, index) {
-              final data = _categoryItems?[index];
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () async {
-                      changeLoading();
-                      if (mealCacheManager
-                              .getItem(data?.strCategory ?? '')
-                              ?.meals
-                              ?.isNotEmpty ??
-                          false) {
-                        categoryMealItems =
-                            mealCacheManager.getItem(data?.strCategory ?? '');
-                      } else {
-                        categoryMealItems = await NetworkManager.instance
-                            .getMealsByCategory(data?.strCategory ?? '');
-                      }
-                      selectedIndex = index;
-                      setState(() {});
-                      changeLoading();
-                    },
-                    child: Card(
-                      color: selectedIndex == index
-                          ? ProjectColors.yellow
-                          : ProjectColors.white,
-                      child: Row(
-                        children: [
-                          Card(
-                            color: ProjectColors.mainWhite,
-                            child: CachedNetworkImage(
-                              imageUrl: data?.strCategoryThumb ?? '',
-                              height: 32,
-                              width: 32,
-                            ),
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemCount: state.mealCategory?.length ?? 0,
+                itemBuilder: (context, index) {
+                  final data = state.mealCategory?[index];
+                  if (data == null) {
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final categoryName = data.strCategory ?? '';
+                          changeLoading();
+                          if (mealCacheManager.getItem(categoryName)?.meals?.isNotEmpty ??
+                              false) {
+                            categoryMealItems = mealCacheManager.getItem(categoryName);
+                          } else {
+                            categoryMealItems = await context
+                                .read<HomeCubit>()
+                                .getMealsByCategory(categoryName);
+                          }
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                          changeLoading();
+                        },
+                        child: Card(
+                          color: selectedIndex == index
+                              ? ProjectColors.yellow
+                              : ProjectColors.white,
+                          child: Row(
+                            children: [
+                              Card(
+                                color: ProjectColors.mainWhite,
+                                child: CachedNetworkImage(
+                                  imageUrl: data.strCategoryThumb ?? '',
+                                  height: 32,
+                                  width: 32,
+                                ),
+                              ),
+                              Padding(
+                                padding: ProjectPaddings.textSmall,
+                                child: Text(
+                                  data.strCategory ?? '',
+                                  style: Theme.of(context).textTheme.bodyText1,
+                                ),
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: ProjectPaddings.textSmall,
-                            child: Text(
-                              data?.strCategory ?? '',
-                              style: Theme.of(context).textTheme.bodyText1,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -295,181 +278,179 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  GridView _categoryMeals() {
-    dataLenght = categoryMealItems?.meals?.length ?? 0;
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        crossAxisSpacing: context.dynamicWidth(0.05),
-        mainAxisSpacing: context.dynamicWidth(0.02),
-        maxCrossAxisExtent: context.dynamicWidth(0.5),
-        mainAxisExtent: context.dynamicHeight(0.27),
-      ),
-      shrinkWrap: true,
-      itemCount: itemLength(),
-      itemBuilder: (context, index) {
-        final data = categoryMealItems?.meals?[index];
-        return Column(
-          children: [
-            SizedBox(
-              height: context.dynamicHeight(0.27),
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.pushNamed(
-                        'details',
-                        params: {
-                          'name': data?.strMeal ?? '',
-                          'image': data?.strMealThumb ?? '',
-                          'id': data?.idMeal ?? '',
+  BlocBuilder<HomeCubit, HomeState> _categoryMeals() {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        dataLenght = state.mealsByCategory?.meals?.length ?? 0;
+        return GridView.builder(
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            crossAxisSpacing: context.dynamicWidth(0.05),
+            mainAxisSpacing: context.dynamicWidth(0.02),
+            maxCrossAxisExtent: context.dynamicWidth(0.5),
+            mainAxisExtent: context.dynamicHeight(0.27),
+          ),
+          shrinkWrap: true,
+          itemCount: itemLength(),
+          itemBuilder: (context, index) {
+            final data = state.mealsByCategory?.meals?[index];
+            if (data == null) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: [
+                SizedBox(
+                  height: context.dynamicHeight(0.27),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.pushNamed(
+                            'details',
+                            params: {
+                              'name': data.strMeal ?? '',
+                              'image': data.strMealThumb ?? '',
+                              'id': data.idMeal ?? '',
+                            },
+                          );
                         },
-                      );
-                    },
-                    child: Stack(
-                      alignment: Alignment.topCenter,
-                      children: <Widget>[
-                        Padding(
-                          padding: ProjectPaddings.cardImagePaddingSmall,
-                          child: SizedBox(
-                            width: context.dynamicWidth(0.5),
-                            height: context.dynamicHeight(0.23),
-                            child: Card(
-                              elevation: 1,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: context.lowBorderRadius,
-                              ),
-                              color: ProjectColors.secondWhite,
-                              child: Padding(
-                                padding: ProjectPaddings.cardImagePadding,
-                                child: Text(
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                  data?.strMeal ?? '',
-                                  style: context.textTheme.bodyText2,
+                        child: Stack(
+                          alignment: Alignment.topCenter,
+                          children: <Widget>[
+                            Padding(
+                              padding: ProjectPaddings.cardImagePaddingSmall,
+                              child: SizedBox(
+                                width: context.dynamicWidth(0.5),
+                                height: context.dynamicHeight(0.23),
+                                child: Card(
+                                  elevation: 1,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: context.lowBorderRadius,
+                                  ),
+                                  color: ProjectColors.secondWhite,
+                                  child: Padding(
+                                    padding: ProjectPaddings.cardImagePadding,
+                                    child: Text(
+                                      maxLines: 4,
+                                      overflow: TextOverflow.ellipsis,
+                                      data.strMeal ?? '',
+                                      style: context.textTheme.bodyText2,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                        Container(
-                          height: 90,
-                          width: 90,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(),
-                            color: Colors.transparent,
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(
-                                data?.strMealThumb ?? '',
+                            Container(
+                              height: 90,
+                              width: 90,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(),
+                                color: Colors.transparent,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                    data.strMealThumb ?? '',
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  Padding _randomRecipe() {
-    return Padding(
-      padding: ProjectPaddings.cardMedium,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  BlocBuilder<HomeCubit, HomeState> _randomRecipe() {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        return Padding(
+          padding: ProjectPaddings.cardMedium,
+          child: Column(
             children: [
-              const _AlignedText(text: 'Random Recipe'),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    changeLoading();
-                    randomMealCacheManager.getValues();
-                    changeLoading();
-                  });
-                },
-                icon: const Icon(Icons.refresh),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const _AlignedText(text: 'Random Recipe'),
+                  IconButton(
+                    onPressed: () {
+                      context.read<HomeCubit>().getRandomMeal();
+                    },
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.2,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.randomMeal?.meals?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final data = state.randomMeal?.meals?[index];
+                    return InkWell(
+                      onTap: () {
+                        context.pushNamed(
+                          'details',
+                          params: {
+                            'id': data?.idMeal ?? '',
+                            'name': data?.strMeal ?? '',
+                            'image': data?.strMealThumb ?? '',
+                          },
+                        );
+                      },
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.20,
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                height: MediaQuery.of(context).size.height,
+                                width: MediaQuery.of(context).size.width * 0.40,
+                                child: CachedNetworkImage(
+                                  imageUrl: data?.strMealThumb ?? '',
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                              Flexible(
+                                child: Padding(
+                                  padding: ProjectPaddings.textMedium,
+                                  child: Text(
+                                    softWrap: true,
+                                    data?.strMeal ?? '',
+                                    style: Theme.of(context).textTheme.bodyText2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.2,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: randomMealItems?.meals?.length,
-              itemBuilder: (context, index) {
-                final data = randomMealItems?.meals?[index];
-                return InkWell(
-                  onTap: () {
-                    context.pushNamed(
-                      'details',
-                      params: {
-                        'id': data?.idMeal ?? '',
-                        'name': data?.strMeal ?? '',
-                        'image': data?.strMealThumb ?? '',
-                      },
-                    );
-                  },
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.20,
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height,
-                            width: MediaQuery.of(context).size.width * 0.40,
-                            child: CachedNetworkImage(
-                              imageUrl: data?.strMealThumb ?? '',
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                          Flexible(
-                            child: Padding(
-                              padding: ProjectPaddings.textMedium,
-                              child: Text(
-                                softWrap: true,
-                                data?.strMeal ?? '',
-                                style: Theme.of(context).textTheme.bodyText2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   AppBar _appBar() {
     return AppBar(
-      leading: IconButton(
-        onPressed: () async {
-          categoryCacheManager.getValues();
-          if (_categoryItems?.isNotEmpty ?? false) {
-            await categoryCacheManager.addItems(_categoryItems!);
-          }
-        },
-        icon: const Icon(Icons.menu),
-      ),
       title: Padding(
         padding: ProjectPaddings.pageMedium,
         child: Row(
@@ -508,6 +489,42 @@ class _HomeViewState extends State<HomeView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _Drawer extends StatelessWidget {
+  const _Drawer({
+    super.key,
+    required FirebaseAuth auth,
+  }) : _auth = auth;
+
+  final FirebaseAuth _auth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text(
+              _auth.currentUser?.displayName ?? 'User',
+              style: context.textTheme.headline6,
+            ),
+          ),
+          ListTile(
+            title: const Text('Sign Out'),
+            onTap: () {
+              _auth.signOut();
+              context.go('/login');
+            },
+          ),
+        ],
+      ),
     );
   }
 }

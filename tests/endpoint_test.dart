@@ -8,10 +8,6 @@ void main() {
   });
 
   test('getByArea', () async {
-    final areas = await NetworkManager.instance.getAreas();
-    expect(areas, isNotEmpty);
-  });
-  test('getByArea', () async {
     final area = await NetworkManager.instance.getMealsByCategory('American');
     expect(area, isNotEmpty);
   });
