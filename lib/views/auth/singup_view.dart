@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/views/auth/auth_models.dart';
+import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
 
 class SingUpView extends StatefulWidget {
   const SingUpView({super.key});
@@ -43,8 +45,25 @@ class _SingUpViewState extends State<SingUpView> {
                   height: context.dynamicHeight(0.05),
                 ),
                 NameField(nameController: _nameController),
-                EmailField(emailController: _emailController),
-                PasswordField(passwordController: _passwordController),
+                BlocBuilder<LoginCubit, LoginState>(
+                  buildWhen: (previous, current) => previous.email != current.email,
+                  builder: (context, state) {
+                    return EmailField(
+                      onChanged: (email) =>
+                          context.read<LoginCubit>().emailChanged(email),
+                      emailController: _emailController,
+                    );
+                  },
+                ),
+                BlocBuilder<LoginCubit, LoginState>(
+                  builder: (context, state) {
+                    return PasswordField(
+                      passwordController: _passwordController,
+                      onChanged: (password) =>
+                          context.read<LoginCubit>().passwordChanged(password),
+                    );
+                  },
+                ),
                 ConfirmPasswordField(
                   confirmPasswordController: _confirmPasswordController,
                   passwordController: _passwordController,

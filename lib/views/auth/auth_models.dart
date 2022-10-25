@@ -1,3 +1,4 @@
+import 'package:authentication_repository/authentication_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +9,7 @@ import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/texts.dart';
-import 'package:thefood/views/auth/bloc/cubit/login_cubit.dart';
+import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
 
 class NameField extends StatelessWidget {
   const NameField({
@@ -50,39 +51,30 @@ class NameField extends StatelessWidget {
 class EmailField extends StatelessWidget {
   const EmailField({
     super.key,
+    required void Function(String)? onChanged,
     required TextEditingController emailController,
-  }) : _emailController = emailController;
+  })  : _emailController = emailController,
+        _onChanged = onChanged;
 
   final TextEditingController _emailController;
-
+  final void Function(String)? _onChanged;
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginCubit, LoginState>(
-      buildWhen: (previous, current) => previous.email != current.email,
-      builder: (context, state) {
-        return Padding(
-          padding: context.verticalPaddingLow,
-          child: SizedBox(
-            width: context.dynamicWidth(0.8),
-            height: context.dynamicHeight(0.10),
-            child: TextFormField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: ProjectTexts.email,
-              ),
-              controller: _emailController,
-              key: const Key('loginForm_emailInput_textField'),
-              onChanged: (email) => context.read<LoginCubit>().emailChanged(email),
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return ProjectTexts.emailError;
-                }
-                return null;
-              },
-            ),
+    return Padding(
+      padding: context.verticalPaddingLow,
+      child: SizedBox(
+        width: context.dynamicWidth(0.8),
+        height: context.dynamicHeight(0.10),
+        child: TextFormField(
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: ProjectTexts.email,
           ),
-        );
-      },
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          onChanged: _onChanged,
+        ),
+      ),
     );
   }
 }
@@ -90,12 +82,14 @@ class EmailField extends StatelessWidget {
 class PasswordField extends StatefulWidget {
   const PasswordField({
     super.key,
+    required void Function(String)? onChanged,
     required TextEditingController passwordController,
-  }) : _passwordController = passwordController;
+  })  : _passwordController = passwordController,
+        _onChanged = onChanged;
 
   static bool isVisible = true;
   final TextEditingController _passwordController;
-
+  final void Function(String)? _onChanged;
   @override
   State<PasswordField> createState() => _PasswordFieldState();
 }
@@ -113,8 +107,7 @@ class _PasswordFieldState extends State<PasswordField> {
             height: context.dynamicHeight(0.10),
             child: TextFormField(
               key: const Key('loginForm_passwordInput_textField'),
-              onChanged: (password) =>
-                  context.read<LoginCubit>().passwordChanged(password),
+              onChanged: widget._onChanged,
               obscureText: PasswordField.isVisible,
               decoration: InputDecoration(
                 suffixIcon: IconButton(
@@ -131,14 +124,6 @@ class _PasswordFieldState extends State<PasswordField> {
                 labelText: ProjectTexts.password,
               ),
               controller: widget._passwordController,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return ProjectTexts.passwordEmptyError;
-                } else if (value.length < 6) {
-                  return ProjectTexts.password6CharError;
-                }
-                return null;
-              },
             ),
           ),
         );
@@ -207,16 +192,13 @@ class _ConfirmPasswordFieldState extends State<ConfirmPasswordField> {
 class CheckBoxAndLoginButton extends StatefulWidget {
   CheckBoxAndLoginButton({
     super.key,
-    required GlobalKey<FormState> formKey,
     required TextEditingController emailController,
     required TextEditingController passwordController,
     required bool isChecked,
-  })  : _formKey = formKey,
-        _emailController = emailController,
+  })  : _emailController = emailController,
         _passwordController = passwordController,
         _isChecked = isChecked;
 
-  final GlobalKey<FormState> _formKey;
   final TextEditingController _emailController;
   final TextEditingController _passwordController;
   late bool _isChecked;
@@ -246,7 +228,6 @@ class _CheckBoxAndLoginButtonState extends State<CheckBoxAndLoginButton> {
           ),
         ),
         LoginButton(
-          formKey: widget._formKey,
           emailController: widget._emailController,
           passwordController: widget._passwordController,
           isChecked: widget._isChecked,
@@ -259,16 +240,13 @@ class _CheckBoxAndLoginButtonState extends State<CheckBoxAndLoginButton> {
 class LoginButton extends StatelessWidget {
   LoginButton({
     super.key,
-    required GlobalKey<FormState> formKey,
     required TextEditingController emailController,
     required TextEditingController passwordController,
     required bool isChecked,
-  })  : _formKey = formKey,
-        _emailController = emailController,
+  })  : _emailController = emailController,
         _passwordController = passwordController,
         _isChecked = isChecked;
 
-  final GlobalKey<FormState> _formKey;
   final TextEditingController _emailController;
   final TextEditingController _passwordController;
   late final bool _isChecked;
@@ -292,7 +270,7 @@ class LoginButton extends StatelessWidget {
         buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, state) {
           return state.status.isSubmissionInProgress
-              ? const CircularProgressIndicator()
+              ? const Center(child: CircularProgressIndicator())
               : ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ProjectColors.yellow,
@@ -300,11 +278,15 @@ class LoginButton extends StatelessWidget {
                       borderRadius: context.normalBorderRadius,
                     ),
                   ),
-                  onPressed: () {
-                    state.status.isValidated
-                        ? () => context.read<LoginCubit>().logInWithCredentials()
-                        : null;
-                  },
+                  onPressed: state.status.isValidated
+                      ? () => context.read<LoginCubit>().logInWithCredentials().then(
+                            (value) => login().then(
+                              (_) async => AuthenticationRepository().user != null
+                                  ? context.goNamed('home')
+                                  : null,
+                            ),
+                          )
+                      : null,
                   child: Text(
                     ProjectTexts.login,
                     style: context.textTheme.bodyText2,

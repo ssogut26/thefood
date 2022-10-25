@@ -1,3 +1,4 @@
+import 'package:authentication_repository/authentication_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +14,9 @@ import 'package:thefood/constants/texts.dart';
 import 'package:thefood/firebase_options.dart';
 import 'package:thefood/services/home_service.dart';
 import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/views/auth/forgot_password_view.dart';
 import 'package:thefood/views/auth/login_view.dart';
-import 'package:thefood/views/auth/repository/authentication.dart';
 import 'package:thefood/views/auth/singup_view.dart';
 import 'package:thefood/views/category_details/category_details_view.dart';
 import 'package:thefood/views/details/details_view.dart';
@@ -34,6 +35,7 @@ Future<void> main() async {
   Hive.init(directory.path);
   await Hive.openBox<String>(HiveConstants.loginCredentials);
   final authenticationRepository = AuthenticationRepository();
+  await authenticationRepository.user.first;
   runApp(const TheFood());
 }
 
@@ -139,7 +141,10 @@ class _TheFoodState extends State<TheFood> {
         path: '/login',
         name: 'login',
         builder: (BuildContext context, GoRouterState state) {
-          return const LoginView();
+          return BlocProvider(
+            create: (_) => LoginCubit(AuthenticationRepository()),
+            child: const LoginView(),
+          );
         },
       ),
       GoRoute(

@@ -1,4 +1,4 @@
-part of 'login_cubit_cubit.dart';
+part of 'login_cubit.dart';
 
 class LoginState extends Equatable {
   const LoginState({
