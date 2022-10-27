@@ -17,6 +17,9 @@ dependencies:
   cache:
     path: packages/cache
 
+  navigator:
+    path: packages/navigator
+
   flutter:
     sdk: flutter
 

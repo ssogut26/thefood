@@ -46,11 +46,11 @@ class _SingUpViewState extends State<SingUpView> {
                 ),
                 NameField(nameController: _nameController),
                 BlocBuilder<LoginCubit, LoginState>(
-                  buildWhen: (previous, current) => previous.email != current.email,
                   builder: (context, state) {
                     return EmailField(
-                      onChanged: (email) =>
-                          context.read<LoginCubit>().emailChanged(email),
+                      onChanged: (email) => context
+                          .read<LoginCubit>()
+                          .emailChanged(email ?? _emailController.text),
                       emailController: _emailController,
                     );
                   },

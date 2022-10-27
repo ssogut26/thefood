@@ -170,51 +170,8 @@ class _MealDetailsState extends State<_MealDetails> {
       itemCount: widget.items?.meals?.length ?? 0,
       itemBuilder: (context, index) {
         final meals = widget.items?.meals?[index];
-        final ingList = [
-          meals?.strIngredient1 ?? '',
-          meals?.strIngredient2 ?? '',
-          meals?.strIngredient3 ?? '',
-          meals?.strIngredient4 ?? '',
-          meals?.strIngredient5 ?? '',
-          meals?.strIngredient6 ?? '',
-          meals?.strIngredient7 ?? '',
-          meals?.strIngredient8 ?? '',
-          meals?.strIngredient9 ?? '',
-          meals?.strIngredient10 ?? '',
-          meals?.strIngredient11 ?? '',
-          meals?.strIngredient12 ?? '',
-          meals?.strIngredient13 ?? '',
-          meals?.strIngredient14 ?? '',
-          meals?.strIngredient15 ?? '',
-          meals?.strIngredient16 ?? '',
-          meals?.strIngredient17 ?? '',
-          meals?.strIngredient18 ?? '',
-          meals?.strIngredient19 ?? '',
-          meals?.strIngredient20 ?? '',
-        ];
-        final measureList = <String?>[
-          meals?.strMeasure1 ?? '',
-          meals?.strMeasure2 ?? '',
-          meals?.strMeasure3 ?? '',
-          meals?.strMeasure4 ?? '',
-          meals?.strMeasure5 ?? '',
-          meals?.strMeasure6 ?? '',
-          meals?.strMeasure7 ?? '',
-          meals?.strMeasure8 ?? '',
-          meals?.strMeasure9 ?? '',
-          meals?.strMeasure10 ?? '',
-          meals?.strMeasure11 ?? '',
-          meals?.strMeasure12 ?? '',
-          meals?.strMeasure13 ?? '',
-          meals?.strMeasure14 ?? '',
-          meals?.strMeasure15 ?? '',
-          meals?.strMeasure16 ?? '',
-          meals?.strMeasure17 ?? '',
-          meals?.strMeasure18 ?? '',
-          meals?.strMeasure19 ?? '',
-          meals?.strMeasure20 ?? '',
-        ];
-
+        final ingredientList = meals?.getIngredients();
+        final measureList = meals?.getMeasures();
         return ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
@@ -311,11 +268,11 @@ class _MealDetailsState extends State<_MealDetails> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       for (int index = 0;
-                          index < ingList.length && index.isFinite;
+                          index < ingredientList!.length && index.isFinite;
                           index++)
-                        ingList[index].isNotNullOrNoEmpty
+                        ingredientList[index].isNotNullOrNoEmpty
                             ? _ingredients(
-                                ingList,
+                                ingredientList,
                                 index,
                                 context,
                                 measureList,
@@ -359,10 +316,10 @@ class _MealDetailsState extends State<_MealDetails> {
   }
 
   SizedBox _ingredients(
-    List<String?> ingList,
+    List<String?> ingredientList,
     int index,
     BuildContext context,
-    List<String?> measureList,
+    List<String?>? measureList,
   ) {
     return SizedBox(
       height: 60,
@@ -377,7 +334,8 @@ class _MealDetailsState extends State<_MealDetails> {
                 errorWidget: (context, url, error) => const Icon(Icons.error),
                 width: 60,
                 height: 60,
-                imageUrl: '${EndPoints.ingredientsImages}${ingList[index]}-small.png',
+                imageUrl:
+                    '${EndPoints.ingredientsImages}${ingredientList[index]}-small.png',
               ),
             ),
           ),
@@ -386,17 +344,17 @@ class _MealDetailsState extends State<_MealDetails> {
             child: Padding(
               padding: ProjectPaddings.textLarge,
               child: Text(
-                '${ingList[index]}'.capitalize(),
+                '${ingredientList[index]}'.capitalize(),
                 style: Theme.of(context).textTheme.headline3,
               ).toVisible(
-                ingList[index] != null,
+                ingredientList[index] != null,
               ),
             ),
           ),
           Expanded(
             flex: 3,
-            child: Text('${measureList[index]}').toVisible(
-              measureList[index] != null,
+            child: Text('${measureList?[index]}').toVisible(
+              measureList?[index] != null,
             ),
           ),
         ],

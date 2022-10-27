@@ -7,12 +7,23 @@ import 'package:formz/formz.dart';
 part 'login_cubit_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
-  LoginCubit(this._authenticationRepository) : super(const LoginState());
+  LoginCubit(
+    this._authenticationRepository,
+  ) : super(LoginState());
 
   final AuthenticationRepository _authenticationRepository;
 
   void emailChanged(String value) {
-    const email = Email.dirty();
+    final email = Email.dirty(value);
+
+    if (state.isChecked) {
+      emit(
+        state.copyWith(
+          email: email,
+          status: Formz.validate([email, state.password]),
+        ),
+      );
+    }
     emit(
       state.copyWith(
         email: email,

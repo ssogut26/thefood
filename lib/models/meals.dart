@@ -52,6 +52,7 @@ class Meals with EquatableMixin {
     this.strIngredient18,
     this.strIngredient19,
     this.strIngredient20,
+    this.strIngredients,
     this.strMeasure1,
     this.strMeasure2,
     this.strMeasure3,
@@ -72,6 +73,7 @@ class Meals with EquatableMixin {
     this.strMeasure18,
     this.strMeasure19,
     this.strMeasure20,
+    this.strMeasures,
     this.strSource,
     this.strImageSource,
     this.strCreativeCommonsConfirmed,
@@ -79,7 +81,8 @@ class Meals with EquatableMixin {
   });
   factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
   @HiveField(0)
-  String? ingredients;
+  @JsonKey(name: 'strIngredients')
+  List<String?>? strIngredients;
   @JsonKey(name: 'idMeal')
   @HiveField(1)
   String? idMeal;
@@ -239,8 +242,61 @@ class Meals with EquatableMixin {
   @JsonKey(name: 'dateModified')
   @HiveField(53)
   String? dateModified;
+  @JsonKey(name: 'strMeasures')
+  @HiveField(54)
+  List<String?>? strMeasures;
 
   Map<String, dynamic> toJson() => _$MealsToJson(this);
+
+  List<String?>? getMeasures() {
+    final strMeasures = <String>[];
+    if (strMeasure1 != null) strMeasures.add(strMeasure1!);
+    if (strMeasure2 != null) strMeasures.add(strMeasure2!);
+    if (strMeasure3 != null) strMeasures.add(strMeasure3!);
+    if (strMeasure4 != null) strMeasures.add(strMeasure4!);
+    if (strMeasure5 != null) strMeasures.add(strMeasure5!);
+    if (strMeasure6 != null) strMeasures.add(strMeasure6!);
+    if (strMeasure7 != null) strMeasures.add(strMeasure7!);
+    if (strMeasure8 != null) strMeasures.add(strMeasure8!);
+    if (strMeasure9 != null) strMeasures.add(strMeasure9!);
+    if (strMeasure10 != null) strMeasures.add(strMeasure10!);
+    if (strMeasure11 != null) strMeasures.add(strMeasure11!);
+    if (strMeasure12 != null) strMeasures.add(strMeasure12!);
+    if (strMeasure13 != null) strMeasures.add(strMeasure13!);
+    if (strMeasure14 != null) strMeasures.add(strMeasure14!);
+    if (strMeasure15 != null) strMeasures.add(strMeasure15!);
+    if (strMeasure16 != null) strMeasures.add(strMeasure16!);
+    if (strMeasure17 != null) strMeasures.add(strMeasure17!);
+    if (strMeasure18 != null) strMeasures.add(strMeasure18!);
+    if (strMeasure19 != null) strMeasures.add(strMeasure19!);
+    if (strMeasure20 != null) strMeasures.add(strMeasure20!);
+    return strMeasures;
+  }
+
+  List<String?>? getIngredients() {
+    final strIngredients = <String>[];
+    if (strIngredient1 != null) strIngredients.add(strIngredient1!);
+    if (strIngredient2 != null) strIngredients.add(strIngredient2!);
+    if (strIngredient3 != null) strIngredients.add(strIngredient3!);
+    if (strIngredient4 != null) strIngredients.add(strIngredient4!);
+    if (strIngredient5 != null) strIngredients.add(strIngredient5!);
+    if (strIngredient6 != null) strIngredients.add(strIngredient6!);
+    if (strIngredient7 != null) strIngredients.add(strIngredient7!);
+    if (strIngredient8 != null) strIngredients.add(strIngredient8!);
+    if (strIngredient9 != null) strIngredients.add(strIngredient9!);
+    if (strIngredient10 != null) strIngredients.add(strIngredient10!);
+    if (strIngredient11 != null) strIngredients.add(strIngredient11!);
+    if (strIngredient12 != null) strIngredients.add(strIngredient12!);
+    if (strIngredient13 != null) strIngredients.add(strIngredient13!);
+    if (strIngredient14 != null) strIngredients.add(strIngredient14!);
+    if (strIngredient15 != null) strIngredients.add(strIngredient15!);
+    if (strIngredient16 != null) strIngredients.add(strIngredient16!);
+    if (strIngredient17 != null) strIngredients.add(strIngredient17!);
+    if (strIngredient18 != null) strIngredients.add(strIngredient18!);
+    if (strIngredient19 != null) strIngredients.add(strIngredient19!);
+    if (strIngredient20 != null) strIngredients.add(strIngredient20!);
+    return strIngredients;
+  }
 
   @override
   List<Object?> get props => [
@@ -273,6 +329,7 @@ class Meals with EquatableMixin {
         strIngredient18,
         strIngredient19,
         strIngredient20,
+        strIngredients,
         strMeasure1,
         strMeasure2,
         strMeasure3,
@@ -293,10 +350,11 @@ class Meals with EquatableMixin {
         strMeasure18,
         strMeasure19,
         strMeasure20,
+        strMeasures,
         strSource,
         strImageSource,
         strCreativeCommonsConfirmed,
-        dateModified
+        dateModified,
       ];
 
   Meals copyWith({
@@ -329,6 +387,7 @@ class Meals with EquatableMixin {
     String? strIngredient18,
     String? strIngredient19,
     String? strIngredient20,
+    List<String?>? strIngredients,
     String? strMeasure1,
     String? strMeasure2,
     String? strMeasure3,
@@ -349,6 +408,7 @@ class Meals with EquatableMixin {
     String? strMeasure18,
     String? strMeasure19,
     String? strMeasure20,
+    List<String?>? strMeasures,
     String? strSource,
     String? strImageSource,
     String? strCreativeCommonsConfirmed,
@@ -364,26 +424,27 @@ class Meals with EquatableMixin {
       strMealThumb: strMealThumb ?? this.strMealThumb,
       strTags: strTags ?? this.strTags,
       strYoutube: strYoutube ?? this.strYoutube,
-      strIngredient1: strIngredient1 ?? this.strIngredient1,
-      strIngredient2: strIngredient2 ?? this.strIngredient2,
-      strIngredient3: strIngredient3 ?? this.strIngredient3,
-      strIngredient4: strIngredient4 ?? this.strIngredient4,
-      strIngredient5: strIngredient5 ?? this.strIngredient5,
-      strIngredient6: strIngredient6 ?? this.strIngredient6,
-      strIngredient7: strIngredient7 ?? this.strIngredient7,
-      strIngredient8: strIngredient8 ?? this.strIngredient8,
-      strIngredient9: strIngredient9 ?? this.strIngredient9,
-      strIngredient10: strIngredient10 ?? this.strIngredient10,
-      strIngredient11: strIngredient11 ?? this.strIngredient11,
-      strIngredient12: strIngredient12 ?? this.strIngredient12,
-      strIngredient13: strIngredient13 ?? this.strIngredient13,
-      strIngredient14: strIngredient14 ?? this.strIngredient14,
-      strIngredient15: strIngredient15 ?? this.strIngredient15,
-      strIngredient16: strIngredient16 ?? this.strIngredient16,
-      strIngredient17: strIngredient17 ?? this.strIngredient17,
-      strIngredient18: strIngredient18 ?? this.strIngredient18,
-      strIngredient19: strIngredient19 ?? this.strIngredient19,
-      strIngredient20: strIngredient20 ?? this.strIngredient20,
+      strIngredient1: strIngredient1 ?? strIngredient1,
+      strIngredient2: strIngredient2 ?? strIngredient2,
+      strIngredient3: strIngredient3 ?? strIngredient3,
+      strIngredient4: strIngredient4 ?? strIngredient4,
+      strIngredient5: strIngredient5 ?? strIngredient5,
+      strIngredient6: strIngredient6 ?? strIngredient6,
+      strIngredient7: strIngredient7 ?? strIngredient7,
+      strIngredient8: strIngredient8 ?? strIngredient8,
+      strIngredient9: strIngredient9 ?? strIngredient9,
+      strIngredient10: strIngredient10 ?? strIngredient10,
+      strIngredient11: strIngredient11 ?? strIngredient11,
+      strIngredient12: strIngredient12 ?? strIngredient12,
+      strIngredient13: strIngredient13 ?? strIngredient13,
+      strIngredient14: strIngredient14 ?? strIngredient14,
+      strIngredient15: strIngredient15 ?? strIngredient15,
+      strIngredient16: strIngredient16 ?? strIngredient16,
+      strIngredient17: strIngredient17 ?? strIngredient17,
+      strIngredient18: strIngredient18 ?? strIngredient18,
+      strIngredient19: strIngredient19 ?? strIngredient19,
+      strIngredient20: strIngredient20 ?? strIngredient20,
+      strIngredients: strIngredients ?? this.strIngredients,
       strMeasure1: strMeasure1 ?? this.strMeasure1,
       strMeasure2: strMeasure2 ?? this.strMeasure2,
       strMeasure3: strMeasure3 ?? this.strMeasure3,
@@ -404,6 +465,7 @@ class Meals with EquatableMixin {
       strMeasure18: strMeasure18 ?? this.strMeasure18,
       strMeasure19: strMeasure19 ?? this.strMeasure19,
       strMeasure20: strMeasure20 ?? this.strMeasure20,
+      strMeasures: strMeasures ?? this.strMeasures,
       strSource: strSource ?? this.strSource,
       strImageSource: strImageSource ?? this.strImageSource,
       strCreativeCommonsConfirmed:

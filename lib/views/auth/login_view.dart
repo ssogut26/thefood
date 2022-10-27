@@ -36,8 +36,9 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> getdata() async {
     if (rememberCrendentialBox.get('email') != null) {
-      _emailController.text = rememberCrendentialBox.get('email')!;
-      setState(() {});
+      setState(() {
+        _emailController.text = rememberCrendentialBox.get('email')!;
+      });
       isChecked = true;
     }
   }
@@ -78,9 +79,12 @@ class _LoginViewState extends State<LoginView> {
                 BlocBuilder<LoginCubit, LoginState>(
                   buildWhen: (previous, current) => previous.email != current.email,
                   builder: (context, state) {
+                    state.isChecked = isChecked;
+
                     return EmailField(
-                      onChanged: (email) =>
-                          context.read<LoginCubit>().emailChanged(email),
+                      onChanged: (email) {
+                        context.read<LoginCubit>().emailChanged(email ?? '');
+                      },
                       emailController: _emailController,
                     );
                   },

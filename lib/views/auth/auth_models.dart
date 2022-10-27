@@ -51,13 +51,13 @@ class NameField extends StatelessWidget {
 class EmailField extends StatelessWidget {
   const EmailField({
     super.key,
-    required void Function(String)? onChanged,
+    required void Function(String?)? onChanged,
     required TextEditingController emailController,
   })  : _emailController = emailController,
         _onChanged = onChanged;
 
   final TextEditingController _emailController;
-  final void Function(String)? _onChanged;
+  final void Function(String?)? _onChanged;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -66,12 +66,14 @@ class EmailField extends StatelessWidget {
         width: context.dynamicWidth(0.8),
         height: context.dynamicHeight(0.10),
         child: TextFormField(
+          autofocus: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             labelText: ProjectTexts.email,
           ),
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
           onChanged: _onChanged,
         ),
       ),

@@ -80,6 +80,7 @@ class MealsAdapter extends TypeAdapter<Meals> {
       strIngredient18: fields[27] as String?,
       strIngredient19: fields[28] as String?,
       strIngredient20: fields[29] as String?,
+      strIngredients: (fields[0] as List?)?.cast<String?>(),
       strMeasure1: fields[30] as String?,
       strMeasure2: fields[31] as String?,
       strMeasure3: fields[32] as String?,
@@ -100,19 +101,20 @@ class MealsAdapter extends TypeAdapter<Meals> {
       strMeasure18: fields[47] as String?,
       strMeasure19: fields[48] as String?,
       strMeasure20: fields[49] as String?,
+      strMeasures: (fields[54] as List?)?.cast<String?>(),
       strSource: fields[50] as String?,
       strImageSource: fields[51] as String?,
       strCreativeCommonsConfirmed: fields[52] as String?,
       dateModified: fields[53] as String?,
-    )..ingredients = fields[0] as String?;
+    );
   }
 
   @override
   void write(BinaryWriter writer, Meals obj) {
     writer
-      ..writeByte(54)
+      ..writeByte(55)
       ..writeByte(0)
-      ..write(obj.ingredients)
+      ..write(obj.strIngredients)
       ..writeByte(1)
       ..write(obj.idMeal)
       ..writeByte(2)
@@ -218,7 +220,9 @@ class MealsAdapter extends TypeAdapter<Meals> {
       ..writeByte(52)
       ..write(obj.strCreativeCommonsConfirmed)
       ..writeByte(53)
-      ..write(obj.dateModified);
+      ..write(obj.dateModified)
+      ..writeByte(54)
+      ..write(obj.strMeasures);
   }
 
   @override
@@ -276,6 +280,9 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strIngredient18: json['strIngredient18'] as String?,
       strIngredient19: json['strIngredient19'] as String?,
       strIngredient20: json['strIngredient20'] as String?,
+      strIngredients: (json['strIngredients'] as List<dynamic>?)
+          ?.map((e) => e as String?)
+          .toList(),
       strMeasure1: json['strMeasure1'] as String?,
       strMeasure2: json['strMeasure2'] as String?,
       strMeasure3: json['strMeasure3'] as String?,
@@ -296,15 +303,18 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strMeasure18: json['strMeasure18'] as String?,
       strMeasure19: json['strMeasure19'] as String?,
       strMeasure20: json['strMeasure20'] as String?,
+      strMeasures: (json['strMeasures'] as List<dynamic>?)
+          ?.map((e) => e as String?)
+          .toList(),
       strSource: json['strSource'] as String?,
       strImageSource: json['strImageSource'] as String?,
       strCreativeCommonsConfirmed:
           json['strCreativeCommonsConfirmed'] as String?,
       dateModified: json['dateModified'] as String?,
-    )..ingredients = json['ingredients'] as String?;
+    );
 
 Map<String, dynamic> _$MealsToJson(Meals instance) => <String, dynamic>{
-      'ingredients': instance.ingredients,
+      'strIngredients': instance.strIngredients,
       'idMeal': instance.idMeal,
       'strMeal': instance.strMeal,
       'strDrinkAlternate': instance.strDrinkAlternate,
@@ -358,4 +368,5 @@ Map<String, dynamic> _$MealsToJson(Meals instance) => <String, dynamic>{
       'strImageSource': instance.strImageSource,
       'strCreativeCommonsConfirmed': instance.strCreativeCommonsConfirmed,
       'dateModified': instance.dateModified,
+      'strMeasures': instance.strMeasures,
     };
