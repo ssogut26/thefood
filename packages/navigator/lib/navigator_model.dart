@@ -1,1 +1,1 @@
-export 'navigator/navigator.dart';
+export 'navigator.dart';

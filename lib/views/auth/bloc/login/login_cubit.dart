@@ -1,6 +1,7 @@
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart';
 import 'package:form_inputs/form_inputs.dart';
 import 'package:formz/formz.dart';
 
@@ -13,17 +14,8 @@ class LoginCubit extends Cubit<LoginState> {
 
   final AuthenticationRepository _authenticationRepository;
 
-  void emailChanged(String value) {
-    final email = Email.dirty(value);
-
-    if (state.isChecked) {
-      emit(
-        state.copyWith(
-          email: email,
-          status: Formz.validate([email, state.password]),
-        ),
-      );
-    }
+  void emailChanged(TextEditingController value) {
+    final email = Email.dirty(value.text);
     emit(
       state.copyWith(
         email: email,

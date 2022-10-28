@@ -77,15 +77,13 @@ class _LoginViewState extends State<LoginView> {
                   height: context.dynamicHeight(0.08),
                 ),
                 BlocBuilder<LoginCubit, LoginState>(
-                  buildWhen: (previous, current) => previous.email != current.email,
                   builder: (context, state) {
-                    state.isChecked = isChecked;
-
+                    context.read<LoginCubit>().emailChanged(_emailController);
                     return EmailField(
-                      onChanged: (email) {
-                        context.read<LoginCubit>().emailChanged(email ?? '');
+                      controller: _emailController,
+                      onChanged: (_) {
+                        context.read<LoginCubit>().emailChanged(_emailController);
                       },
-                      emailController: _emailController,
                     );
                   },
                 ),

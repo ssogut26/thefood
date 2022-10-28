@@ -33,3 +33,30 @@ abstract class ICacheManager<T> {
   Future<void> putItem(String key, T item);
   Future<void> removeItem(String key);
 }
+
+abstract class ICacheUserData<User> {
+  ICacheUserData(this.key);
+  final String key;
+  Box<User>? _box;
+  Future<void> init() async {
+    registerAdapters();
+    if (!(_box?.isOpen ?? false)) {
+      _box = await Hive.openBox(key);
+    }
+  }
+
+  void registerAdapters();
+
+  Future<void> clearAll() async {
+    await _box?.clear();
+  }
+
+  Future<void> addItems(List<User> user);
+  Future<void> putItems(List<User> user);
+
+  User? getItem(String key);
+  List<User>? getValues();
+
+  Future<void> putItem(String key, User user);
+  Future<void> removeItem(String key);
+}

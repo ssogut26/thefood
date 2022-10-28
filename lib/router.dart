@@ -9,8 +9,8 @@ final GoRouter _router = GoRouter(
         return const NavigatorView(
           widgetOptions: [
             HomeView(),
-            FavoriteView(),
             HomeView(),
+            FavoriteView(),
           ],
         );
       },
@@ -69,7 +69,10 @@ final GoRouter _router = GoRouter(
       path: '/singup',
       name: 'singup',
       builder: (BuildContext context, GoRouterState state) {
-        return const SingUpView();
+        return BlocProvider(
+          create: (context) => SignUpCubit(AuthenticationRepository()),
+          child: const SingUpView(),
+        );
       },
     ),
     GoRoute(
@@ -79,8 +82,8 @@ final GoRouter _router = GoRouter(
         return const NavigatorView(
           widgetOptions: [
             HomeView(),
-            FavoriteView(),
             HomeView(),
+            FavoriteView(),
           ],
         );
       },

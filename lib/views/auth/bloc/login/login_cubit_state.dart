@@ -1,16 +1,17 @@
 part of 'login_cubit.dart';
 
-class LoginState extends Equatable {
+class LoginState extends Equatable with FormzMixin {
   LoginState({
-    this.email = const Email.pure(),
+    this.email = const Email.dirty(),
     this.password = const Password.pure(),
     this.status = FormzStatus.pure,
     this.errorMessage,
     this.isChecked = false,
   });
 
-  late Email email;
+  final Email email;
   final Password password;
+  @override
   final FormzStatus status;
   final String? errorMessage;
   late bool isChecked;
@@ -33,4 +34,10 @@ class LoginState extends Equatable {
       isChecked: isChecked ?? this.isChecked,
     );
   }
+
+  @override
+  List<FormzInput> get inputs => [
+        email,
+        password,
+      ];
 }

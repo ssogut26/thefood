@@ -3,7 +3,7 @@ import 'package:formz/formz.dart';
 /// Validation errors for the [ConfirmedPassword] [FormzInput].
 enum ConfirmedPasswordValidationError {
   /// Generic invalid error.
-  invalid
+  confirmedPasswordInvalid
 }
 
 /// {@template confirmed_password}
@@ -22,6 +22,8 @@ class ConfirmedPassword extends FormzInput<String, ConfirmedPasswordValidationEr
 
   @override
   ConfirmedPasswordValidationError? validator(String? value) {
-    return password == value ? null : ConfirmedPasswordValidationError.invalid;
+    return password == value
+        ? null
+        : ConfirmedPasswordValidationError.confirmedPasswordInvalid;
   }
 }

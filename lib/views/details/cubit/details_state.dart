@@ -1,7 +1,7 @@
 part of 'details_cubit.dart';
 
 class DetailsState extends Equatable {
-  const DetailsState({
+  DetailsState({
     this.id,
     this.meal,
     this.favoriteMealDetail,
@@ -10,7 +10,7 @@ class DetailsState extends Equatable {
   });
   final int? id;
   final Meal? meal;
-  final Meal? favoriteMealDetail;
+  Meal? favoriteMealDetail;
   final ICacheManager<Meal>? favoriteCacheManager;
   final IDetailService? detailService;
 

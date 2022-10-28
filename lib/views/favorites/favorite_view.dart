@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
@@ -16,6 +17,7 @@ class FavoriteView extends StatefulWidget {
 class _FavoriteViewState extends State<FavoriteView> {
   late final ICacheManager<Meal> favoriteCacheManager;
   List<Meal>? favoriteBox;
+  late Box<String> userBox;
 
   Future<void> fetchData() async {
     await favoriteCacheManager.init();

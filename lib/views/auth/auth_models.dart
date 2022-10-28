@@ -1,4 +1,3 @@
-import 'package:authentication_repository/authentication_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,15 +9,18 @@ import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
+import 'package:thefood/views/auth/bloc/sign_up/sign_up_cubit.dart';
 
 class NameField extends StatelessWidget {
   const NameField({
     super.key,
     required TextEditingController nameController,
-  }) : _nameController = nameController;
+    required void Function(String?)? onChanged,
+  })  : _nameController = nameController,
+        _onChanged = onChanged;
 
   final TextEditingController _nameController;
-
+  final void Function(String?)? _onChanged;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -31,17 +33,10 @@ class NameField extends StatelessWidget {
             border: OutlineInputBorder(),
             labelText: ProjectTexts.name,
           ),
+          onChanged: _onChanged,
           controller: _nameController,
           keyboardType: TextInputType.name,
           textInputAction: TextInputAction.next,
-          validator: (value) {
-            if (value!.isEmpty) {
-              return ProjectTexts.nameError;
-            } else if (value.contains(RegExp('[0-9]'))) {
-              return ProjectTexts.nameValidError;
-            }
-            return null;
-          },
         ),
       ),
     );
@@ -52,12 +47,15 @@ class EmailField extends StatelessWidget {
   const EmailField({
     super.key,
     required void Function(String?)? onChanged,
-    required TextEditingController emailController,
-  })  : _emailController = emailController,
+    required TextEditingController? controller,
+    Widget? suffixIcon,
+  })  : _controller = controller,
+        _suffixIcon = suffixIcon,
         _onChanged = onChanged;
 
-  final TextEditingController _emailController;
+  final TextEditingController? _controller;
   final void Function(String?)? _onChanged;
+  final Widget? _suffixIcon;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -66,12 +64,12 @@ class EmailField extends StatelessWidget {
         width: context.dynamicWidth(0.8),
         height: context.dynamicHeight(0.10),
         child: TextFormField(
-          autofocus: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          controller: _controller,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
             labelText: ProjectTexts.email,
+            suffixIcon: _suffixIcon,
           ),
-          controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           onChanged: _onChanged,
@@ -99,37 +97,32 @@ class PasswordField extends StatefulWidget {
 class _PasswordFieldState extends State<PasswordField> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginCubit, LoginState>(
-      buildWhen: (previous, current) => previous.password != current.password,
-      builder: (context, state) {
-        return Padding(
-          padding: context.verticalPaddingLow,
-          child: SizedBox(
-            width: context.dynamicWidth(0.8),
-            height: context.dynamicHeight(0.10),
-            child: TextFormField(
-              key: const Key('loginForm_passwordInput_textField'),
-              onChanged: widget._onChanged,
-              obscureText: PasswordField.isVisible,
-              decoration: InputDecoration(
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      PasswordField.isVisible = !PasswordField.isVisible;
-                    });
-                  },
-                  icon: PasswordField.isVisible
-                      ? const Icon(Icons.visibility)
-                      : const Icon(Icons.visibility_off),
-                ),
-                border: const OutlineInputBorder(),
-                labelText: ProjectTexts.password,
-              ),
-              controller: widget._passwordController,
+    return Padding(
+      padding: context.verticalPaddingLow,
+      child: SizedBox(
+        width: context.dynamicWidth(0.8),
+        height: context.dynamicHeight(0.10),
+        child: TextFormField(
+          key: const Key('loginForm_passwordInput_textField'),
+          onChanged: widget._onChanged,
+          obscureText: PasswordField.isVisible,
+          decoration: InputDecoration(
+            suffixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  PasswordField.isVisible = !PasswordField.isVisible;
+                });
+              },
+              icon: PasswordField.isVisible
+                  ? const Icon(Icons.visibility)
+                  : const Icon(Icons.visibility_off),
             ),
+            border: const OutlineInputBorder(),
+            labelText: ProjectTexts.password,
           ),
-        );
-      },
+          controller: widget._passwordController,
+        ),
+      ),
     );
   }
 }
@@ -138,13 +131,16 @@ class ConfirmPasswordField extends StatefulWidget {
   const ConfirmPasswordField({
     super.key,
     required TextEditingController confirmPasswordController,
+    required void Function(String)? onChanged,
     required TextEditingController passwordController,
   })  : _confirmPasswordController = confirmPasswordController,
+        _onChanged = onChanged,
         _passwordController = passwordController;
 
-  static bool isVisible = false;
+  static bool isVisible = true;
   final TextEditingController _confirmPasswordController;
   final TextEditingController _passwordController;
+  final void Function(String)? _onChanged;
 
   @override
   State<ConfirmPasswordField> createState() => _ConfirmPasswordFieldState();
@@ -159,6 +155,7 @@ class _ConfirmPasswordFieldState extends State<ConfirmPasswordField> {
         width: context.dynamicWidth(0.8),
         height: context.dynamicHeight(0.10),
         child: TextFormField(
+          onChanged: widget._onChanged,
           obscureText: ConfirmPasswordField.isVisible,
           decoration: InputDecoration(
             suffixIcon: IconButton(
@@ -177,14 +174,6 @@ class _ConfirmPasswordFieldState extends State<ConfirmPasswordField> {
           controller: widget._confirmPasswordController,
           keyboardType: TextInputType.visiblePassword,
           textInputAction: TextInputAction.done,
-          validator: (value) {
-            if (value!.isEmpty) {
-              return ProjectTexts.passwordEmptyError;
-            } else if (value != widget._passwordController.text) {
-              return ProjectTexts.passwordMatchError;
-            }
-            return null;
-          },
         ),
       ),
     );
@@ -269,7 +258,6 @@ class LoginButton extends StatelessWidget {
       height: context.dynamicHeight(0.06),
       width: context.dynamicWidth(0.6),
       child: BlocBuilder<LoginCubit, LoginState>(
-        buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, state) {
           return state.status.isSubmissionInProgress
               ? const Center(child: CircularProgressIndicator())
@@ -280,15 +268,22 @@ class LoginButton extends StatelessWidget {
                       borderRadius: context.normalBorderRadius,
                     ),
                   ),
-                  onPressed: state.status.isValidated
-                      ? () => context.read<LoginCubit>().logInWithCredentials().then(
-                            (value) => login().then(
-                              (_) async => AuthenticationRepository().user != null
-                                  ? context.goNamed('home')
-                                  : null,
-                            ),
-                          )
-                      : null,
+                  onPressed: () async {
+                    if (state.status.isValid) {
+                      await context.read<LoginCubit>().logInWithCredentials();
+                      await login();
+                      if (FirebaseAuth.instance.currentUser != null) {
+                        context.goNamed('navigator');
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(ProjectTexts.loginError),
+                          backgroundColor: Theme.of(context).errorColor,
+                        ),
+                      );
+                    }
+                  },
                   child: Text(
                     ProjectTexts.login,
                     style: context.textTheme.bodyText2,
@@ -325,54 +320,41 @@ class RegisterButton extends StatelessWidget {
       child: SizedBox(
         height: context.dynamicHeight(0.06),
         width: context.dynamicWidth(0.6),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ProjectColors.yellow,
-            shape: RoundedRectangleBorder(
-              borderRadius: context.normalBorderRadius,
-            ),
-          ),
-          onPressed: () async {
-            final name = _nameController.text;
-            final email = _emailController.text;
-            final password = _passwordController.text;
-            try {
-              if (_formKey.currentState!.validate()) {
-                final result = await _auth.createUserWithEmailAndPassword(
-                  email: email,
-                  password: password,
-                );
-                final user = await result.user?.updateDisplayName(name);
-                if (FirebaseAuth.instance.currentUser != null) {
-                  FirebaseAuth.instance.authStateChanges();
-                  context.goNamed('home');
-                  return user;
-                }
-              }
-            } on FirebaseAuthException catch (e) {
-              if (e.code == 'weak-password') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('The password provided is too weak.'),
-                  ),
-                );
-              } else if (e.code == 'email-already-in-use') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('The account already exists for that email.'),
-                  ),
-                );
-              }
-            } catch (e) {
-              SnackBar(
-                content: Text('Error: $e'),
-              );
-            }
+        child: BlocBuilder<SignUpCubit, SignUpState>(
+          builder: (context, state) {
+            return state.status.isSubmissionInProgress
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ProjectColors.yellow,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: context.normalBorderRadius,
+                      ),
+                    ),
+                    onPressed: () async {
+                      if (state.status.isValid) {
+                        await context.read<SignUpCubit>().signUpFormSubmitted();
+                        if (FirebaseAuth.instance.currentUser != null) {
+                          await FirebaseAuth.instance.currentUser
+                              ?.updateDisplayName(state.name.value);
+                          FirebaseAuth.instance.authStateChanges();
+                          context.go('/navigator');
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(ProjectTexts.registerError),
+                            backgroundColor: Theme.of(context).errorColor,
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      ProjectTexts.register,
+                      style: context.textTheme.bodyText2,
+                    ),
+                  );
           },
-          child: Text(
-            ProjectTexts.register,
-            style: context.textTheme.bodyText2,
-          ),
         ),
       ),
     );

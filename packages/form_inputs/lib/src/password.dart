@@ -3,7 +3,7 @@ import 'package:formz/formz.dart';
 /// Validation errors for the [Password] [FormzInput].
 enum PasswordValidationError {
   /// Generic invalid error.
-  invalid
+  passwordInvalid
 }
 
 /// {@template password}
@@ -20,6 +20,8 @@ class Password extends FormzInput<String, PasswordValidationError> {
 
   @override
   PasswordValidationError? validator(String? value) {
-    return _passwordRegExp.hasMatch(value ?? '') ? null : PasswordValidationError.invalid;
+    return _passwordRegExp.hasMatch(value ?? '')
+        ? null
+        : PasswordValidationError.passwordInvalid;
   }
 }

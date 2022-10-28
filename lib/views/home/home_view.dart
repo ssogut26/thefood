@@ -1,20 +1,17 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/home_service.dart';
-import 'package:thefood/services/managers/cache_manager.dart';
 import 'package:thefood/services/managers/network_manager.dart';
 import 'package:thefood/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/views/home/shimmers.dart';
@@ -33,40 +30,6 @@ class _HomeViewState extends State<HomeView> {
   late int selectedIndex;
   late int dataLenght;
   late String categoryName;
-  late StreamSubscription subscription;
-
-  List<MealCategory>? _categoryItems;
-  Meal? categoryMealItems;
-  Meal? randomMealItems;
-  late final ICacheManager<MealCategory> categoryCacheManager;
-  late final ICacheManager<Meal> mealCacheManager;
-  late final ICacheManager<Meal> randomMealCacheManager;
-
-  Future<void> fetchData() async {
-    await categoryCacheManager.init();
-    if (categoryCacheManager.getValues()?.isNotEmpty ?? false) {
-      _categoryItems = categoryCacheManager.getValues();
-    } else {
-      _categoryItems = await NetworkManager.instance.getCategories();
-    }
-    setState(() {});
-    await mealCacheManager.init();
-    if (mealCacheManager.getItem(categoryName)?.meals?.isNotEmpty ?? false) {
-      categoryMealItems = mealCacheManager.getItem(categoryName);
-    } else {
-      categoryMealItems = await NetworkManager.instance.getMealsByCategory(categoryName);
-    }
-    setState(() {});
-
-    await randomMealCacheManager.init();
-    if (randomMealCacheManager.getItem(EndPoints.randomMeal)?.meals?.isNotEmpty ??
-        false) {
-      randomMealItems = randomMealCacheManager.getItem(EndPoints.randomMeal);
-    } else {
-      randomMealItems = await NetworkManager.instance.getRandomMeal();
-    }
-    setState(() {});
-  }
 
   int itemLength() {
     if (dataLenght < 4) {
@@ -75,7 +38,7 @@ class _HomeViewState extends State<HomeView> {
     return 4;
   }
 
-  bool isLoading = false;
+  bool isLoading = true;
 
   void changeLoading() {
     setState(() {
@@ -83,60 +46,14 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  Future<void> checkConnectivity() async {
-    final result = await Connectivity().checkConnectivity();
-    Future.delayed(const Duration(seconds: 10), () {
-      if (result == ConnectivityResult.none) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('No internet access. Check your connection'),
-            duration: const Duration(seconds: 10),
-            action: SnackBarAction(
-              label: 'Dissmiss',
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-            ),
-          ),
-        );
-      } else if (result == ConnectivityResult.wifi ||
-          result == ConnectivityResult.mobile) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Internet access is available'),
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Retry',
-              onPressed: () {
-                setState(() {});
-              },
-            ),
-          ),
-        );
-      }
-    });
-  }
-
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   final _auth = FirebaseAuth.instance;
-  late int favoritesIndex;
-  List<String> favorites = [];
-  late bool isFavorite;
   @override
   void initState() {
-    subscription =
-        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      checkConnectivity();
-    });
     categoryName = 'Beef';
-    isFavorite = favorites.isNotEmpty;
     dataLenght = 0;
     selectedIndex = 0;
-    categoryCacheManager = MealCategoryCacheManager('mealCategory');
-    mealCacheManager = CategoryMealsCacheManager('categoryMeal');
-    randomMealCacheManager = RandomMealCacheManager('randomMeal');
     itemLength();
-    fetchData();
     super.initState();
   }
 
@@ -152,24 +69,28 @@ class _HomeViewState extends State<HomeView> {
           child: SingleChildScrollView(
             child: Padding(
               padding: ProjectPaddings.pageLarge,
-              child: Column(
-                children: [
-                  const _SearchBar(),
-                  if (_categoryItems?.isNotEmpty ?? false)
-                    _getCategories(context)
-                  else
-                    const CategoryShimmer(),
-                  if (categoryMealItems?.meals?.isNotEmpty ?? false)
-                    _categoryMeals()
-                  else
-                    const CategoryMealShimmer(
-                      itemCount: 4,
-                    ),
-                  if (randomMealItems?.meals?.isNotEmpty ?? false)
-                    _randomRecipe()
-                  else
-                    const RandomMealShimmer(),
-                ],
+              child: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      const _SearchBar(),
+                      if (context.read<HomeCubit>().fetchCategoryData() != null)
+                        _getCategories(context)
+                      else
+                        const CategoryShimmer(),
+                      if (context.read<HomeCubit>().fetchCategoryMealData() != null)
+                        _categoryMeals()
+                      else
+                        const CategoryMealShimmer(
+                          itemCount: 4,
+                        ),
+                      if (context.read<HomeCubit>().fetchRandomMealData() != null)
+                        _randomRecipe()
+                      else
+                        const RandomMealShimmer(),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -178,15 +99,15 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Column _getCategories(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 50,
-          width: MediaQuery.of(context).size.width,
-          child: BlocBuilder<HomeCubit, HomeState>(
-            builder: (context, state) {
-              return ListView.builder(
+  BlocBuilder _getCategories(BuildContext context) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        return Column(
+          children: [
+            SizedBox(
+              height: 50,
+              width: MediaQuery.of(context).size.width,
+              child: ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
@@ -201,22 +122,27 @@ class _HomeViewState extends State<HomeView> {
                       GestureDetector(
                         onTap: () async {
                           final categoryName = data.strCategory ?? '';
-                          changeLoading();
-                          if (mealCacheManager.getItem(categoryName)?.meals?.isNotEmpty ??
+
+                          if (context
+                                  .read<HomeCubit>()
+                                  .mealCacheManager
+                                  .getItem(categoryName)
+                                  ?.meals
+                                  ?.isNotEmpty ??
                               false) {
-                            categoryMealItems = mealCacheManager.getItem(categoryName);
+                            state.categoryMealItems = context
+                                .read<HomeCubit>()
+                                .mealCacheManager
+                                .getItem(categoryName);
                           } else {
-                            categoryMealItems = await context
+                            state.categoryMealItems = await context
                                 .read<HomeCubit>()
                                 .getMealsByCategory(categoryName);
                           }
-                          setState(() {
-                            selectedIndex = index;
-                          });
-                          changeLoading();
+                          context.read<HomeCubit>().changeSelectedIndex(index);
                         },
                         child: Card(
-                          color: selectedIndex == index
+                          color: state.selectedIndex == index
                               ? ProjectColors.yellow
                               : ProjectColors.white,
                           child: Row(
@@ -243,45 +169,49 @@ class _HomeViewState extends State<HomeView> {
                     ],
                   );
                 },
-              );
-            },
-          ),
-        ),
-        SizedBox(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Preview',
-                style: Theme.of(context).textTheme.headline1,
               ),
-              TextButton(
-                child: Text(
-                  'See all',
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                onPressed: () {
-                  context.pushNamed(
-                    'category',
-                    params: {
-                      'name': _categoryItems!.elementAt(selectedIndex).strCategory ?? '',
-                      'image':
-                          _categoryItems!.elementAt(selectedIndex).strCategoryThumb ?? '',
+            ),
+            SizedBox(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Preview',
+                    style: Theme.of(context).textTheme.headline1,
+                  ),
+                  TextButton(
+                    child: Text(
+                      'See all',
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                    onPressed: () {
+                      context.pushNamed(
+                        'category',
+                        params: {
+                          'name':
+                              state.mealCategory!.elementAt(selectedIndex).strCategory ??
+                                  '',
+                          'image': state.mealCategory!
+                                  .elementAt(selectedIndex)
+                                  .strCategoryThumb ??
+                              '',
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
   BlocBuilder<HomeCubit, HomeState> _categoryMeals() {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        dataLenght = state.mealsByCategory?.meals?.length ?? 0;
+        // dataLenght = state.mealsByCategory?.meals?.length ?? 0;
         return GridView.builder(
           padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
@@ -292,12 +222,13 @@ class _HomeViewState extends State<HomeView> {
             mainAxisExtent: context.dynamicHeight(0.27),
           ),
           shrinkWrap: true,
-          itemCount: itemLength(),
+          itemCount: 4,
           itemBuilder: (context, index) {
             final data = state.mealsByCategory?.meals?[index];
             if (data == null) {
               return const SizedBox.shrink();
             }
+
             return Column(
               children: [
                 SizedBox(
@@ -450,6 +381,8 @@ class _HomeViewState extends State<HomeView> {
   }
 
   AppBar _appBar() {
+    final auth = _auth;
+    final userName = auth.currentUser?.displayName?.split(' ')[0];
     return AppBar(
       title: Padding(
         padding: ProjectPaddings.pageMedium,
@@ -460,8 +393,7 @@ class _HomeViewState extends State<HomeView> {
               text: TextSpan(
                 children: <TextSpan>[
                   TextSpan(
-                    text:
-                        '${ProjectTexts.helloText} ${_auth.currentUser?.displayName} \n',
+                    text: '${ProjectTexts.helloText} $userName \n',
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   TextSpan(
@@ -495,7 +427,6 @@ class _HomeViewState extends State<HomeView> {
 
 class _Drawer extends StatelessWidget {
   const _Drawer({
-    super.key,
     required FirebaseAuth auth,
   }) : _auth = auth;
 

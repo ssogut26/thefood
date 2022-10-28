@@ -3,7 +3,7 @@ import 'package:formz/formz.dart';
 /// Validation errors for the [Email] [FormzInput].
 enum EmailValidationError {
   /// Generic invalid error.
-  invalid
+  emailInvalid
 }
 
 /// {@template email}
@@ -22,6 +22,6 @@ class Email extends FormzInput<String, EmailValidationError> {
 
   @override
   EmailValidationError? validator(String? value) {
-    return _emailRegExp.hasMatch(value ?? '') ? null : EmailValidationError.invalid;
+    return _emailRegExp.hasMatch(value ?? '') ? null : EmailValidationError.emailInvalid;
   }
 }

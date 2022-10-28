@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/assets_path.dart';
@@ -11,8 +12,10 @@ import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
+import 'package:thefood/services/detail_service.dart';
 import 'package:thefood/services/managers/cache_manager.dart';
 import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/views/details/cubit/details_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailsView extends StatefulWidget {
@@ -30,95 +33,110 @@ class DetailsView extends StatefulWidget {
 }
 
 class _DetailsViewState extends State<DetailsView> {
-  late final ICacheManager<Meal> favoriteCacheManager;
-  Meal? favoriteMealDetail;
+  // late final ICacheManager<Meal> favoriteCacheManager;
 
-  Future<void> fetchData() async {
-    await favoriteCacheManager.init();
-    if (favoriteCacheManager.getItem(widget.id.toString())?.meals?.isNotEmpty ?? false) {
-      favoriteMealDetail = favoriteCacheManager.getItem(widget.id.toString());
-    } else {
-      favoriteMealDetail = await NetworkManager.instance.getMeal(widget.id);
-    }
-    setState(() {});
-  }
+  // Future<void> fetchData() async {
+  //   await favoriteCacheManager.init();
+  //   if (favoriteCacheManager.getItem(widget.id.toString())?.meals?.isNotEmpty ?? false) {
+  //     favoriteMealDetail = favoriteCacheManager.getItem(widget.id.toString());
+  //   } else {
+  //     favoriteMealDetail = await NetworkManager.instance.getMeal(widget.id);
+  //   }
+  //   setState(() {});
+  // }
 
   @override
   void initState() {
-    favoriteCacheManager = FavoriteMealDetailCacheManager('mealDetails');
-    fetchData();
+    // favoriteCacheManager = FavoriteMealDetailCacheManager('mealDetails');
+    // userBox = Hive.box<String>(HiveConstants.user);
+    // fetchData();
+    // createOpenBox();
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-            leading: Padding(
-              padding: ProjectPaddings.cardSmall,
-              child: IconButton(
-                icon: CircleAvatar(
-                  backgroundColor: ProjectColors.actionsBgColor,
-                  child: SvgPicture.asset(
-                    AssetsPath.back,
-                    color: ProjectColors.black,
-                  ),
-                ),
-                onPressed: () {
-                  context.pop();
-                },
-              ),
-            ),
-            pinned: true,
-            expandedHeight: 200,
-            flexibleSpace: Stack(
-              children: <Widget>[
-                Positioned.fill(
-                  child: CachedNetworkImage(
-                    imageUrl: widget.image ?? '',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => Padding(
-                padding: const EdgeInsets.all(8),
-                child: Container(
-                  // height: MediaQuery.of(context).size.height * 0.7,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: const BoxDecoration(
-                    color: ProjectColors.mainWhite,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+    return BlocProvider(
+      create: (context) => DetailsCubit(
+        FavoriteMealDetailCacheManager('mealDetails'),
+        DetailService(NetworkManager.instance),
+        widget.id,
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              leading: Padding(
+                padding: ProjectPaddings.cardSmall,
+                child: IconButton(
+                  icon: CircleAvatar(
+                    backgroundColor: ProjectColors.actionsBgColor,
+                    child: SvgPicture.asset(
+                      AssetsPath.back,
+                      color: ProjectColors.black,
                     ),
                   ),
-                  child: Padding(
-                    padding: ProjectPaddings.pageLarge,
-                    child: favoriteMealDetail?.meals?.isNotEmpty ?? false
-                        ? _MealDetails(
-                            widget: widget,
-                            items: favoriteMealDetail,
-                            favoriteCacheManager: favoriteCacheManager,
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                  ),
+                  onPressed: () {
+                    context.pop();
+                  },
                 ),
               ),
-              childCount: 1,
+              pinned: true,
+              expandedHeight: 200,
+              flexibleSpace: Stack(
+                children: <Widget>[
+                  Positioned.fill(
+                    child: CachedNetworkImage(
+                      imageUrl: widget.image ?? '',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => Padding(
+                  padding: context.paddingLow,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: const BoxDecoration(
+                      color: ProjectColors.mainWhite,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: BlocBuilder<DetailsCubit, DetailsState>(
+                      builder: (context, state) {
+                        print(state.id);
+                        context.read<DetailsCubit>().updateId(widget.id);
+                        return Padding(
+                          padding: ProjectPaddings.pageLarge,
+                          child:
+                              state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false
+                                  ? _MealDetails(
+                                      widget: widget,
+                                      items: state.favoriteMealDetail,
+                                      favoriteCacheManager: state.favoriteCacheManager,
+                                    )
+                                  : const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                childCount: 1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -133,7 +151,7 @@ class _MealDetails extends StatefulWidget {
 
   final DetailsView widget;
   final Meal? items;
-  final ICacheManager<Meal> favoriteCacheManager;
+  final ICacheManager<Meal>? favoriteCacheManager;
   @override
   State<_MealDetails> createState() => _MealDetailsState();
 }
@@ -201,10 +219,10 @@ class _MealDetailsState extends State<_MealDetails> {
                           ),
                         ),
                         onPressed: () async {
-                          widget.favoriteCacheManager.getValues();
+                          widget.favoriteCacheManager?.getValues();
                           if (widget.items?.meals?.isNotEmpty ?? false) {
                             await widget.favoriteCacheManager
-                                .putItem('${widget.widget.id}', widget.items!);
+                                ?.putItem('${widget.widget.id}', widget.items!);
                           }
                         },
                       ),
