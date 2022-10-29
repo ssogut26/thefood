@@ -12,9 +12,7 @@ import 'package:thefood/constants/flags.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/detail_service.dart';
 import 'package:thefood/services/managers/cache_manager.dart';
-import 'package:thefood/services/managers/network_manager.dart';
 import 'package:thefood/views/details/cubit/details_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,123 +31,93 @@ class DetailsView extends StatefulWidget {
 }
 
 class _DetailsViewState extends State<DetailsView> {
-  // late final ICacheManager<Meal> favoriteCacheManager;
-
-  // Future<void> fetchData() async {
-  //   await favoriteCacheManager.init();
-  //   if (favoriteCacheManager.getItem(widget.id.toString())?.meals?.isNotEmpty ?? false) {
-  //     favoriteMealDetail = favoriteCacheManager.getItem(widget.id.toString());
-  //   } else {
-  //     favoriteMealDetail = await NetworkManager.instance.getMeal(widget.id);
-  //   }
-  //   setState(() {});
-  // }
-
-  @override
-  void initState() {
-    // favoriteCacheManager = FavoriteMealDetailCacheManager('mealDetails');
-    // userBox = Hive.box<String>(HiveConstants.user);
-    // fetchData();
-    // createOpenBox();
-
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => DetailsCubit(
-        FavoriteMealDetailCacheManager('mealDetails'),
-        DetailService(NetworkManager.instance),
-        widget.id,
-      ),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        extendBody: true,
-        body: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              leading: Padding(
-                padding: ProjectPaddings.cardSmall,
-                child: IconButton(
-                  icon: CircleAvatar(
-                    backgroundColor: ProjectColors.actionsBgColor,
-                    child: SvgPicture.asset(
-                      AssetsPath.back,
-                      color: ProjectColors.black,
-                    ),
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            leading: Padding(
+              padding: ProjectPaddings.cardSmall,
+              child: IconButton(
+                icon: CircleAvatar(
+                  backgroundColor: ProjectColors.actionsBgColor,
+                  child: SvgPicture.asset(
+                    AssetsPath.back,
+                    color: ProjectColors.black,
                   ),
-                  onPressed: () {
-                    context.pop();
-                  },
                 ),
-              ),
-              pinned: true,
-              expandedHeight: 200,
-              flexibleSpace: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child: CachedNetworkImage(
-                      imageUrl: widget.image ?? '',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ],
+                onPressed: () {
+                  context.pop();
+                },
               ),
             ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => Padding(
-                  padding: context.paddingLow,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: const BoxDecoration(
-                      color: ProjectColors.mainWhite,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
+            pinned: true,
+            expandedHeight: 200,
+            flexibleSpace: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.image ?? '',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: context.paddingLow,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        color: ProjectColors.mainWhite,
+                        borderRadius: BorderRadius.only(
+                          topLeft: context.lowRadius,
+                          topRight: context.lowRadius,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: ProjectPaddings.pageLarge,
+                        child: state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false
+                            ? _MealDetails(
+                                details: widget,
+                                items: state.favoriteMealDetail,
+                                favoriteCacheManager:
+                                    context.read<DetailsCubit>().favoriteCacheManager,
+                              )
+                            : const Center(
+                                child: CircularProgressIndicator(),
+                              ),
                       ),
                     ),
-                    child: BlocBuilder<DetailsCubit, DetailsState>(
-                      builder: (context, state) {
-                        print(state.id);
-                        context.read<DetailsCubit>().updateId(widget.id);
-                        return Padding(
-                          padding: ProjectPaddings.pageLarge,
-                          child:
-                              state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false
-                                  ? _MealDetails(
-                                      widget: widget,
-                                      items: state.favoriteMealDetail,
-                                      favoriteCacheManager: state.favoriteCacheManager,
-                                    )
-                                  : const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                childCount: 1,
+                  );
+                },
               ),
+              childCount: 1,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+      // ),
     );
   }
 }
 
 class _MealDetails extends StatefulWidget {
   const _MealDetails({
-    required this.widget,
+    required this.details,
     required this.items,
     required this.favoriteCacheManager,
   });
 
-  final DetailsView widget;
+  final DetailsView details;
   final Meal? items;
   final ICacheManager<Meal>? favoriteCacheManager;
   @override
@@ -171,8 +139,6 @@ class _MealDetailsState extends State<_MealDetails> {
     }
   }
 
-  final meals = Meals();
-
   @override
   void initState() {
     selectedIndex = 0;
@@ -181,151 +147,160 @@ class _MealDetailsState extends State<_MealDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      itemCount: widget.items?.meals?.length ?? 0,
-      itemBuilder: (context, index) {
-        final meals = widget.items?.meals?[index];
-        final ingredientList = meals?.getIngredients();
-        final measureList = meals?.getMeasures();
+    return BlocBuilder<DetailsCubit, DetailsState>(
+      builder: (context, state) {
         return ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           shrinkWrap: true,
-          itemCount: 1,
+          itemCount: state.favoriteMealDetail?.meals?.length ?? 0,
           itemBuilder: (context, index) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            final meals = state.favoriteMealDetail?.meals?[index];
+            final ingredientList = meals?.getIngredients();
+            final measureList = meals?.getMeasures();
+            return ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              itemCount: 1,
+              itemBuilder: (context, index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 12,
-                      child: Text(
-                        widget.widget.name ?? '',
-                        style: Theme.of(context).textTheme.headline1,
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: IconButton(
-                        icon: CircleAvatar(
-                          backgroundColor: ProjectColors.actionsBgColor,
-                          child: SvgPicture.asset(
-                            AssetsPath.bookmark,
-                            color: ProjectColors.black,
-                          ),
-                        ),
-                        onPressed: () async {
-                          widget.favoriteCacheManager?.getValues();
-                          if (widget.items?.meals?.isNotEmpty ?? false) {
-                            await widget.favoriteCacheManager
-                                ?.putItem('${widget.widget.id}', widget.items!);
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CategoryName(meals: meals),
-                    AreaImage(meals: meals),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 50,
-                      child: TextButton(
-                        autofocus: true,
-                        onPressed: () async {
-                          setState(() {
-                            selectedIndex = 0;
-                          });
-                        },
-                        child: AnimatedScale(
-                          duration: const Duration(milliseconds: 300),
-                          scale: (selectedIndex == 0) ? 1.2 : 1,
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 12,
                           child: Text(
-                            ProjectTexts.ingredients,
-                            style: (selectedIndex == 0)
-                                ? Theme.of(context).textTheme.headline3
-                                : Theme.of(context).textTheme.bodyText2,
+                            widget.details.name ?? '',
+                            style: Theme.of(context).textTheme.headline1,
                           ),
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 50,
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedIndex = 1;
-                          });
-                        },
-                        child: AnimatedScale(
-                          duration: const Duration(milliseconds: 300),
-                          scale: (selectedIndex == 1) ? 1.2 : 1,
-                          child: Text(
-                            ProjectTexts.instructions,
-                            style: (selectedIndex == 1)
-                                ? Theme.of(context).textTheme.headline3
-                                : Theme.of(context).textTheme.bodyText2,
+                        Expanded(
+                          flex: 2,
+                          child: IconButton(
+                            icon: CircleAvatar(
+                              backgroundColor: ProjectColors.actionsBgColor,
+                              child: SvgPicture.asset(
+                                AssetsPath.bookmark,
+                                color: ProjectColors.black,
+                              ),
+                            ),
+                            onPressed: () async {
+                              context
+                                  .read<DetailsCubit>()
+                                  .favoriteCacheManager
+                                  .getValues();
+                              if (state.favoriteMealDetail?.meals?.isNotEmpty ?? false) {
+                                await context
+                                    .read<DetailsCubit>()
+                                    .favoriteCacheManager
+                                    .putItem('${state.id}', state.favoriteMealDetail!);
+                              }
+                            },
                           ),
                         ),
-                      ),
+                      ],
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CategoryName(meals: meals),
+                        AreaImage(meals: meals),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 50,
+                          child: TextButton(
+                            autofocus: true,
+                            onPressed: () async {
+                              setState(() {
+                                selectedIndex = 0;
+                              });
+                            },
+                            child: AnimatedScale(
+                              duration: const Duration(milliseconds: 300),
+                              scale: (selectedIndex == 0) ? 1.2 : 1,
+                              child: Text(
+                                ProjectTexts.ingredients,
+                                style: (selectedIndex == 0)
+                                    ? Theme.of(context).textTheme.headline3
+                                    : Theme.of(context).textTheme.bodyText2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 50,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                selectedIndex = 1;
+                              });
+                            },
+                            child: AnimatedScale(
+                              duration: const Duration(milliseconds: 300),
+                              scale: (selectedIndex == 1) ? 1.2 : 1,
+                              child: Text(
+                                ProjectTexts.instructions,
+                                style: (selectedIndex == 1)
+                                    ? Theme.of(context).textTheme.headline3
+                                    : Theme.of(context).textTheme.bodyText2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (selectedIndex == 0)
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (int index = 0;
+                              index < ingredientList!.length && index.isFinite;
+                              index++)
+                            ingredientList[index].isNotNullOrNoEmpty
+                                ? _ingredients(
+                                    ingredientList,
+                                    index,
+                                    context,
+                                    measureList,
+                                  )
+                                : const SizedBox.shrink(),
+                        ],
+                      )
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(meals?.strInstructions ?? ''),
+                          TextButton(
+                            onPressed: () {
+                              launch(
+                                Uri.parse(
+                                  meals?.strYoutube ?? '',
+                                ),
+                              );
+                            },
+                            child: const Text('Watch Video'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              launch(
+                                Uri.parse(
+                                  meals?.strSource ?? '',
+                                ),
+                              );
+                            },
+                            child: const Text('Source'),
+                          ),
+                        ],
+                      ),
                   ],
-                ),
-                if (selectedIndex == 0)
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (int index = 0;
-                          index < ingredientList!.length && index.isFinite;
-                          index++)
-                        ingredientList[index].isNotNullOrNoEmpty
-                            ? _ingredients(
-                                ingredientList,
-                                index,
-                                context,
-                                measureList,
-                              )
-                            : const SizedBox.shrink(),
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(meals?.strInstructions ?? ''),
-                      TextButton(
-                        onPressed: () {
-                          launch(
-                            Uri.parse(
-                              meals?.strYoutube ?? '',
-                            ),
-                          );
-                        },
-                        child: const Text('Watch Video'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          launch(
-                            Uri.parse(
-                              meals?.strSource ?? '',
-                            ),
-                          );
-                        },
-                        child: const Text('Source'),
-                      ),
-                    ],
-                  ),
-              ],
+                );
+              },
             );
           },
         );

@@ -7,7 +7,7 @@ part 'meals.g.dart';
 @JsonSerializable()
 @HiveType(typeId: 0)
 class Meal with EquatableMixin {
-  Meal({
+  const Meal({
     this.meals,
   });
   factory Meal.fromJson(Map<String, dynamic> json) => _$MealFromJson(json);

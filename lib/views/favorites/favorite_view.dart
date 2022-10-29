@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/managers/cache_manager.dart';
+import 'package:thefood/views/favorites/cubit/favorite_cubit.dart';
 
 class FavoriteView extends StatefulWidget {
   const FavoriteView({super.key});
@@ -15,85 +16,50 @@ class FavoriteView extends StatefulWidget {
 }
 
 class _FavoriteViewState extends State<FavoriteView> {
-  late final ICacheManager<Meal> favoriteCacheManager;
-  List<Meal>? favoriteBox;
-  late Box<String> userBox;
-
-  Future<void> fetchData() async {
-    await favoriteCacheManager.init();
-    if (favoriteCacheManager.getValues()?.isNotEmpty ?? false) {
-      favoriteBox = favoriteCacheManager.getValues();
-    }
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    favoriteCacheManager = FavoriteMealDetailCacheManager('mealDetails');
-    fetchData();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appBar(),
-      body: Padding(
-        padding: ProjectPaddings.pageMedium,
-        child: (favoriteBox?.isNotEmpty ?? false)
-            ? SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: favoriteBox?.length,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final meal = favoriteBox?[index].meals;
-                    final deleteIndex = index;
-                    return Padding(
-                      padding: ProjectPaddings.cardMedium,
-                      child: InkWell(
-                        onTap: () {
-                          context.pushNamed(
-                            'details',
-                            params: {
-                              'id': meal?.map((e) => e.idMeal).toString().substring(
-                                        1,
-                                        meal.map((e) => e.idMeal).toString().length - 1,
-                                      ) ??
-                                  '',
-                              'name': meal?.map((e) => e.strMeal).toString().substring(
-                                        1,
-                                        meal.map((e) => e.strMeal).toString().length - 1,
-                                      ) ??
-                                  '',
-                              'image':
-                                  meal?.map((e) => e.strMealThumb).toString().substring(
-                                            1,
-                                            meal
-                                                    .map((e) => e.strMealThumb)
-                                                    .toString()
-                                                    .length -
-                                                1,
-                                          ) ??
-                                      '',
-                            },
+    return BlocProvider(
+      create: (context) => FavoritesCubit(),
+      child: Scaffold(
+        appBar: _appBar(),
+        body: BlocBuilder<FavoritesCubit, FavoritesState>(
+          builder: (context, state) {
+            return Padding(
+              padding: ProjectPaddings.pageMedium,
+              child: (context
+                          .read<FavoritesCubit>()
+                          .favoriteCacheManager
+                          .getValues()
+                          ?.isNotEmpty ??
+                      false)
+                  ? SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: state.favoriteBox?.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final meal = state.favoriteBox?[index]?.meals;
+                          final deleteIndex = index;
+                          return Padding(
+                            padding: ProjectPaddings.cardMedium,
+                            child: GoToDetails(
+                              meal: meal,
+                              favoriteBox: state.favoriteBox,
+                              deleteIndex: deleteIndex,
+                              favoriteCacheManager:
+                                  context.read<FavoritesCubit>().favoriteCacheManager,
+                            ),
                           );
                         },
-                        child: CardBox(
-                          favoriteCacheManager: favoriteCacheManager,
-                          meal: meal,
-                          favoriteBox: favoriteBox,
-                          deleteIndex: deleteIndex,
-                        ),
                       ),
-                    );
-                  },
-                ),
-              )
-            : const Center(
-                child: Text(ProjectTexts.noFavoritesYet),
-              ),
+                    )
+                  : const Center(
+                      child: Text(ProjectTexts.noFavoritesYet),
+                    ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -110,22 +76,18 @@ class DeleteButton extends StatelessWidget {
     super.key,
     required this.favoriteCacheManager,
     required this.meal,
+    required this.deleteIndex,
   });
 
   final ICacheManager<Meal> favoriteCacheManager;
   final List<Meals>? meal;
+  final int deleteIndex;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        favoriteCacheManager.removeItem(
-          meal?.map((e) => e.idMeal).toString().substring(
-                    1,
-                    meal!.map((e) => e.idMeal).toString().length - 1,
-                  ) ??
-              '',
-        );
+        context.read<FavoritesCubit>().removeItem(meal?[deleteIndex].idMeal ?? '');
       },
       icon: const Icon(Icons.delete_outline_outlined),
     );
@@ -142,7 +104,7 @@ class GoToDetails extends StatelessWidget {
   });
 
   final List<Meals>? meal;
-  final List<Meal>? favoriteBox;
+  final List<Meal?>? favoriteBox;
   final int deleteIndex;
   final ICacheManager<Meal> favoriteCacheManager;
 
@@ -191,7 +153,7 @@ class CardBox extends StatelessWidget {
   });
 
   final List<Meals>? meal;
-  final List<Meal>? favoriteBox;
+  final List<Meal?>? favoriteBox;
   final int deleteIndex;
   final ICacheManager<Meal> favoriteCacheManager;
 
@@ -206,7 +168,11 @@ class CardBox extends StatelessWidget {
           children: [
             ImageBox(meal: meal),
             MealText(meal: meal),
-            DeleteButton(favoriteCacheManager: favoriteCacheManager, meal: meal)
+            DeleteButton(
+              favoriteCacheManager: favoriteCacheManager,
+              meal: meal,
+              deleteIndex: deleteIndex,
+            ),
           ],
         ),
       ),

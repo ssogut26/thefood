@@ -19,15 +19,19 @@ class HomeService extends IHomeService {
   Future<List<MealCategory>?> getCategories() async {
     try {
       final response = await _networkManager.service.get(EndPoints.categories);
-      final categories =
-          Categories.fromJson(response.data as Map<String, dynamic>).categories;
-      return categories;
+      if (response.statusCode == 200) {
+        final categories = response.data;
+        if (categories is Map<String, dynamic>) {
+          return Categories.fromJson(categories).categories;
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         print(e);
       }
       return [];
     }
+    return null;
   }
 
   @override
@@ -35,8 +39,11 @@ class HomeService extends IHomeService {
     final response = await _networkManager.service.get(
       EndPoints.filterByCategory + name,
     );
-    if (response.data is Map<String, dynamic>) {
-      return Meal.fromJson(response.data as Map<String, dynamic>);
+    if (response.statusCode == 200) {
+      final meal = response.data;
+      if (meal is Map<String, dynamic>) {
+        return Meal.fromJson(meal);
+      }
     }
     return null;
   }

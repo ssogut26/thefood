@@ -211,7 +211,7 @@ class _HomeViewState extends State<HomeView> {
   BlocBuilder<HomeCubit, HomeState> _categoryMeals() {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        // dataLenght = state.mealsByCategory?.meals?.length ?? 0;
+        dataLenght = state.mealsByCategory?.meals?.length ?? 0;
         return GridView.builder(
           padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
@@ -222,7 +222,7 @@ class _HomeViewState extends State<HomeView> {
             mainAxisExtent: context.dynamicHeight(0.27),
           ),
           shrinkWrap: true,
-          itemCount: 4,
+          itemCount: itemLength(),
           itemBuilder: (context, index) {
             final data = state.mealsByCategory?.meals?[index];
             if (data == null) {

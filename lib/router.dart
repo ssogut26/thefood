@@ -41,7 +41,10 @@ final GoRouter _router = GoRouter(
       path: '/favorites',
       name: 'favorites',
       builder: (BuildContext context, GoRouterState state) {
-        return const FavoriteView();
+        return BlocProvider(
+          create: (context) => FavoritesCubit(),
+          child: const FavoriteView(),
+        );
       },
     ),
     GoRoute(
@@ -53,7 +56,6 @@ final GoRouter _router = GoRouter(
         final id = int.parse(state.params['id'] ?? '');
         return BlocProvider(
           create: (context) => DetailsCubit(
-            FavoriteMealDetailCacheManager('mealDetails'),
             DetailService(NetworkManager.instance),
             id,
           ),

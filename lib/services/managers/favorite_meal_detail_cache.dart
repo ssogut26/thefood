@@ -35,9 +35,9 @@ class FavoriteMealDetailCacheManager extends ICacheManager<Meal> {
 
   @override
   void registerAdapters() {
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(MealAdapter());
+    if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(MealsAdapter());
+      Hive.registerAdapter(MealAdapter());
     }
   }
 }

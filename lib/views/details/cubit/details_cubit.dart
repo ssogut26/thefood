@@ -7,39 +7,48 @@ import 'package:thefood/services/managers/cache_manager.dart';
 part 'details_state.dart';
 
 class DetailsCubit extends Cubit<DetailsState> {
-  DetailsCubit(
-    this.favoriteCacheManager,
-    this.detailService,
-    this.id,
-  ) : super(DetailsState()) {
-    getMeal(state.id ?? 0);
-    fetchData();
-    updateId(state.id ?? 0);
+  DetailsCubit(this.detailService, this.id)
+      : super(
+          DetailsState(id: id),
+        ) {
+    getMeal(id);
+    fetchMealData(id);
+    updateId(id);
   }
-  final IDetailService detailService;
 
-  ICacheManager<Meal> favoriteCacheManager =
+  final IDetailService detailService;
+  final ICacheManager<Meal> favoriteCacheManager =
       FavoriteMealDetailCacheManager('mealDetails');
+  final int id;
   Meal? favoriteMealDetail;
-  int id = 0;
 
   Future<Meal?> getMeal(int id) async {
-    final mealDetails = await detailService.getMeal(id);
-    emit(state.copyWith(meal: mealDetails));
-    return mealDetails!;
+    final mealDetail = await detailService.getMeal(id);
+    emit(
+      state.copyWith(
+        meal: mealDetail,
+      ),
+    );
+    return mealDetail;
   }
 
   void updateId(int id) {
-    emit(state.copyWith(id: id));
+    emit(
+      state.copyWith(
+        id: id,
+      ),
+    );
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchMealData(int id) async {
     await favoriteCacheManager.init();
-    if (favoriteCacheManager.getItem(state.id.toString())?.meals?.isNotEmpty ?? false) {
-      state.favoriteMealDetail = favoriteCacheManager.getItem(state.id.toString());
-    } else {
-      state.favoriteMealDetail = await detailService.getMeal(state.id ?? 0);
+    if (state.id == id) {
+      if (favoriteCacheManager.getItem(id.toString())?.meals?.isNotEmpty ?? false) {
+        favoriteMealDetail = favoriteCacheManager.getItem(id.toString());
+      } else {
+        favoriteMealDetail = await detailService.getMeal(id);
+      }
     }
-    emit(state.copyWith(meal: state.favoriteMealDetail));
+    emit(state.copyWith(favoriteMealDetail: favoriteMealDetail));
   }
 }
