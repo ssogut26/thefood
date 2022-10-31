@@ -58,25 +58,57 @@ class TheFood extends StatefulWidget {
 class _TheFoodState extends State<TheFood> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: ProjectTexts.appName,
-      theme: ThemeData(
-        scaffoldBackgroundColor: ProjectColors.mainWhite,
-        useMaterial3: true,
-        textTheme: ProjectTextStyles().textTheme,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-        ),
-        cardTheme: const CardTheme(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<HomeCubit>(
+          create: (context) => HomeCubit(
+            HomeService(
+              NetworkManager.instance,
+            ),
           ),
         ),
+        BlocProvider<DetailsCubit>(
+          create: (context) => DetailsCubit(
+            DetailService(
+              NetworkManager.instance,
+            ),
+            0,
+          ),
+        ),
+        BlocProvider<FavoritesCubit>(
+          create: (context) => FavoritesCubit(),
+        ),
+        BlocProvider<LoginCubit>(
+          create: (context) => LoginCubit(
+            AuthenticationRepository(),
+          ),
+        ),
+        BlocProvider<SignUpCubit>(
+          create: (context) => SignUpCubit(
+            AuthenticationRepository(),
+          ),
+        ),
+      ],
+      child: MaterialApp.router(
+        title: ProjectTexts.appName,
+        theme: ThemeData(
+          scaffoldBackgroundColor: ProjectColors.mainWhite,
+          useMaterial3: true,
+          textTheme: ProjectTextStyles().textTheme,
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            systemOverlayStyle: SystemUiOverlayStyle.light,
+          ),
+          cardTheme: const CardTheme(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+        ),
+        routerConfig: _router,
       ),
-      routerConfig: _router,
     );
   }
 }

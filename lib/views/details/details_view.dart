@@ -191,12 +191,26 @@ class _MealDetailsState extends State<_MealDetails> {
                                   .read<DetailsCubit>()
                                   .favoriteCacheManager
                                   .getValues();
-                              if (state.favoriteMealDetail?.meals?.isNotEmpty ?? false) {
+                              if (context
+                                      .read<DetailsCubit>()
+                                      .favoriteMealDetail
+                                      ?.meals
+                                      .isNotNullOrEmpty ??
+                                  false) {
                                 await context
                                     .read<DetailsCubit>()
                                     .favoriteCacheManager
-                                    .putItem('${state.id}', state.favoriteMealDetail!);
+                                    .putItem(
+                                      state.id.toString(),
+                                      state.favoriteMealDetail!,
+                                    );
                               }
+                              // show snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Added to favorites'),
+                                ),
+                              );
                             },
                           ),
                         ),

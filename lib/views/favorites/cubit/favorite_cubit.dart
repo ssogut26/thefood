@@ -10,24 +10,46 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       : super(
           FavoritesState(),
         ) {
-    fetchData();
+    fetchListOfFavorites();
+    removeItem('');
+    checkUpdated();
   }
 
-  ICacheManager<Meal> favoriteCacheManager =
+  final ICacheManager<Meal> favoriteCacheManager =
       FavoriteMealDetailCacheManager('mealDetails');
-  List<Meal?>? favoriteBox;
+  List<Meal>? favoriteBox;
 
-  Future<void> fetchData() async {
+  Future<void> fetchListOfFavorites() async {
     await favoriteCacheManager.init();
     if (favoriteCacheManager.getValues()?.isNotEmpty ?? false) {
       favoriteBox = favoriteCacheManager.getValues();
     }
-    emit(state.copyWith(favoriteBox: favoriteBox));
+    emit(
+      state.copyWith(
+        favoriteBox: favoriteBox,
+      ),
+    );
   }
 
-  Future<void> removeItem(String key) async {
+  Future<void> checkUpdated() async {
+    if (favoriteBox != favoriteCacheManager.getValues()) {
+      favoriteBox = favoriteCacheManager.getValues();
+    }
+    emit(
+      state.copyWith(
+        favoriteBox: favoriteBox,
+      ),
+    );
+  }
+
+  Future<void Function()?> removeItem(String key) async {
     await favoriteCacheManager.removeItem(key);
-    emit(state.copyWith(favoriteBox: favoriteBox));
-    await fetchData();
+    favoriteBox = favoriteCacheManager.getValues();
+    emit(
+      state.copyWith(
+        favoriteBox: favoriteBox,
+      ),
+    );
+    return null;
   }
 }

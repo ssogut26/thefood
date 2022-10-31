@@ -11,8 +11,6 @@ import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/constants/texts.dart';
 import 'package:thefood/models/categories.dart';
 import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/home_service.dart';
-import 'package:thefood/services/managers/network_manager.dart';
 import 'package:thefood/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/views/home/shimmers.dart';
 
@@ -59,39 +57,36 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeCubit(HomeService(NetworkManager.instance)),
-      child: Scaffold(
-        key: _key,
-        appBar: _appBar(),
-        endDrawer: _Drawer(auth: _auth),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: ProjectPaddings.pageLarge,
-              child: BlocBuilder<HomeCubit, HomeState>(
-                builder: (context, state) {
-                  return Column(
-                    children: [
-                      const _SearchBar(),
-                      if (context.read<HomeCubit>().fetchCategoryData() != null)
-                        _getCategories(context)
-                      else
-                        const CategoryShimmer(),
-                      if (context.read<HomeCubit>().fetchCategoryMealData() != null)
-                        _categoryMeals()
-                      else
-                        const CategoryMealShimmer(
-                          itemCount: 4,
-                        ),
-                      if (context.read<HomeCubit>().fetchRandomMealData() != null)
-                        _randomRecipe()
-                      else
-                        const RandomMealShimmer(),
-                    ],
-                  );
-                },
-              ),
+    return Scaffold(
+      key: _key,
+      appBar: _appBar(),
+      endDrawer: _Drawer(auth: _auth),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: ProjectPaddings.pageLarge,
+            child: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                return Column(
+                  children: [
+                    const _SearchBar(),
+                    if (context.read<HomeCubit>().fetchCategoryData() != null)
+                      _getCategories(context)
+                    else
+                      const CategoryShimmer(),
+                    if (context.read<HomeCubit>().fetchCategoryMealData() != null)
+                      _categoryMeals()
+                    else
+                      const CategoryMealShimmer(
+                        itemCount: 4,
+                      ),
+                    if (context.read<HomeCubit>().fetchRandomMealData() != null)
+                      _randomRecipe()
+                    else
+                      const RandomMealShimmer(),
+                  ],
+                );
+              },
             ),
           ),
         ),

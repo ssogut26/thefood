@@ -5,7 +5,7 @@ class FavoritesState extends Equatable {
     this.favoriteBox,
   });
 
-  List<Meal?>? favoriteBox;
+  late List<Meal?>? favoriteBox;
 
   @override
   List<Object?> get props => [favoriteBox];
