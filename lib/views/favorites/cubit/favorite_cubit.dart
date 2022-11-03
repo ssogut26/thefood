@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thefood/models/meals.dart';
@@ -31,8 +33,8 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     );
   }
 
-  Future<void> checkUpdated() async {
-    if (favoriteBox != favoriteCacheManager.getValues()) {
+  Stream<void> checkUpdated() async* {
+    if (favoriteBox?.length != favoriteCacheManager.getValues()?.length) {
       favoriteBox = favoriteCacheManager.getValues();
     }
     emit(
@@ -51,5 +53,12 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       ),
     );
     return null;
+  }
+
+  Future<void> Function() onRefresh() {
+    return () async {
+      await Future.delayed(const Duration(seconds: 1));
+      await fetchListOfFavorites();
+    };
   }
 }

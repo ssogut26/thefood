@@ -3,11 +3,17 @@ library navigator;
 import 'package:flutter/material.dart';
 
 class NavigatorView extends StatefulWidget {
-  const NavigatorView({required this.widgetOptions, super.key});
+  const NavigatorView(
+      {required this.widgetOptions,
+      this.selectedIndex = 1,
+      this.navigatorKeys = const {},
+      super.key});
 
   @override
   State<NavigatorView> createState() => _NavigatorViewState();
   final List<Widget> widgetOptions;
+  final Map<int, GlobalKey<NavigatorState>> navigatorKeys;
+  final int selectedIndex;
 }
 
 class _NavigatorViewState extends State<NavigatorView> {
@@ -53,7 +59,7 @@ class _NavigatorViewState extends State<NavigatorView> {
 
   Navigator buildNavigator() {
     return Navigator(
-      key: navigatorKeys[_selectedIndex],
+      key: widget.navigatorKeys[_selectedIndex],
       onGenerateRoute: (RouteSettings settings) {
         return MaterialPageRoute(
           builder: (_) => widget.widgetOptions.elementAt(_selectedIndex),

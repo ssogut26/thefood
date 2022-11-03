@@ -273,7 +273,7 @@ class LoginButton extends StatelessWidget {
                       await context.read<LoginCubit>().logInWithCredentials();
                       await login();
                       if (FirebaseAuth.instance.currentUser != null) {
-                        context.goNamed('navigator');
+                        context.goNamed('/');
                       }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -338,7 +338,7 @@ class RegisterButton extends StatelessWidget {
                           await FirebaseAuth.instance.currentUser
                               ?.updateDisplayName(state.name.value);
                           FirebaseAuth.instance.authStateChanges();
-                          context.go('/navigator');
+                          context.goNamed('/');
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

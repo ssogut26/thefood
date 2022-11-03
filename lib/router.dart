@@ -1,10 +1,17 @@
 part of 'main.dart';
 
 final GoRouter _router = GoRouter(
+  routerNeglect: true,
+  errorBuilder: (context, error) => Scaffold(
+    body: Center(
+      child: Text(error.toString()),
+    ),
+  ),
   initialLocation: FirebaseAuth.instance.currentUser == null ? '/login' : '/',
   routes: [
     GoRoute(
       path: '/',
+      name: '/',
       builder: (BuildContext context, GoRouterState state) {
         return const NavigatorView(
           widgetOptions: [
@@ -14,6 +21,28 @@ final GoRouter _router = GoRouter(
           ],
         );
       },
+      routes: [
+        GoRoute(
+          path: 'home',
+          name: 'home',
+          builder: (BuildContext context, GoRouterState state) {
+            return BlocProvider(
+              create: (_) => HomeCubit(HomeService(NetworkManager.instance)),
+              child: const HomeView(),
+            );
+          },
+        ),
+        GoRoute(
+          path: 'favorites',
+          name: 'favorites',
+          builder: (BuildContext context, GoRouterState state) {
+            return BlocProvider(
+              create: (context) => FavoritesCubit(),
+              child: const FavoriteView(),
+            );
+          },
+        ),
+      ],
     ),
     GoRoute(
       path: '/category/:name/:image',
@@ -28,26 +57,6 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/home',
-      name: 'home',
-      builder: (BuildContext context, GoRouterState state) {
-        return BlocProvider(
-          create: (_) => HomeCubit(HomeService(NetworkManager.instance)),
-          child: const HomeView(),
-        );
-      },
-    ),
-    GoRoute(
-      path: '/favorites',
-      name: 'favorites',
-      builder: (BuildContext context, GoRouterState state) {
-        return BlocProvider(
-          create: (context) => FavoritesCubit(),
-          child: const FavoriteView(),
-        );
-      },
-    ),
-    GoRoute(
       path: '/details/:id/:name/:image',
       name: 'details',
       builder: (BuildContext context, GoRouterState state) {
@@ -58,6 +67,7 @@ final GoRouter _router = GoRouter(
           create: (context) => DetailsCubit(
             DetailService(NetworkManager.instance),
             id,
+            context,
           ),
           child: DetailsView(
             name: name,
@@ -74,19 +84,6 @@ final GoRouter _router = GoRouter(
         return BlocProvider(
           create: (context) => SignUpCubit(AuthenticationRepository()),
           child: const SingUpView(),
-        );
-      },
-    ),
-    GoRoute(
-      path: '/navigator',
-      name: 'navigator',
-      builder: (BuildContext context, GoRouterState state) {
-        return const NavigatorView(
-          widgetOptions: [
-            HomeView(),
-            HomeView(),
-            FavoriteView(),
-          ],
         );
       },
     ),

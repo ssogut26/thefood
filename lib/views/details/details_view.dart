@@ -92,8 +92,11 @@ class _DetailsViewState extends State<DetailsView> {
                                 favoriteCacheManager:
                                     context.read<DetailsCubit>().favoriteCacheManager,
                               )
-                            : const Center(
-                                child: CircularProgressIndicator(),
+                            : _MealDetails(
+                                details: widget,
+                                items: state.meal,
+                                favoriteCacheManager:
+                                    context.read<DetailsCubit>().favoriteCacheManager,
                               ),
                       ),
                     ),

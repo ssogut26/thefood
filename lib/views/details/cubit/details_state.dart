@@ -6,12 +6,14 @@ class DetailsState extends Equatable {
     this.meal,
     this.favoriteMealDetail,
     this.detailService,
+    this.connectionStatus,
   });
 
   final int id;
   final Meal? meal;
   late Meal? favoriteMealDetail;
   final IDetailService? detailService;
+  final ConnectivityResult? connectionStatus;
 
   @override
   List<Object?> get props => [id, meal, favoriteMealDetail, detailService];
@@ -21,12 +23,14 @@ class DetailsState extends Equatable {
     Meal? meal,
     Meal? favoriteMealDetail,
     IDetailService? detailService,
+    ConnectivityResult? connectionStatus,
   }) {
     return DetailsState(
       id: id ?? this.id,
       meal: meal ?? this.meal,
       favoriteMealDetail: favoriteMealDetail ?? this.favoriteMealDetail,
       detailService: detailService ?? this.detailService,
+      connectionStatus: connectionStatus ?? this.connectionStatus,
     );
   }
 }

@@ -33,6 +33,14 @@ class FavoriteMealDetailCacheManager extends ICacheManager<Meal> {
     return _box?.values.toList();
   }
 
+  Future<void> initLazyBox() async {
+    LazyBox<Meal>? box;
+    registerAdapters();
+    if (!(box?.isOpen ?? false)) {
+      box = await Hive.openLazyBox(key);
+    }
+  }
+
   @override
   void registerAdapters() {
     if (!Hive.isAdapterRegistered(1)) {

@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:navigator/navigator.dart';
-import 'package:path_provider/path_provider.dart' as pathProvider;
 import 'package:thefood/constants/colors.dart';
 import 'package:thefood/constants/hive_constants.dart';
 import 'package:thefood/constants/text_styles.dart';
@@ -37,8 +36,9 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final directory = await pathProvider.getApplicationDocumentsDirectory();
-  Hive.init(directory.path);
+  // final directory = await pathProvider.getApplicationDocumentsDirectory();
+  // Hive.init(directory.path);
+
   await Hive.openBox<String>(HiveConstants.loginCredentials);
   final userbox = await Hive.openBox<String>(HiveConstants.user);
   final currentUser = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -73,6 +73,7 @@ class _TheFoodState extends State<TheFood> {
               NetworkManager.instance,
             ),
             0,
+            context,
           ),
         ),
         BlocProvider<FavoritesCubit>(
