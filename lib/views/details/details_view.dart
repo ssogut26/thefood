@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/assets_path.dart';
@@ -31,84 +34,143 @@ class DetailsView extends StatefulWidget {
 }
 
 class _DetailsViewState extends State<DetailsView> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    isLoading = changeLoading();
+    super.initState();
+  }
+
+  bool changeLoading() {
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
+    return isLoading;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-            leading: Padding(
-              padding: ProjectPaddings.cardSmall,
-              child: IconButton(
-                icon: CircleAvatar(
-                  backgroundColor: ProjectColors.actionsBgColor,
-                  child: SvgPicture.asset(
-                    AssetsPath.back,
-                    color: ProjectColors.black,
-                  ),
-                ),
-                onPressed: () {
-                  context.pop();
-                },
-              ),
-            ),
-            pinned: true,
-            expandedHeight: 200,
-            flexibleSpace: Stack(
-              children: <Widget>[
-                Positioned.fill(
-                  child: CachedNetworkImage(
-                    imageUrl: widget.image ?? '',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
-                builder: (context, state) {
-                  return Padding(
-                    padding: context.paddingLow,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        color: ProjectColors.mainWhite,
-                        borderRadius: BorderRadius.only(
-                          topLeft: context.lowRadius,
-                          topRight: context.lowRadius,
+      body: OfflineBuilder(
+        connectivityBuilder: (
+          BuildContext context,
+          ConnectivityResult connectivity,
+          Widget child,
+        ) {
+          final connected = connectivity != ConnectivityResult.none;
+          return isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : CustomScrollView(
+                  slivers: <Widget>[
+                    SliverAppBar(
+                      leading: Padding(
+                        padding: ProjectPaddings.cardSmall,
+                        child: IconButton(
+                          icon: CircleAvatar(
+                            backgroundColor: ProjectColors.actionsBgColor,
+                            child: SvgPicture.asset(
+                              AssetsPath.back,
+                              color: ProjectColors.black,
+                            ),
+                          ),
+                          onPressed: () {
+                            context.pop();
+                          },
                         ),
                       ),
-                      child: Padding(
-                        padding: ProjectPaddings.pageLarge,
-                        child: state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false
-                            ? _MealDetails(
-                                details: widget,
-                                items: state.favoriteMealDetail,
-                                favoriteCacheManager:
-                                    context.read<DetailsCubit>().favoriteCacheManager,
-                              )
-                            : _MealDetails(
-                                details: widget,
-                                items: state.meal,
-                                favoriteCacheManager:
-                                    context.read<DetailsCubit>().favoriteCacheManager,
+                      pinned: true,
+                      expandedHeight: 200,
+                      flexibleSpace: Stack(
+                        children: <Widget>[
+                          if (connected || DioErrorType.other == SocketException)
+                            Positioned.fill(
+                              child: CachedNetworkImage(
+                                imageUrl: widget.image ?? '',
+                                fit: BoxFit.cover,
                               ),
+                            )
+                          else
+                            const Center(child: SizedBox.shrink()),
+                        ],
                       ),
                     ),
-                  );
-                },
-              ),
-              childCount: 1,
-            ),
-          ),
-        ],
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
+                          builder: (context, state) {
+                            return Padding(
+                              padding: context.paddingLow,
+                              child: Container(
+                                width: MediaQuery.of(context).size.width,
+                                decoration: BoxDecoration(
+                                  color: ProjectColors.mainWhite,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: context.lowRadius,
+                                    topRight: context.lowRadius,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: ProjectPaddings.pageLarge,
+                                  child: state.favoriteMealDetail?.meals
+                                              ?.isNotNullOrEmpty ??
+                                          false
+                                      ? _MealDetails(
+                                          details: widget,
+                                          items: state.favoriteMealDetail,
+                                          favoriteCacheManager: context
+                                              .read<DetailsCubit>()
+                                              .favoriteCacheManager,
+                                        )
+                                      : connected
+                                          ? _MealDetails(
+                                              details: widget,
+                                              items: state.meal,
+                                              favoriteCacheManager: context
+                                                  .read<DetailsCubit>()
+                                                  .favoriteCacheManager,
+                                            )
+                                          : Center(
+                                              child: DecoratedBox(
+                                                decoration: BoxDecoration(
+                                                  color: ProjectColors.mainWhite,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Image.asset(
+                                                      'assets/images/no_connection.png',
+                                                    ),
+                                                    Text(
+                                                      'No internet connection',
+                                                      style: context.textTheme.headline6,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        childCount: 1,
+                      ),
+                    ),
+                  ],
+                );
+        },
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
-      // ),
     );
   }
 }

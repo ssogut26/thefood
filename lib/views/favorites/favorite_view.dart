@@ -14,6 +14,24 @@ class FavoriteView extends StatefulWidget {
 }
 
 class _FavoriteViewState extends State<FavoriteView> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    isLoading = changeLoading();
+    super.initState();
+  }
+
+  bool changeLoading() {
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        isLoading = false;
+        print(isLoading);
+      });
+    });
+    return isLoading;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,136 +47,143 @@ class _FavoriteViewState extends State<FavoriteView> {
           }
         },
         builder: (context, state) {
-          return context.watch<FavoritesCubit>().favoriteBox?.isNotEmpty ?? false
-              ? RefreshIndicator(
-                  onRefresh: context.read<FavoritesCubit>().onRefresh(),
-                  child: Padding(
-                    padding: ProjectPaddings.pageMedium,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: ListView.builder(
-                        itemCount: context.watch<FavoritesCubit>().favoriteBox?.length,
-                        physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
-                        ),
-                        itemBuilder: (context, index) {
-                          final meal = state.favoriteBox?[index]?.meals;
-                          return Padding(
-                            padding: ProjectPaddings.cardMedium,
-                            child: InkWell(
-                              onTap: () {
-                                context.pushNamed(
-                                  'details',
-                                  params: {
-                                    'id': meal
-                                            ?.map((e) => e.idMeal)
-                                            .toString()
-                                            .deletePharanteses() ??
-                                        '',
-                                    'name': meal
-                                            ?.map((e) => e.strMeal)
-                                            .toString()
-                                            .deletePharanteses() ??
-                                        '',
-                                    'image': meal
-                                            ?.map((e) => e.strMealThumb)
-                                            .toString()
-                                            .deletePharanteses() ??
-                                        '',
+          return isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : context.watch<FavoritesCubit>().favoriteBox?.isNotEmpty ?? false
+                  ? RefreshIndicator(
+                      onRefresh: context.read<FavoritesCubit>().onRefresh(),
+                      child: Padding(
+                        padding: ProjectPaddings.pageMedium,
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: ListView.builder(
+                            itemCount:
+                                context.watch<FavoritesCubit>().favoriteBox?.length,
+                            physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            itemBuilder: (context, index) {
+                              final meal = state.favoriteBox?[index]?.meals;
+                              return Padding(
+                                padding: ProjectPaddings.cardMedium,
+                                child: InkWell(
+                                  onTap: () {
+                                    context.pushNamed(
+                                      'details',
+                                      params: {
+                                        'id': meal
+                                                ?.map((e) => e.idMeal)
+                                                .toString()
+                                                .deletePharanteses() ??
+                                            '',
+                                        'name': meal
+                                                ?.map((e) => e.strMeal)
+                                                .toString()
+                                                .deletePharanteses() ??
+                                            '',
+                                        'image': meal
+                                                ?.map((e) => e.strMealThumb)
+                                                .toString()
+                                                .deletePharanteses() ??
+                                            '',
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                height: MediaQuery.of(context).size.height * 0.20,
-                                child: Card(
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        height: MediaQuery.of(context).size.height,
-                                        width: MediaQuery.of(context).size.width * 0.40,
-                                        child: CachedNetworkImage(
-                                          imageUrl: meal
-                                                  ?.map((e) => e.strMealThumb)
-                                                  .toString()
-                                                  .deletePharanteses() ??
-                                              '',
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: ProjectPaddings.textMedium,
-                                          child: Text(
-                                            softWrap: true,
-                                            meal
-                                                    ?.map((e) => e.strMeal)
-                                                    .toString()
-                                                    .deletePharanteses() ??
-                                                '',
-                                            style: Theme.of(context).textTheme.bodyText2,
+                                  child: SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    height: MediaQuery.of(context).size.height * 0.20,
+                                    child: Card(
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            height: MediaQuery.of(context).size.height,
+                                            width:
+                                                MediaQuery.of(context).size.width * 0.40,
+                                            child: CachedNetworkImage(
+                                              imageUrl: meal
+                                                      ?.map((e) => e.strMealThumb)
+                                                      .toString()
+                                                      .deletePharanteses() ??
+                                                  '',
+                                              fit: BoxFit.fill,
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          context.read<FavoritesCubit>().removeItem(
+                                          Expanded(
+                                            child: Padding(
+                                              padding: ProjectPaddings.textMedium,
+                                              child: Text(
+                                                softWrap: true,
                                                 meal
-                                                        ?.map((e) => e.idMeal)
+                                                        ?.map((e) => e.strMeal)
                                                         .toString()
                                                         .deletePharanteses() ??
                                                     '',
-                                              );
-                                        },
-                                        icon: const Icon(Icons.delete),
+                                                style:
+                                                    Theme.of(context).textTheme.bodyText2,
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              context.read<FavoritesCubit>().removeItem(
+                                                    meal
+                                                            ?.map((e) => e.idMeal)
+                                                            .toString()
+                                                            .deletePharanteses() ??
+                                                        '',
+                                                  );
+                                            },
+                                            icon: const Icon(Icons.delete),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          await Future.delayed(const Duration(seconds: 1));
+                          await context.read<FavoritesCubit>().fetchListOfFavorites();
+                        },
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height / 1.2,
+                              child: Center(
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                        text: '${ProjectTexts.noFavoritesYet}\n\n',
+                                        style: Theme.of(context).textTheme.headline2,
+                                      ),
+                                      TextSpan(
+                                        text: 'To refresh, pull down',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            ?.copyWith(
+                                              letterSpacing: 0.5,
+                                            ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                )
-              : Center(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(seconds: 1));
-                      await context.read<FavoritesCubit>().fetchListOfFavorites();
-                    },
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height / 1.2,
-                          child: Center(
-                            child: RichText(
-                              text: TextSpan(
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: '${ProjectTexts.noFavoritesYet}\n\n',
-                                    style: Theme.of(context).textTheme.headline2,
-                                  ),
-                                  TextSpan(
-                                    text: 'To refresh, pull down',
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1?.copyWith(
-                                              letterSpacing: 0.5,
-                                            ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
+                      ),
+                    );
         },
       ),
     );
