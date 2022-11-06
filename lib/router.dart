@@ -15,7 +15,7 @@ final GoRouter _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return const NavigatorView(
           widgetOptions: [
-            HomeView(),
+            ProfileView(),
             HomeView(),
             FavoriteView(),
           ],

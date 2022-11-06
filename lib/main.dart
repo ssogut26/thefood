@@ -27,6 +27,7 @@ import 'package:thefood/views/favorites/cubit/favorite_cubit.dart';
 import 'package:thefood/views/favorites/favorite_view.dart';
 import 'package:thefood/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/views/home/home_view.dart';
+import 'package:thefood/views/profile/profile_view.dart';
 
 part 'router.dart';
 

@@ -25,7 +25,6 @@ class DetailsCubit extends Cubit<DetailsState> {
   final int id;
   Meal? favoriteMealDetail;
   final BuildContext context;
-  late ConnectivityResult connectionStatus;
 
   Future<Meal?> getMeal(int id) async {
     final mealDetail = await detailService.getMeal(id);
@@ -48,13 +47,4 @@ class DetailsCubit extends Cubit<DetailsState> {
     }
     emit(state.copyWith(favoriteMealDetail: favoriteMealDetail));
   }
-}
-
-enum Status {
-  none(ConnectivityResult.none),
-  wifi(ConnectivityResult.wifi),
-  mobile(ConnectivityResult.mobile);
-
-  const Status(this.connectionStatus);
-  final ConnectivityResult? connectionStatus;
 }

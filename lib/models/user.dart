@@ -1,30 +1,44 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class User extends Equatable {
-  const User({
-    required this.id,
+part 'user.g.dart';
+
+@JsonSerializable()
+class UserModels extends Equatable {
+  const UserModels({
+    this.id,
     this.email,
     this.name,
-    this.recipe,
+    this.recipes,
     this.favorite,
+    this.image,
   });
+  factory UserModels.fromJson(Map<String, dynamic> json) => _$UserModelsFromJson(json);
+  factory UserModels.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      _$UserModelsFromFirestore(doc);
+
+  Map<String, dynamic> toJson() => _$UserModelsToJson(this);
+  Map<String, dynamic> toFirestore() => _$UserModelsToFirebase(this);
 
   final String? email;
 
-  final String id;
+  final String? id;
 
   final String? name;
 
-  final List<String>? recipe;
+  final List<dynamic>? recipes;
 
-  final List<String>? favorite;
+  final List<dynamic>? favorite;
 
-  static const empty = User(id: '');
+  final String? image;
 
-  bool get isEmpty => this == User.empty;
+  static const empty = UserModels(id: '');
 
-  bool get isNotEmpty => this != User.empty;
+  bool get isEmpty => this == UserModels.empty;
+
+  bool get isNotEmpty => this != UserModels.empty;
 
   @override
-  List<Object?> get props => [email, id, name, recipe, favorite];
+  List<Object?> get props => [email, id, name, recipes, favorite, image];
 }
