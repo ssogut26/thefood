@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:card_swiper/card_swiper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/models/user.dart';
+import 'package:thefood/views/add_recipe/add_recipe_view.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -19,9 +20,14 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   File? _image;
   final picker = ImagePicker();
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   Future<void> pickImage() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (image == null) return;
     final imageTempPath = File(image.path);
     setState(() {
@@ -30,22 +36,19 @@ class _ProfileViewState extends State<ProfileView> {
     final user = UserModels(
       image: imageTempPath.toString().getPath(),
     );
-    final docRef = FirebaseFirestore.instance
+    final docRef = _firestore
         .collection('users')
         .withConverter(
           fromFirestore: (snapshot, _) => UserModels.fromFirestore(snapshot),
           toFirestore: (UserModels user, options) => user.toFirestore(),
         )
-        .doc(FirebaseAuth.instance.currentUser?.uid);
+        .doc(_auth.currentUser?.uid);
     if (user.image?.isNotNullOrNoEmpty ?? false) {
       await docRef.set(user);
     } else {
       await docRef.update(user.toFirestore());
     }
   }
-
-  int _current = 0;
-  final CarouselController _carouselController = CarouselController();
 
   Future<String> getUserImage() async {
     final ref = FirebaseFirestore.instance
@@ -64,7 +67,6 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
-    print(_image);
     imagess = getUserImage();
     super.initState();
   }
@@ -77,7 +79,13 @@ class _ProfileViewState extends State<ProfileView> {
       ),
       // for adding recipes to firestore
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AddRecipe(),
+            ),
+          );
+        },
         child: const Icon(Icons.add),
       ),
       body: Padding(
@@ -90,7 +98,7 @@ class _ProfileViewState extends State<ProfileView> {
                 GestureDetector(
                   onTap: pickImage,
                   child: CircleAvatar(
-                    radius: 40,
+                    radius: 35,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(40),
                       child: Center(
@@ -101,9 +109,9 @@ class _ProfileViewState extends State<ProfileView> {
                                   if (snapshot.hasData) {
                                     return Image.file(
                                       File(snapshot.data ?? ''),
-                                      fit: BoxFit.cover,
                                       width: 80,
                                       height: 80,
+                                      fit: BoxFit.cover,
                                     );
                                   } else {
                                     return const CircularProgressIndicator();
@@ -112,7 +120,7 @@ class _ProfileViewState extends State<ProfileView> {
                               )
                             : Image.file(
                                 File(_image?.path ?? ''),
-                                fit: BoxFit.scaleDown,
+                                fit: BoxFit.cover,
                                 width: 80,
                                 height: 80,
                               ),
@@ -136,35 +144,35 @@ class _ProfileViewState extends State<ProfileView> {
               'My Recipes',
               style: TextStyle(fontSize: 20),
             ),
-            Expanded(
-              child: SizedBox(
-                height: context.dynamicHeight(0.2),
-                width: context.dynamicWidth(1),
-                child: Card(
-                  child: Column(
-                    children: [
-                      CarouselSlider(
-                        items: const [],
-                        carouselController: _carouselController,
-                        options: CarouselOptions(
-                          onPageChanged: (index, reason) {
-                            setState(() {
-                              _current = index;
-                            });
-                          },
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          Image.network(
+            ConstrainedBox(
+              constraints:
+                  BoxConstraints.loose(Size(context.width, context.dynamicHeight(0.2))),
+              child: Swiper(
+                curve: Curves.easeIn,
+                scale: 0.9,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          height: context.dynamicHeight(0.2),
+                          width: context.dynamicWidth(0.4),
+                          child: Image.network(
                             'https://picsum.photos/250?image=9',
-                            width: context.dynamicWidth(0.2),
-                            height: context.dynamicHeight(0.12),
+                            fit: BoxFit.scaleDown,
                           ),
-                          const Text('Recipe Name'),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const Text('Recipe Name'),
+                      ],
+                    ),
+                  );
+                },
+                pagination: const SwiperPagination(
+                  margin: EdgeInsets.all(5),
+                  builder: DotSwiperPaginationBuilder(
+                    color: Colors.grey,
+                    activeColor: Colors.black,
                   ),
                 ),
               ),

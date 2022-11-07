@@ -141,13 +141,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
-  carousel_slider:
+  card_swiper:
     dependency: "direct main"
     description:
-      name: carousel_slider
+      name: card_swiper
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.1"
+    version: "2.0.4"
   characters:
     dependency: transitive
     description:
@@ -205,7 +205,7 @@ packages:
     source: hosted
     version: "1.16.0"
   connectivity_plus:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: connectivity_plus
       url: "https://pub.dartlang.org"
@@ -626,7 +626,7 @@ packages:
     source: hosted
     version: "0.6.4"
   json_annotation:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: json_annotation
       url: "https://pub.dartlang.org"
