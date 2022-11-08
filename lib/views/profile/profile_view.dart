@@ -4,11 +4,11 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/paddings.dart';
 import 'package:thefood/models/user.dart';
-import 'package:thefood/views/add_recipe/add_recipe_view.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -80,11 +80,7 @@ class _ProfileViewState extends State<ProfileView> {
       // for adding recipes to firestore
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddRecipe(),
-            ),
-          );
+          context.pushNamed('add');
         },
         child: const Icon(Icons.add),
       ),

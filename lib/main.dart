@@ -15,6 +15,7 @@ import 'package:thefood/firebase_options.dart';
 import 'package:thefood/services/detail_service.dart';
 import 'package:thefood/services/home_service.dart';
 import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/views/add_recipe/add_recipe_view.dart';
 import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/views/auth/bloc/sign_up/sign_up_cubit.dart';
 import 'package:thefood/views/auth/forgot_password_view.dart';

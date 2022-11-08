@@ -476,10 +476,10 @@ class AreaImage extends StatelessWidget {
         errorWidget: (context, url, error) => const Icon(
           Icons.error,
         ),
-        progressIndicatorBuilder: (context, url, downloadProgress) => SizedBox(
-          height: 32,
-          width: 32,
-          child: Center(
+        progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+          child: SizedBox(
+            height: 16,
+            width: 16,
             child: CircularProgressIndicator(
               value: downloadProgress.progress,
             ),

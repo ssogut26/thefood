@@ -103,6 +103,13 @@ final GoRouter _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return const ForgotPassView();
       },
-    )
+    ),
+    GoRoute(
+      path: '/add',
+      name: 'add',
+      builder: (BuildContext context, GoRouterState state) {
+        return const AddRecipe();
+      },
+    ),
   ],
 );
