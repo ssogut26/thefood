@@ -10,12 +10,38 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   AddRecipeCubit() : super(AddRecipeState());
 
   List<Widget> widgetList = [];
-  List<String> ingredientList = [];
+  List<String?>? ingredientList = [
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ];
   TextEditingController ingredientNameController = TextEditingController();
   TextEditingController ingredientAmountController = TextEditingController();
 
-  void addValue(List<String> value) {
-    emit(state.copyWith(ingredientList: [...state.ingredientList, ...value]));
+  void addValue(List<String>? ingredientList, List<String>? measureList) {
+    emit(
+      state.copyWith(
+        ingredientList: ingredientList ?? [],
+        measureList: measureList ?? [],
+      ),
+    );
   }
 
   void addIngredientField(
@@ -66,7 +92,7 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
 
   void addRecipe() {
     for (final widget in widgetList) {
-      ingredientList.add(ingredientNameController.text);
+      ingredientList?.add(ingredientNameController.text);
     }
     emit(state.copyWith(ingredientList: state.ingredientList));
   }

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kartal/kartal.dart';
@@ -17,47 +18,25 @@ class AddRecipe extends StatefulWidget {
 }
 
 class _AddRecipeState extends State<AddRecipe> {
-  final List<Widget> _widgetList1 = [
-    Row(
-      children: [
-        Flexible(
-          flex: 3,
-          child: TextFormField(
-            decoration: const InputDecoration(
-              hintText: 'Ingredient',
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Flexible(
-          flex: 2,
-          child: TextFormField(
-            decoration: const InputDecoration(
-              hintText: 'Amount',
-            ),
-          ),
-        ),
-      ],
-    ),
-  ];
-
-  final List<TextEditingController> _controllers = [];
+  List<Widget> widgetList = [];
+  final List<TextEditingController> _ingredientControllers = [];
+  final List<TextEditingController> _measureControllers = [];
 
   void addIngredientField(
     int index,
     TextEditingController controllertxt,
     TextEditingController ingredientAmountController,
   ) {
-    final ingredients = ingredientList[index];
-    _widgetList1.insert(
-      0,
+    widgetList.add(
       Padding(
         padding: ProjectPaddings.cardMedium,
         child: Row(
           children: [
             Expanded(
               flex: 5,
-              child: IngredientName(controller: controllertxt),
+              child: IngredientName(
+                controller: _ingredientControllers[index],
+              ),
             ),
             const SizedBox(
               width: 10,
@@ -65,17 +44,29 @@ class _AddRecipeState extends State<AddRecipe> {
             Expanded(
               flex: 3,
               child: TextFormField(
-                controller: ingredientAmountController,
+                controller: _measureControllers[index],
                 decoration: InputDecoration(
                   hintText: 'Amount',
                   suffixIcon: IconButton(
                     iconSize: 20,
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        widgetList.removeWhere(
+                          (element) => element == widgetList[index],
+                        );
+                        _ingredientControllers.removeWhere(
+                          (element) => element == _ingredientControllers[index],
+                        );
+                        _measureControllers.removeWhere(
+                          (element) => element == _measureControllers[index],
+                        );
+                      });
+                    },
                     icon: const Icon(
                       Icons.delete,
                       color: Colors.black,
                     ),
-                  ),
+                  ).toVisible(index >= 1),
                 ),
               ),
             ),
@@ -85,13 +76,18 @@ class _AddRecipeState extends State<AddRecipe> {
     );
   }
 
+  final TextEditingController _nameController = TextEditingController();
   List<String> ingredientList = [];
-  final bool _displayNewTextField = false;
   Meals? test;
+  late Future<List<MealCategory>?> categories;
   @override
   void initState() {
+    categories = NetworkManager.instance.getCategories();
     super.initState();
   }
+
+  String categoryValue = 'Select Category';
+  final int _selectedCategory = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -114,80 +110,48 @@ class _AddRecipeState extends State<AddRecipe> {
                 child: Column(
                   children: [
                     _headlineBox(context, 'NAME'),
-                    const NameInput(),
+                    NameInput(nameController: _nameController),
                     _headlineBox(context, 'CATEGORY'),
                     const CategoryDropDown(),
                     _headlineBox(context, 'AREA'),
                     const AreaDropdown(),
                     _headlineBox(context, 'INGREDIENTS'),
                     ListView.builder(
-                      itemCount: _widgetList1.length,
+                      itemCount: widgetList.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
-                        const i = 20;
-                        if (i < _widgetList1.length) {
-                          _controllers.add(TextEditingController());
-                        }
-                        return _widgetList1[index];
+                        return widgetList[index];
                       },
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          var index = _widgetList1.length;
-                          _widgetList1.insert(
-                            0,
-                            Padding(
-                              padding: ProjectPaddings.cardMedium,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 5,
-                                    child: IngredientName(
-                                      controller: _controllers[index],
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: TextFormField(
-                                      decoration: InputDecoration(
-                                        hintText: 'Amount',
-                                        suffixIcon: IconButton(
-                                          iconSize: 20,
-                                          onPressed: () {
-                                            setState(() {
-                                              _widgetList1.removeAt(0);
-                                            });
-                                          },
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                          index++;
-                        });
+                      onPressed: () async {
+                        // create every index for widgetList
+
+                        _ingredientControllers.add(TextEditingController());
+                        _measureControllers.add(TextEditingController());
                       },
                       child: const Text('Add Ingredient'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         setState(() {
-                          context
-                              .read<AddRecipeCubit>()
-                              .addValue(_controllers.map((e) => e.text).toList());
+                          context.read<AddRecipeCubit>().addValue(
+                                _ingredientControllers.map((e) => e.text).toList(),
+                                _measureControllers.map((e) => e.text).toList(),
+                              );
                         });
-                        print(_controllers.map((e) => e.text).toList().length);
-                        _controllers.clear();
+
+                        final recipe = Meals().copyWith(
+                          strMeal: _nameController.text,
+                          strArea: state.recipeArea,
+                          strCategory: state.recipeCategory,
+                          strIngredients: state.ingredientList,
+                          strMeasures: state.measureList,
+                        );
+                        await FirebaseFirestore.instance
+                            .collection('recipes')
+                            .doc()
+                            .set(recipe.toJson());
                       },
                       child: const Text('Save'),
                     ),
@@ -255,13 +219,17 @@ class _IngredientNameState extends State<IngredientName> {
 class NameInput extends StatelessWidget {
   const NameInput({
     super.key,
-  });
+    required TextEditingController nameController,
+  }) : _nameController = nameController;
+
+  final TextEditingController _nameController;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextFormField(
+        controller: _nameController,
         decoration: const InputDecoration(
           hintText: 'Enter your recipe name',
         ),
@@ -270,40 +238,53 @@ class NameInput extends StatelessWidget {
   }
 }
 
-class AreaDropdown extends StatelessWidget {
+class AreaDropdown extends StatefulWidget {
   const AreaDropdown({
     super.key,
   });
 
   @override
+  State<AreaDropdown> createState() => _AreaDropdownState();
+}
+
+class _AreaDropdownState extends State<AreaDropdown> {
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
-      child: DropdownButtonFormField(
-        hint: const Text('Select Area'),
-        items: [
-          for (var index = 0; index < countryFlagMap.length; index++)
-            DropdownMenuItem(
-              value: countryFlagMap.keys.elementAt(index),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: context.onlyRightPaddingLow,
-                    child: CachedNetworkImage(
-                      imageUrl: countryFlagMap.values.elementAt(index),
-                      height: 32,
-                      width: 32,
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.error,
+      child: BlocBuilder<AddRecipeCubit, AddRecipeState>(
+        builder: (context, state) {
+          return DropdownButtonFormField(
+            hint: const Text('Select Area'),
+            items: [
+              for (var index = 0; index < countryFlagMap.length; index++)
+                DropdownMenuItem(
+                  value: countryFlagMap.keys.elementAt(index),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: context.onlyRightPaddingLow,
+                        child: CachedNetworkImage(
+                          imageUrl: countryFlagMap.values.elementAt(index),
+                          height: 32,
+                          width: 32,
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.error,
+                          ),
+                        ),
                       ),
-                    ),
+                      Text(countryFlagMap.keys.elementAt(index)),
+                    ],
                   ),
-                  Text(countryFlagMap.keys.elementAt(index)),
-                ],
-              ),
-            ),
-        ],
-        onChanged: (value) {},
+                ),
+            ],
+            onChanged: (value) {
+              setState(() {
+                state.recipeArea = value.toString();
+              });
+            },
+          );
+        },
       ),
     );
   }
@@ -331,29 +312,34 @@ class _CategoryDropDownState extends State<CategoryDropDown> {
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
-      child: FutureBuilder<List<MealCategory>?>(
-        future: categories,
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data.isNotNullOrEmpty) {
-            final data = snapshot.data;
-            return DropdownButtonFormField(
-              hint: const Text('Select Category'),
-              items: [
-                for (var index = 0; index < data!.length; index++)
-                  DropdownMenuItem(
-                    value: index,
-                    child: Text(data[index].strCategory ?? ''),
-                  ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value;
-                });
-              },
-            );
-          } else {
-            return const CircularProgressIndicator();
-          }
+      child: BlocBuilder<AddRecipeCubit, AddRecipeState>(
+        builder: (context, state) {
+          return FutureBuilder<List<MealCategory>?>(
+            future: categories,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data.isNotNullOrEmpty) {
+                final data = snapshot.data;
+                return DropdownButtonFormField(
+                  hint: const Text('Select Category'),
+                  items: [
+                    for (var index = 0; index < data!.length; index++)
+                      DropdownMenuItem(
+                        value: index,
+                        child: Text(data[index].strCategory ?? ''),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                      state.recipeCategory = data[_selectedCategory!].strCategory ?? '';
+                    });
+                  },
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          );
         },
       ),
     );
