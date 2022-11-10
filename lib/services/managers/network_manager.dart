@@ -38,9 +38,9 @@ class NetworkManager {
     return null;
   }
 
-  Future<Meal?> getMealsByCategory(String name) async {
+  Future<Meal?> getMealsByCategory(String key) async {
     final response = await _dio.get(
-      EndPoints.filterByCategory + name,
+      EndPoints.filterByCategory + key,
     );
     if (response.data is Map<String, dynamic>) {
       return Meal.fromJson(response.data as Map<String, dynamic>);

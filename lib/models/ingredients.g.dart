@@ -7,20 +7,18 @@ part of 'ingredients.dart';
 // **************************************************************************
 
 Ingredients _$IngredientsFromJson(Map<String, dynamic> json) => Ingredients(
-      meals: (json['meals'] as List<dynamic>?)
+      ingredients: (json['meals'] as List<dynamic>?)
           ?.map((e) => MealsIngredient.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$IngredientsToJson(Ingredients instance) =>
-    <String, dynamic>{
-      'meals': instance.meals,
+Map<String, dynamic> _$IngredientsToJson(Ingredients instance) => <String, dynamic>{
+      'meals': instance.ingredients,
     };
 
-MealsIngredient _$MealsIngredientFromJson(Map<String, dynamic> json) =>
-    MealsIngredient(
+MealsIngredient _$MealsIngredientFromJson(Map<String, dynamic> json) => MealsIngredient(
       idIngredient: json['idIngredient'] as String?,
-      strIngredient: json['strIngredient'] as String?,
+      strIngredient: json['strIngredient'] as String,
       strDescription: json['strDescription'] as String?,
       strType: json['strType'] as String?,
     );

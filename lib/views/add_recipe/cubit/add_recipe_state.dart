@@ -30,28 +30,7 @@ class AddRecipeState extends Equatable {
     this.recipeArea,
   });
 
-  List<String?>? ingredientList = [
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ];
+  List<String?>? ingredientList = [];
   List<String?>? measureList = [];
   List<Widget> widgetList = [];
   String? recipeCategory;

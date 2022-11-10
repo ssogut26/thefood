@@ -10,28 +10,7 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   AddRecipeCubit() : super(AddRecipeState());
 
   List<Widget> widgetList = [];
-  List<String?>? ingredientList = [
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ];
+  List<String?>? ingredientList = [];
   TextEditingController ingredientNameController = TextEditingController();
   TextEditingController ingredientAmountController = TextEditingController();
 
@@ -56,7 +35,9 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
           children: [
             Expanded(
               flex: 5,
-              child: IngredientName(controller: ingredientNameController),
+              child: IngredientName(
+                ingredientController: ingredientNameController,
+              ),
             ),
             const SizedBox(
               width: 10,
