@@ -1,5 +1,6 @@
 class ProjectTexts {
   ProjectTexts._();
+
   static const categories = 'Categories';
   static const areas = 'Areas';
   static const ingredients = 'Ingredients';
@@ -36,4 +37,23 @@ class ProjectTexts {
   static const favoriteBoxName = 'Favorites';
   static const logoutError = 'Could not log out';
   static const logoutSuccess = 'Logged out';
+  static const addRecipe = 'Add Recipe';
+  static const recipeName = 'Recipe Name*';
+  static const categoryName = 'Category*';
+  static const areaName = 'Area*';
+  static const youtubeLink = 'Youtube Link';
+  static const image = 'Image*';
+  static const source = 'Source';
+  static const ingredientInput = 'Ingredient';
+  static const measureInput = 'Measure';
+  static const selectCategory = 'Select Category';
+  static const selectArea = 'Select Area';
+  static const pickGallery = 'Pick from Gallery';
+  static const pickCamera = 'Take a picture';
+  static const instructionInput = 'Enter an instruction';
+  static const recipeIngredients = 'Ingredients*';
+  static const recipeInstructions = 'Instructions*';
+  static const sourceInput = 'Enter a source link';
+  static const youtubeInput = 'Enter a youtube link';
+  static const recipeNameInput = 'Enter your recipe name';
 }

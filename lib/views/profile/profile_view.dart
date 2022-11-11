@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/constants/paddings.dart';
+import 'package:thefood/models/meals.dart';
 import 'package:thefood/models/user.dart';
 
 class ProfileView extends StatefulWidget {
@@ -64,11 +65,21 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   late Future<String> imagess;
-
+  late final Future<Meals> userMealData;
   @override
   void initState() {
+    userMealData = getUserRecipes();
     imagess = getUserImage();
     super.initState();
+  }
+
+  Future<Meals> getUserRecipes() async {
+    final ref = FirebaseFirestore.instance
+        .collection('recipes')
+        .doc(FirebaseAuth.instance.currentUser?.uid);
+
+    final docSnap = await ref.get().then((value) => value.data());
+    return Meals.fromJson(docSnap ?? {});
   }
 
   @override
@@ -148,20 +159,48 @@ class _ProfileViewState extends State<ProfileView> {
                 scale: 0.9,
                 itemCount: 5,
                 itemBuilder: (context, index) {
-                  return Card(
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          height: context.dynamicHeight(0.2),
-                          width: context.dynamicWidth(0.4),
-                          child: Image.network(
-                            'https://picsum.photos/250?image=9',
-                            fit: BoxFit.scaleDown,
-                          ),
-                        ),
-                        const Text('Recipe Name'),
-                      ],
-                    ),
+                  return FutureBuilder<Meals>(
+                    future: userMealData,
+                    builder: (context, snapshot) {
+                      final meals = snapshot.data?.strMeal;
+
+                      if (snapshot.hasData) {
+                        return ListView.builder(
+                          itemCount: 1,
+                          itemBuilder: (context, index) {
+                            return const ListTile(
+                              title: Text(
+                                '',
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const Center(child: Text('noData'));
+                      // return Card(
+                      //   child: Row(
+                      //     children: [
+                      //       SizedBox(
+                      //         height: context.dynamicHeight(0.2),
+                      //         width: context.dynamicWidth(0.4),
+                      //         child: Text(
+                      //           snapshot.data
+                      //                   ?.map((e) => e?.data()?['strMeal'])
+                      //                   .toString() ??
+                      //               '',
+                      //         ),
+                      //       ),
+                      //       Text(
+                      //         snapshot.data
+                      //                 ?.map((e) => e?.data()?['strMeal'])
+                      //                 .toString() ??
+                      //             '',
+                      //         style: context.textTheme.headline1,
+                      //       ),
+                      //     ],
+                      //   ),
+                      // );
+                    },
                   );
                 },
                 pagination: const SwiperPagination(
