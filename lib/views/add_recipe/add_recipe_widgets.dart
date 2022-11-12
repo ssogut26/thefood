@@ -5,6 +5,7 @@ late TextEditingController _nameController;
 late TextEditingController _youtubeController;
 late TextEditingController _sourceController;
 late TextEditingController _instructionController;
+final TextEditingController _imageController = TextEditingController();
 final List<TextEditingController> _ingredientControllers = [];
 final List<TextEditingController> _measureControllers = [];
 
@@ -90,12 +91,14 @@ class _SendButtonState extends State<SendButton> {
               strIngredients: state.ingredientList,
               strMeasures: state.measureList,
               strInstructions: _instructionController.text,
+              strImageSource: _imageController.text,
+              strSource: _sourceController.text,
               strYoutube: _youtubeController.text,
             );
+
             final user = UserModels(
-              id: FirebaseAuth.instance.currentUser!.uid,
-              name: FirebaseAuth.instance.currentUser!.displayName,
-              image: FirebaseAuth.instance.currentUser!.photoURL,
+              id: FirebaseAuth.instance.currentUser?.uid,
+              name: FirebaseAuth.instance.currentUser?.displayName,
             );
 
             await FirebaseFirestore.instance
@@ -106,6 +109,14 @@ class _SendButtonState extends State<SendButton> {
                 .collection('recipes')
                 .doc(FirebaseAuth.instance.currentUser!.uid)
                 .update(user.toJson());
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .collection(
+                  'recipes',
+                )
+                .doc()
+                .set(recipe.toJson());
           },
           child: const Text(ProjectTexts.send),
         );
@@ -161,6 +172,12 @@ class AddImageButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        TextField(
+          controller: _imageController,
+          decoration: const InputDecoration(
+            hintText: ProjectTexts.image,
+          ),
+        ),
         Padding(
           padding: ProjectPaddings.cardMedium,
           child: ElevatedButton.icon(
@@ -287,12 +304,13 @@ class _IngredientNameState extends State<IngredientName> {
           return RawAutocomplete<MealsIngredient>(
             textEditingController: widget._ingredientController,
             focusNode: FocusNode(),
-            fieldViewBuilder: (context, textEditingController, focusNode, onChanged) {
+            fieldViewBuilder:
+                (context, textEditingController, focusNode, onFieldSubmitted) {
               return TextFormField(
                 controller: textEditingController,
                 focusNode: focusNode,
-                onChanged: (value) {
-                  onChanged();
+                onFieldSubmitted: (value) {
+                  onFieldSubmitted;
                 },
                 decoration: const InputDecoration(
                   hintText: ProjectTexts.ingredientInput,

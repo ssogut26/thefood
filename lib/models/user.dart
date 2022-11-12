@@ -27,7 +27,7 @@ class UserModels extends Equatable {
 
   final String? name;
 
-  final List<dynamic>? recipes;
+  final Map<String, dynamic>? recipes;
 
   final List<dynamic>? favorite;
 

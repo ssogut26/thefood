@@ -69,4 +69,17 @@ class NetworkManager {
     }
     return null;
   }
+
+  // get firestore data
+  // Future<List<FieldValue>?> getFirestoreData() async {
+  //   final ref = FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(FirebaseAuth.instance.currentUser?.uid);
+
+  //   final docSnap = await ref.get();
+  //   if (docSnap.exists) {
+  //     return docSnap.data()?['recipes'] as List<FieldValue>;
+  //   }
+  //   return null;
+  // }
 }

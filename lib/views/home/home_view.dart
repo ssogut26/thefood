@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:card_swiper/card_swiper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -103,6 +105,89 @@ class _HomeViewState extends State<HomeView> {
                                     _randomRecipe()
                                   else
                                     const RandomMealShimmer(),
+                                  StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('recipes')
+                                        .snapshots(),
+                                    builder:
+                                        (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      final data = snapshot.data?.docs;
+                                      if (snapshot.hasData) {
+                                        return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: snapshot.data?.docs.length ?? 0,
+                                          itemBuilder: (context, index) {
+                                            return ConstrainedBox(
+                                              constraints: BoxConstraints.loose(
+                                                Size(
+                                                  context.width,
+                                                  context.dynamicHeight(0.2),
+                                                ),
+                                              ),
+                                              child: Swiper(
+                                                loop: false,
+                                                curve: Curves.easeIn,
+                                                scale: 0.9,
+                                                itemCount: data?.length ?? 0,
+                                                itemBuilder: (context, index) {
+                                                  return Card(
+                                                    child: Row(
+                                                      children: [
+                                                        SizedBox(
+                                                          height:
+                                                              context.dynamicHeight(0.2),
+                                                          width:
+                                                              context.dynamicWidth(0.4),
+                                                          child: Image.network(
+                                                            fit: BoxFit.cover,
+                                                            "${data?[index]['strImageSource']}",
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              ProjectPaddings.textMedium,
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment.center,
+                                                            children: [
+                                                              Text(
+                                                                '${data?[index]['strMeal']}\n',
+                                                              ),
+                                                              Text(
+                                                                '${data?[index]['strCategory']}',
+                                                              ),
+                                                              Align(
+                                                                alignment:
+                                                                    Alignment.bottomRight,
+                                                                child: Text(
+                                                                  '${data?[index]['name']}',
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                                pagination: const SwiperPagination(
+                                                  margin: EdgeInsets.all(5),
+                                                  builder: DotSwiperPaginationBuilder(
+                                                    color: Colors.grey,
+                                                    activeColor: Colors.yellow,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
+                                    },
+                                  ),
                                 ],
                               );
                             },
