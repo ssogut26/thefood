@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -10,10 +11,13 @@ class Meal with EquatableMixin {
   const Meal({
     this.meals,
   });
+  factory Meal.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      _$MealFromFirestore(doc);
   factory Meal.fromJson(Map<String, dynamic> json) => _$MealFromJson(json);
   @HiveField(0)
   final List<Meals>? meals;
   Map<String, dynamic> toJson() => _$MealToJson(this);
+  Map<String, dynamic> toFirestore() => _$MealToFirestore(this);
 
   @override
   List<Object?> get props => [meals];
@@ -80,6 +84,10 @@ class Meals with EquatableMixin {
     this.dateModified,
   });
   factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
+  factory Meals.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      _$MealsFromFirestore(doc);
+
+  Map<String, dynamic> toFirestore() => _$MealsToFirebase(this);
   @HiveField(0)
   @JsonKey(name: 'strIngredients')
   List<String?>? strIngredients;

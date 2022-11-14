@@ -10,7 +10,6 @@ class UserModels extends Equatable {
     this.id,
     this.email,
     this.name,
-    this.recipes,
     this.favorite,
     this.image,
   });
@@ -18,16 +17,14 @@ class UserModels extends Equatable {
   factory UserModels.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
       _$UserModelsFromFirestore(doc);
 
-  Map<String, dynamic> toJson() => _$UserModelsToJson(this);
   Map<String, dynamic> toFirestore() => _$UserModelsToFirebase(this);
+  Map<String, dynamic> toJson() => _$UserModelsToJson(this);
 
   final String? email;
 
   final String? id;
 
   final String? name;
-
-  final Map<String, dynamic>? recipes;
 
   final List<dynamic>? favorite;
 
@@ -40,5 +37,5 @@ class UserModels extends Equatable {
   bool get isNotEmpty => this != UserModels.empty;
 
   @override
-  List<Object?> get props => [email, id, name, recipes, favorite, image];
+  List<Object?> get props => [email, id, name, favorite, image];
 }

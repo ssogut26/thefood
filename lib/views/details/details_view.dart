@@ -35,10 +35,14 @@ class DetailsView extends StatefulWidget {
 
 class _DetailsViewState extends State<DetailsView> {
   bool isLoading = true;
+  late int selectedIndex;
+  late bool isUserRecipe;
 
   @override
   void initState() {
     isLoading = changeLoading();
+    isUserRecipe = widget.id < 5000 ? true : false;
+    selectedIndex = 0;
     super.initState();
   }
 
@@ -117,45 +121,375 @@ class _DetailsViewState extends State<DetailsView> {
                                 ),
                                 child: Padding(
                                   padding: ProjectPaddings.pageLarge,
-                                  child: state.favoriteMealDetail?.meals
+                                  child: Column(
+                                    children: [
+                                      if (state.favoriteMealDetail?.meals
                                               ?.isNotNullOrEmpty ??
-                                          false
-                                      ? _MealDetails(
+                                          false)
+                                        _MealDetails(
                                           details: widget,
                                           items: state.favoriteMealDetail,
                                           favoriteCacheManager: context
                                               .read<DetailsCubit>()
                                               .favoriteCacheManager,
                                         )
-                                      : connected
-                                          ? _MealDetails(
-                                              details: widget,
-                                              items: state.meal,
-                                              favoriteCacheManager: context
-                                                  .read<DetailsCubit>()
-                                                  .favoriteCacheManager,
-                                            )
-                                          : Center(
-                                              child: DecoratedBox(
-                                                decoration: BoxDecoration(
-                                                  color: ProjectColors.mainWhite,
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Image.asset(
-                                                      'assets/images/no_connection.png',
-                                                    ),
-                                                    Text(
-                                                      'No internet connection',
-                                                      style: context.textTheme.headline6,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
+                                      else if (connected && isUserRecipe == false)
+                                        _MealDetails(
+                                          details: widget,
+                                          items: state.meal,
+                                          favoriteCacheManager: context
+                                              .read<DetailsCubit>()
+                                              .favoriteCacheManager,
+                                        )
+                                      else if (connected && isUserRecipe)
+                                        FutureBuilder<Map<String, dynamic>?>(
+                                          future: context
+                                              .read<DetailsCubit>()
+                                              .getUserRecipe(widget.id),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              final data = snapshot.data;
+                                              final ingredientList =
+                                                  data?['strIngredients'] as List;
+                                              final measureList =
+                                                  data?['strMeasures'] as List;
+                                              return ListView.builder(
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(),
+                                                padding: EdgeInsets.zero,
+                                                shrinkWrap: true,
+                                                itemCount: 1,
+                                                itemBuilder: (context, index) {
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 12,
+                                                            child: Text(
+                                                              widget.name ?? '',
+                                                              style: Theme.of(
+                                                                context,
+                                                              ).textTheme.headline1,
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 2,
+                                                            child: IconButton(
+                                                              icon: CircleAvatar(
+                                                                backgroundColor:
+                                                                    ProjectColors
+                                                                        .actionsBgColor,
+                                                                child: SvgPicture.asset(
+                                                                  AssetsPath.bookmark,
+                                                                  color:
+                                                                      ProjectColors.black,
+                                                                ),
+                                                              ),
+                                                              onPressed: () async {
+                                                                context
+                                                                    .read<DetailsCubit>()
+                                                                    .favoriteCacheManager
+                                                                    .getValues();
+                                                                if (context
+                                                                        .read<
+                                                                            DetailsCubit>()
+                                                                        .favoriteMealDetail
+                                                                        ?.meals
+                                                                        .isNotNullOrEmpty ??
+                                                                    false) {
+                                                                  await context
+                                                                      .read<
+                                                                          DetailsCubit>()
+                                                                      .favoriteCacheManager
+                                                                      .putItem(
+                                                                        state.id
+                                                                            .toString(),
+                                                                        state
+                                                                            .favoriteMealDetail!,
+                                                                      );
+                                                                }
+                                                                // show snackbar
+                                                                ScaffoldMessenger.of(
+                                                                  context,
+                                                                ).showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                      'Added to favorites',
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 12,
+                                                            child: Padding(
+                                                              padding: ProjectPaddings
+                                                                  .cardLarge,
+                                                              child: Text(
+                                                                'in ${data?['strCategory']}',
+                                                              ).toVisible(
+                                                                '${data?['strCategory']}'
+                                                                    .isNotNullOrNoEmpty,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 2,
+                                                            child: CachedNetworkImage(
+                                                              imageUrl: countryFlagMap[
+                                                                      data?['strArea']] ??
+                                                                  '',
+                                                              height: 32,
+                                                              width: 32,
+                                                              errorWidget: (
+                                                                context,
+                                                                url,
+                                                                error,
+                                                              ) =>
+                                                                  const Icon(
+                                                                Icons.error,
+                                                              ),
+                                                              progressIndicatorBuilder: (
+                                                                context,
+                                                                url,
+                                                                downloadProgress,
+                                                              ) =>
+                                                                  Center(
+                                                                child: SizedBox(
+                                                                  height: 16,
+                                                                  width: 16,
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    value:
+                                                                        downloadProgress
+                                                                            .progress,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 50,
+                                                            child: TextButton(
+                                                              autofocus: true,
+                                                              onPressed: () async {
+                                                                setState(() {
+                                                                  selectedIndex = 0;
+                                                                });
+                                                              },
+                                                              child: AnimatedScale(
+                                                                duration: const Duration(
+                                                                  milliseconds: 300,
+                                                                ),
+                                                                scale:
+                                                                    (selectedIndex == 0)
+                                                                        ? 1.2
+                                                                        : 1,
+                                                                child: Text(
+                                                                  ProjectTexts
+                                                                      .ingredients,
+                                                                  style:
+                                                                      (selectedIndex == 0)
+                                                                          ? Theme.of(
+                                                                              context,
+                                                                            )
+                                                                              .textTheme
+                                                                              .headline3
+                                                                          : Theme.of(
+                                                                              context,
+                                                                            )
+                                                                              .textTheme
+                                                                              .bodyText2,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 50,
+                                                            child: TextButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  selectedIndex = 1;
+                                                                });
+                                                              },
+                                                              child: AnimatedScale(
+                                                                duration: const Duration(
+                                                                  milliseconds: 300,
+                                                                ),
+                                                                scale:
+                                                                    (selectedIndex == 1)
+                                                                        ? 1.2
+                                                                        : 1,
+                                                                child: Text(
+                                                                  ProjectTexts
+                                                                      .instructions,
+                                                                  style:
+                                                                      (selectedIndex == 1)
+                                                                          ? Theme.of(
+                                                                              context,
+                                                                            )
+                                                                              .textTheme
+                                                                              .headline3
+                                                                          : Theme.of(
+                                                                              context,
+                                                                            )
+                                                                              .textTheme
+                                                                              .bodyText2,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (selectedIndex == 0)
+                                                        Column(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            for (int index = 0;
+                                                                index <
+                                                                        ingredientList
+                                                                            .length &&
+                                                                    index.isFinite;
+                                                                index++)
+                                                              ingredientList
+                                                                      .isNotNullOrEmpty
+                                                                  ? SizedBox(
+                                                                      height: 60,
+                                                                      width: 325,
+                                                                      child: Row(
+                                                                        children: [
+                                                                          Expanded(
+                                                                            flex: 2,
+                                                                            child: Card(
+                                                                              color: ProjectColors
+                                                                                  .lightGrey,
+                                                                              child:
+                                                                                  CachedNetworkImage(
+                                                                                errorWidget: (
+                                                                                  context,
+                                                                                  url,
+                                                                                  error,
+                                                                                ) =>
+                                                                                    const Icon(
+                                                                                  Icons
+                                                                                      .error,
+                                                                                ),
+                                                                                width: 60,
+                                                                                height:
+                                                                                    60,
+                                                                                imageUrl:
+                                                                                    '${EndPoints.ingredientsImages}${ingredientList[index]}-small.png',
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          Expanded(
+                                                                            flex: 7,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding:
+                                                                                  ProjectPaddings
+                                                                                      .textLarge,
+                                                                              child: Text(
+                                                                                '${ingredientList[index]}'
+                                                                                    .capitalize(),
+                                                                                style: Theme
+                                                                                        .of(
+                                                                                  context,
+                                                                                )
+                                                                                    .textTheme
+                                                                                    .headline3,
+                                                                              ).toVisible(
+                                                                                '${ingredientList[index]}' !=
+                                                                                    null,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          Expanded(
+                                                                            flex: 3,
+                                                                            child: Text(
+                                                                              '${measureList[index]}',
+                                                                            ).toVisible(
+                                                                              '${measureList[index]}' !=
+                                                                                  null,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    )
+                                                                  : const SizedBox
+                                                                      .shrink(),
+                                                          ],
+                                                        )
+                                                      else
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              '${data?['strInstructions']}',
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {},
+                                                              child: const Text(
+                                                                'Watch Video',
+                                                              ),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {},
+                                                              child: const Text(
+                                                                'Source',
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                            return const Center(
+                                              child: CircularProgressIndicator(),
+                                            );
+                                          },
+                                        )
+                                      else
+                                        Center(
+                                          child: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: ProjectColors.mainWhite,
+                                              borderRadius: BorderRadius.circular(10),
                                             ),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/no_connection.png',
+                                                ),
+                                                Text(
+                                                  'No internet connection',
+                                                  style: context.textTheme.headline6,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );

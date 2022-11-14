@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -59,8 +60,8 @@ class _ProfileViewState extends State<ProfileView> {
           toFirestore: (UserModels user, _) => user.toFirestore(),
         );
     final docSnap = await ref.get();
-    final userImage = docSnap.data()?.image;
-    return userImage ?? '';
+    final userImage = docSnap.data();
+    return userImage?.image ?? '';
   }
 
   late Future<String> imagess;
@@ -110,17 +111,30 @@ class _ProfileViewState extends State<ProfileView> {
                                       height: 80,
                                       fit: BoxFit.cover,
                                     );
+                                  }
+                                  if (snapshot.hasError) {
+                                    kDebugMode ? print(snapshot.error) : null;
+
+                                    return const Icon(Icons.error);
                                   } else {
                                     return const CircularProgressIndicator();
                                   }
                                 },
                               )
-                            : Image.file(
-                                File(_image?.path ?? ''),
-                                fit: BoxFit.cover,
-                                width: 80,
-                                height: 80,
-                              ),
+                            : _image?.path.isNotNullOrNoEmpty ?? false
+                                ? Image.file(
+                                    File(_image?.path ?? ''),
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                  )
+                                : const Icon(Icons.person),
+                        // Image.file(
+                        //     File(_image?.path ?? ''),
+                        //     fit: BoxFit.cover,
+                        //     width: 80,
+                        //     height: 80,
+                        //   ),
                       ),
                     ),
                   ),
@@ -153,7 +167,12 @@ class _ProfileViewState extends State<ProfileView> {
                 }
 
                 if (snapshot.hasData && snapshot.data?.docs.isEmpty == true) {
-                  return const Text('Document does not exist');
+                  return SizedBox(
+                    height: context.dynamicHeight(0.2),
+                    child: const Card(
+                      child: Center(child: Text('You have no recipes')),
+                    ),
+                  );
                 }
 
                 if (snapshot.connectionState == ConnectionState.done) {
@@ -165,6 +184,7 @@ class _ProfileViewState extends State<ProfileView> {
                     child: Swiper(
                       loop: false,
                       curve: Curves.easeIn,
+                      outer: true,
                       scale: 0.9,
                       itemCount: data?.length ?? 0,
                       itemBuilder: (context, index) {
@@ -176,7 +196,7 @@ class _ProfileViewState extends State<ProfileView> {
                                 width: context.dynamicWidth(0.4),
                                 child: Image.network(
                                   fit: BoxFit.cover,
-                                  "${data?[index]['strImageSource']}",
+                                  "${data?[index]['strMealThumb']}",
                                 ),
                               ),
                               Padding(

@@ -85,13 +85,14 @@ class _SendButtonState extends State<SendButton> {
             });
 
             final recipe = Meals().copyWith(
+              idMeal: '3',
               strMeal: _nameController.text,
               strArea: state.recipeArea,
               strCategory: state.recipeCategory,
               strIngredients: state.ingredientList,
               strMeasures: state.measureList,
               strInstructions: _instructionController.text,
-              strImageSource: _imageController.text,
+              strMealThumb: _imageController.text,
               strSource: _sourceController.text,
               strYoutube: _youtubeController.text,
             );
@@ -101,13 +102,14 @@ class _SendButtonState extends State<SendButton> {
               name: FirebaseAuth.instance.currentUser?.displayName,
             );
 
+            await FirebaseFirestore.instance.collection('recipes').doc('3').set({
+              'meals': [
+                {recipe.toJson()}
+              ]
+            });
             await FirebaseFirestore.instance
                 .collection('recipes')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
-                .set(recipe.toJson());
-            await FirebaseFirestore.instance
-                .collection('recipes')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .doc('3')
                 .update(user.toJson());
             await FirebaseFirestore.instance
                 .collection('users')
@@ -116,7 +118,11 @@ class _SendButtonState extends State<SendButton> {
                   'recipes',
                 )
                 .doc()
-                .set(recipe.toJson());
+                .set({
+              'meals': [
+                {recipe.toJson()}
+              ]
+            });
           },
           child: const Text(ProjectTexts.send),
         );

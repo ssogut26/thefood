@@ -104,7 +104,7 @@ class _HomeViewState extends State<HomeView> {
                                       null)
                                     _randomRecipe()
                                   else
-                                    const RandomMealShimmer(),
+                                    const _AlignedText(text: 'User Recipes'),
                                   StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                                     stream: FirebaseFirestore.instance
                                         .collection('recipes')
@@ -113,73 +113,77 @@ class _HomeViewState extends State<HomeView> {
                                         (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                       final data = snapshot.data?.docs;
                                       if (snapshot.hasData) {
-                                        return ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: snapshot.data?.docs.length ?? 0,
-                                          itemBuilder: (context, index) {
-                                            return ConstrainedBox(
-                                              constraints: BoxConstraints.loose(
-                                                Size(
-                                                  context.width,
-                                                  context.dynamicHeight(0.2),
-                                                ),
-                                              ),
-                                              child: Swiper(
-                                                loop: false,
-                                                curve: Curves.easeIn,
-                                                scale: 0.9,
-                                                itemCount: data?.length ?? 0,
-                                                itemBuilder: (context, index) {
-                                                  return Card(
-                                                    child: Row(
-                                                      children: [
-                                                        SizedBox(
-                                                          height:
-                                                              context.dynamicHeight(0.2),
-                                                          width:
-                                                              context.dynamicWidth(0.4),
-                                                          child: Image.network(
-                                                            fit: BoxFit.cover,
-                                                            "${data?[index]['strImageSource']}",
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              ProjectPaddings.textMedium,
-                                                          child: Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment.center,
-                                                            children: [
-                                                              Text(
-                                                                '${data?[index]['strMeal']}\n',
-                                                              ),
-                                                              Text(
-                                                                '${data?[index]['strCategory']}',
-                                                              ),
-                                                              Align(
-                                                                alignment:
-                                                                    Alignment.bottomRight,
-                                                                child: Text(
-                                                                  '${data?[index]['name']}',
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                        return ConstrainedBox(
+                                          constraints: BoxConstraints.loose(
+                                            Size(
+                                              context.width,
+                                              context.dynamicHeight(0.2),
+                                            ),
+                                          ),
+                                          child: Swiper(
+                                            loop: false,
+                                            curve: Curves.easeIn,
+                                            outer: true,
+                                            itemCount: data?.length ?? 0,
+                                            itemBuilder: (context, index) {
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  context.pushNamed(
+                                                    'details',
+                                                    params: {
+                                                      'name':
+                                                          "${data?[index]['strMeal']}",
+                                                      'image':
+                                                          "${data?[index]['strMealThumb']}",
+                                                      'id': "${data?[index]['idMeal']}",
+                                                    },
                                                   );
                                                 },
-                                                pagination: const SwiperPagination(
-                                                  margin: EdgeInsets.all(5),
-                                                  builder: DotSwiperPaginationBuilder(
-                                                    color: Colors.grey,
-                                                    activeColor: Colors.yellow,
+                                                child: Card(
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        height:
+                                                            context.dynamicHeight(0.2),
+                                                        width: context.dynamicWidth(0.4),
+                                                        child: Image.network(
+                                                          fit: BoxFit.cover,
+                                                          "${data?[index]['strMealThumb']}",
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            ProjectPaddings.textMedium,
+                                                        child: Column(
+                                                          children: [
+                                                            Center(
+                                                              child: Text(
+                                                                '${data?[index]['strMeal']}\n',
+                                                              ),
+                                                            ),
+                                                            // Align(
+                                                            //   alignment: Alignment
+                                                            //       .bottomRight,
+                                                            //   child: Text(
+                                                            //     '${data?[index]['name']}',
+                                                            //   ),
+                                                            // ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
+                                              );
+                                            },
+                                            pagination: const SwiperPagination(
+                                              margin: EdgeInsets.all(5),
+                                              builder: DotSwiperPaginationBuilder(
+                                                color: Colors.grey,
+                                                activeColor: Colors.yellow,
                                               ),
-                                            );
-                                          },
+                                            ),
+                                          ),
                                         );
                                       } else {
                                         return const Center(

@@ -17,12 +17,14 @@ class DetailsCubit extends Cubit<DetailsState> {
         ) {
     getMeal(id);
     fetchMealData(id);
+    getUserRecipe(id);
   }
 
   final IDetailService detailService;
   final ICacheManager<Meal> favoriteCacheManager =
       FavoriteMealDetailCacheManager('mealDetails');
   final int id;
+  Map<String, dynamic>? userRecipe;
   Meal? favoriteMealDetail;
   final BuildContext context;
 
@@ -34,6 +36,17 @@ class DetailsCubit extends Cubit<DetailsState> {
       ),
     );
     return mealDetail;
+  }
+
+  Future<Map<String, dynamic>?> getUserRecipe(int id) async {
+    state.userRecipe = await detailService.isUserRecipe(id);
+    userRecipe = await detailService.isUserRecipe(id);
+    emit(
+      state.copyWith(
+        userRecipe: userRecipe,
+      ),
+    );
+    return state.userRecipe;
   }
 
   Future<void> fetchMealData(int id) async {

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:thefood/constants/endpoints.dart';
 import 'package:thefood/models/meals.dart';
 import 'package:thefood/services/managers/network_manager.dart';
@@ -6,6 +7,7 @@ abstract class IDetailService {
   IDetailService(NetworkManager networkManager) : _networkManager = networkManager;
   late final NetworkManager _networkManager;
   Future<Meal?> getMeal(int id);
+  Future<Map<String, dynamic>> isUserRecipe(int id);
 }
 
 class DetailService extends IDetailService {
@@ -21,5 +23,14 @@ class DetailService extends IDetailService {
       }
     }
     return null;
+  }
+
+  @override
+  Future<Map<String, dynamic>> isUserRecipe(int id) async {
+    final ref = FirebaseFirestore.instance.collection('recipes').doc(id.toString());
+    final docSnap = await ref.get();
+    final userRecipe = docSnap.data();
+
+    return userRecipe ?? {};
   }
 }

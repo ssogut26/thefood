@@ -35,9 +35,7 @@ class MealAdapter extends TypeAdapter<Meal> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MealAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is MealAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class MealsAdapter extends TypeAdapter<Meals> {
@@ -231,9 +229,7 @@ class MealsAdapter extends TypeAdapter<Meals> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MealsAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is MealsAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 // **************************************************************************
@@ -246,9 +242,76 @@ Meal _$MealFromJson(Map<String, dynamic> json) => Meal(
           .toList(),
     );
 
+Meal _$MealFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) => Meal(
+      meals: (doc.data()?['meals'] as List<Meals>?)
+          ?.map((e) => Meals.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
 Map<String, dynamic> _$MealToJson(Meal instance) => <String, dynamic>{
       'meals': instance.meals,
     };
+
+Map<String, dynamic> _$MealToFirestore(Meal instance) => <String, dynamic>{
+      'meals': instance.meals,
+    };
+
+Meals _$MealsFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) => Meals(
+      strIngredients: doc.data()?['strIngredients'] as List<String>?,
+      idMeal: doc.data()?['idMeal'] as String?,
+      strMeal: doc.data()?['strMeal'] as String?,
+      strDrinkAlternate: doc.data()?['strDrinkAlternate'] as String?,
+      strCategory: doc.data()?['strCategory'] as String?,
+      strArea: doc.data()?['strArea'] as String?,
+      strInstructions: doc.data()?['strInstructions'] as String?,
+      strMealThumb: doc.data()?['strMealThumb'] as String?,
+      strTags: doc.data()?['strTags'] as String?,
+      strYoutube: doc.data()?['strYoutube'] as String?,
+      strIngredient1: doc.data()?['strIngredient1'] as String?,
+      strIngredient2: doc.data()?['strIngredient2'] as String?,
+      strIngredient3: doc.data()?['strIngredient3'] as String?,
+      strIngredient4: doc.data()?['strIngredient4'] as String?,
+      strIngredient5: doc.data()?['strIngredient5'] as String?,
+      strIngredient6: doc.data()?['strIngredient6'] as String?,
+      strIngredient7: doc.data()?['strIngredient7'] as String?,
+      strIngredient8: doc.data()?['strIngredient8'] as String?,
+      strIngredient9: doc.data()?['strIngredient9'] as String?,
+      strIngredient10: doc.data()?['strIngredient10'] as String?,
+      strIngredient11: doc.data()?['strIngredient11'] as String?,
+      strIngredient12: doc.data()?['strIngredient12'] as String?,
+      strIngredient13: doc.data()?['strIngredient13'] as String?,
+      strIngredient14: doc.data()?['strIngredient14'] as String?,
+      strIngredient15: doc.data()?['strIngredient15'] as String?,
+      strIngredient16: doc.data()?['strIngredient16'] as String?,
+      strIngredient17: doc.data()?['strIngredient17'] as String?,
+      strIngredient18: doc.data()?['strIngredient18'] as String?,
+      strIngredient19: doc.data()?['strIngredient19'] as String?,
+      strIngredient20: doc.data()?['strIngredient20'] as String?,
+      strMeasure1: doc.data()?['strMeasure1'] as String?,
+      strMeasure2: doc.data()?['strMeasure2'] as String?,
+      strMeasure3: doc.data()?['strMeasure3'] as String?,
+      strMeasure5: doc.data()?['strMeasure5'] as String?,
+      strMeasure6: doc.data()?['strMeasure6'] as String?,
+      strMeasure7: doc.data()?['strMeasure7'] as String?,
+      strMeasure8: doc.data()?['strMeasure8'] as String?,
+      strMeasure9: doc.data()?['strMeasure9'] as String?,
+      strMeasure10: doc.data()?['strMeasure10'] as String?,
+      strMeasure11: doc.data()?['strMeasure11'] as String?,
+      strMeasure12: doc.data()?['strMeasure12'] as String?,
+      strMeasure13: doc.data()?['strMeasure13'] as String?,
+      strMeasure14: doc.data()?['strMeasure14'] as String?,
+      strMeasure15: doc.data()?['strMeasure15'] as String?,
+      strMeasure16: doc.data()?['strMeasure16'] as String?,
+      strMeasure17: doc.data()?['strMeasure17'] as String?,
+      strMeasure18: doc.data()?['strMeasure18'] as String?,
+      strMeasure19: doc.data()?['strMeasure19'] as String?,
+      strMeasure20: doc.data()?['strMeasure20'] as String?,
+      strSource: doc.data()?['strSource'] as String?,
+      strImageSource: doc.data()?['strImageSource'] as String?,
+      strCreativeCommonsConfirmed: doc.data()?['strCreativeCommonsConfirmed'] as String?,
+      dateModified: doc.data()?['dateModified'] as String?,
+      strMeasures: doc.data()?['strMeasures'] as List<String>?,
+    );
 
 Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       idMeal: json['idMeal'] as String?,
@@ -280,9 +343,8 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strIngredient18: json['strIngredient18'] as String?,
       strIngredient19: json['strIngredient19'] as String?,
       strIngredient20: json['strIngredient20'] as String?,
-      strIngredients: (json['strIngredients'] as List<dynamic>?)
-          ?.map((e) => e as String?)
-          .toList(),
+      strIngredients:
+          (json['strIngredients'] as List<dynamic>?)?.map((e) => e as String?).toList(),
       strMeasure1: json['strMeasure1'] as String?,
       strMeasure2: json['strMeasure2'] as String?,
       strMeasure3: json['strMeasure3'] as String?,
@@ -303,15 +365,63 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strMeasure18: json['strMeasure18'] as String?,
       strMeasure19: json['strMeasure19'] as String?,
       strMeasure20: json['strMeasure20'] as String?,
-      strMeasures: (json['strMeasures'] as List<dynamic>?)
-          ?.map((e) => e as String?)
-          .toList(),
+      strMeasures:
+          (json['strMeasures'] as List<dynamic>?)?.map((e) => e as String?).toList(),
       strSource: json['strSource'] as String?,
       strImageSource: json['strImageSource'] as String?,
-      strCreativeCommonsConfirmed:
-          json['strCreativeCommonsConfirmed'] as String?,
+      strCreativeCommonsConfirmed: json['strCreativeCommonsConfirmed'] as String?,
       dateModified: json['dateModified'] as String?,
     );
+
+Map<String, dynamic> _$MealsToFirebase(Meals instance) => <String, dynamic>{
+      'idMeal': instance.idMeal,
+      'strMeal': instance.strMeal,
+      'strDrinkAlternate': instance.strDrinkAlternate,
+      'strCategory': instance.strCategory,
+      'strArea': instance.strArea,
+      'strInstructions': instance.strInstructions,
+      'strMealThumb': instance.strMealThumb,
+      'strTags': instance.strTags,
+      'strYoutube': instance.strYoutube,
+      'strIngredient1': instance.strIngredient1,
+      'strIngredient2': instance.strIngredient2,
+      'strIngredient3': instance.strIngredient3,
+      'strIngredient4': instance.strIngredient4,
+      'strIngredient5': instance.strIngredient5,
+      'strIngredient6': instance.strIngredient6,
+      'strIngredient7': instance.strIngredient7,
+      'strIngredient8': instance.strIngredient8,
+      'strIngredient9': instance.strIngredient9,
+      'strIngredient10': instance.strIngredient10,
+      'strIngredient11': instance.strIngredient11,
+      'strIngredient12': instance.strIngredient12,
+      'strIngredient13': instance.strIngredient13,
+      'strIngredient14': instance.strIngredient14,
+      'strIngredient15': instance.strIngredient15,
+      'strIngredient16': instance.strIngredient16,
+      'strIngredient17': instance.strIngredient17,
+      'strIngredient18': instance.strIngredient18,
+      'strIngredient19': instance.strIngredient19,
+      'strIngredient20': instance.strIngredient20,
+      'strIngredients': instance.strIngredients,
+      'strMeasure1': instance.strMeasure1,
+      'strMeasure2': instance.strMeasure2,
+      'strMeasure3': instance.strMeasure3,
+      'strMeasure4': instance.strMeasure4,
+      'strMeasure5': instance.strMeasure5,
+      'strMeasure6': instance.strMeasure6,
+      'strMeasure7': instance.strMeasure7,
+      'strMeasure8': instance.strMeasure8,
+      'strMeasure9': instance.strMeasure9,
+      'strMeasure10': instance.strMeasure10,
+      'strMeasure11': instance.strMeasure11,
+      'strMeasure12': instance.strMeasure12,
+      'strMeasure13': instance.strMeasure13,
+      'strMeasure14': instance.strMeasure14,
+      'strMeasure15': instance.strMeasure15,
+      'strMeasure16': instance.strMeasure16,
+      'strMeasure17': instance.strMeasure17
+    };
 
 Map<String, dynamic> _$MealsToJson(Meals instance) => <String, dynamic>{
       'strIngredients': instance.strIngredients,
