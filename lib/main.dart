@@ -41,9 +41,6 @@ Future<void> main() async {
   // final directory = await pathProvider.getApplicationDocumentsDirectory();
   // Hive.init(directory.path);
   await Hive.openBox<String>(HiveConstants.loginCredentials);
-  final userbox = await Hive.openBox<String>(HiveConstants.user);
-  final currentUser = FirebaseAuth.instance.currentUser?.uid ?? '';
-  await userbox.add(currentUser);
   final authenticationRepository = AuthenticationRepository();
   await authenticationRepository.user.first;
   runApp(const TheFood());
