@@ -2,8 +2,8 @@ part of 'add_recipe_cubit.dart';
 
 class AddRecipeState extends Equatable {
   AddRecipeState({
-    this.ingredientList = const [],
-    this.measureList = const [],
+    this.ingredientList,
+    this.measureList,
     this.widgetList = const [],
     this.recipeCategory,
     this.index = 0,
@@ -11,8 +11,8 @@ class AddRecipeState extends Equatable {
     this.idMeal,
   });
 
-  List<String?>? ingredientList = [];
-  List<String?>? measureList = [];
+  List<String?>? ingredientList;
+  List<String?>? measureList;
   List<Widget> widgetList = [];
   late int? idMeal;
   final int index;

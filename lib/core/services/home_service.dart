@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:thefood/constants/endpoints.dart';
-import 'package:thefood/models/categories.dart';
-import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/core/constants/endpoints.dart';
+import 'package:thefood/core/services/managers/network_manager.dart';
+import 'package:thefood/features/compoments/models/categories.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 abstract class IHomeService {
   IHomeService(NetworkManager networkManager) : _networkManager = networkManager;

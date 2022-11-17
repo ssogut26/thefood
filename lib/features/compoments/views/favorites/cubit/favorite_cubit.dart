@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/managers/cache_manager.dart';
+import 'package:thefood/core/services/managers/cache_manager.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 part 'favorite_state.dart';
 

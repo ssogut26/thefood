@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thefood/services/managers/network_manager.dart';
+import 'package:thefood/core/services/managers/network_manager.dart';
 
 void main() {
   test('getCategories', () async {

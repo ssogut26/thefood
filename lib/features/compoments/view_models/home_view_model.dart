@@ -1,4 +1,4 @@
-part of 'home_view.dart';
+part of '../views/home/home_view.dart';
 
 late int selectedIndex;
 late int dataLenght;
@@ -28,27 +28,6 @@ class _AlignedText extends StatelessWidget {
         text,
         style: Theme.of(context).textTheme.headline1,
       ),
-    );
-  }
-}
-
-class ConnectivityChecker extends StatefulWidget {
-  const ConnectivityChecker({
-    super.key,
-    required Widget Function(BuildContext, ConnectivityResult, Widget) builder,
-  }) : _builder = builder;
-
-  final Widget Function(BuildContext, ConnectivityResult, Widget) _builder;
-
-  @override
-  State<ConnectivityChecker> createState() => _ConnectivityCheckerState();
-}
-
-class _ConnectivityCheckerState extends State<ConnectivityChecker> {
-  @override
-  Widget build(BuildContext context) {
-    return OfflineBuilder(
-      connectivityBuilder: widget._builder,
     );
   }
 }
@@ -182,7 +161,6 @@ BlocBuilder<HomeCubit, HomeState> _categoryMeals() {
           if (data == null) {
             return const SizedBox.shrink();
           }
-
           return Column(
             children: [
               SizedBox(
@@ -389,15 +367,12 @@ class StreamUserRecipes extends StatelessWidget {
       stream: FirebaseFirestore.instance.collection('recipes').snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         final data = snapshot.data?.docs;
-        if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
-          return SizedBox(
-            height: context.dynamicHeight(0.2),
-            width: context.dynamicWidth(1),
-            child: UserRecipeList(data: data),
-          );
-        } else if (snapshot.connectionState == ConnectionState.active) {
+        if (data.isNullOrEmpty) {
           return const SizedBox.shrink();
         } else {
+          if (snapshot.hasData) {
+            return UserRecipeList(data: data);
+          }
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -417,52 +392,72 @@ class UserRecipeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: data?.length,
-      shrinkWrap: true,
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () {
-            context.pushNamed(
-              'details',
-              params: {
-                'name': "${data?[index]['strMeal']}",
-                'image': "${data?[index]['strMealThumb']}",
-                'id': "${data?[index]['idMeal']}",
-              },
-            );
-          },
-          child: Card(
-            elevation: 2,
-            clipBehavior: Clip.antiAlias,
+    return SizedBox(
+      height: context.dynamicHeight(0.2),
+      width: context.dynamicWidth(1),
+      child: ListView.builder(
+        itemCount: data?.length,
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () {
+              context.pushNamed(
+                'details',
+                params: {
+                  'name': "${data?[index]['strMeal']}",
+                  'image': "${data?[index]['strMealThumb']}",
+                  'id': "${data?[index]['idMeal']}",
+                },
+              );
+            },
+            child: UserRecipeCard(data: data, index: index),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class UserRecipeCard extends StatelessWidget {
+  const UserRecipeCard({
+    super.key,
+    required this.data,
+    required this.index,
+  });
+
+  final List<QueryDocumentSnapshot<Object?>>? data;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          // SizedBox(
+          //   height: context.dynamicHeight(0.12),
+          //   width: context.dynamicWidth(0.4),
+          //   child: Image.network(
+          //     fit: BoxFit.cover,
+          //     "${data?[index]['strMealThumb']}",
+          //   ),
+          // ),
+          Padding(
+            padding: ProjectPaddings.textVerticalMedium,
             child: Column(
               children: [
-                SizedBox(
-                  height: context.dynamicHeight(0.14),
-                  width: context.dynamicWidth(0.4),
-                  child: Image.network(
-                    fit: BoxFit.cover,
-                    "${data?[index]['strMealThumb']}",
-                  ),
-                ),
-                Padding(
-                  padding: ProjectPaddings.textVerticalMedium,
-                  child: Column(
-                    children: [
-                      Center(
-                        child: Text(
-                          '${data?[index]['strMeal']}\n',
-                        ),
-                      ),
-                    ],
+                Center(
+                  child: Text(
+                    '${data?[index]['strMeal']}\n',
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

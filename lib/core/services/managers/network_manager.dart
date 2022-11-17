@@ -3,9 +3,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:thefood/constants/endpoints.dart';
-import 'package:thefood/models/categories.dart';
-import 'package:thefood/models/meals.dart';
+import 'package:thefood/core/constants/endpoints.dart';
+import 'package:thefood/features/compoments/models/categories.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 class NetworkManager {
   NetworkManager._() {
@@ -42,8 +42,10 @@ class NetworkManager {
     final response = await _dio.get(
       EndPoints.filterByCategory + key,
     );
-    if (response.data is Map<String, dynamic>) {
-      return Meal.fromJson(response.data as Map<String, dynamic>);
+
+    final meals = response.data;
+    if (meals is Map<String, dynamic>) {
+      return Meal.fromJson(meals);
     }
     return null;
   }
@@ -69,17 +71,4 @@ class NetworkManager {
     }
     return null;
   }
-
-  // get firestore data
-  // Future<List<FieldValue>?> getFirestoreData() async {
-  //   final ref = FirebaseFirestore.instance
-  //       .collection('users')
-  //       .doc(FirebaseAuth.instance.currentUser?.uid);
-
-  //   final docSnap = await ref.get();
-  //   if (docSnap.exists) {
-  //     return docSnap.data()?['recipes'] as List<FieldValue>;
-  //   }
-  //   return null;
-  // }
 }

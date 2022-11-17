@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:thefood/models/meals.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 part 'search.g.dart';
 

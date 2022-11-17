@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -250,52 +252,62 @@ class Meals with EquatableMixin {
   Map<String, dynamic> toJson() => _$MealsToJson(this);
 
   List<String?>? getMeasures() {
-    final strMeasures = <String>[];
-    if (strMeasure1 != null) strMeasures.add(strMeasure1!);
-    if (strMeasure2 != null) strMeasures.add(strMeasure2!);
-    if (strMeasure3 != null) strMeasures.add(strMeasure3!);
-    if (strMeasure4 != null) strMeasures.add(strMeasure4!);
-    if (strMeasure5 != null) strMeasures.add(strMeasure5!);
-    if (strMeasure6 != null) strMeasures.add(strMeasure6!);
-    if (strMeasure7 != null) strMeasures.add(strMeasure7!);
-    if (strMeasure8 != null) strMeasures.add(strMeasure8!);
-    if (strMeasure9 != null) strMeasures.add(strMeasure9!);
-    if (strMeasure10 != null) strMeasures.add(strMeasure10!);
-    if (strMeasure11 != null) strMeasures.add(strMeasure11!);
-    if (strMeasure12 != null) strMeasures.add(strMeasure12!);
-    if (strMeasure13 != null) strMeasures.add(strMeasure13!);
-    if (strMeasure14 != null) strMeasures.add(strMeasure14!);
-    if (strMeasure15 != null) strMeasures.add(strMeasure15!);
-    if (strMeasure16 != null) strMeasures.add(strMeasure16!);
-    if (strMeasure17 != null) strMeasures.add(strMeasure17!);
-    if (strMeasure18 != null) strMeasures.add(strMeasure18!);
-    if (strMeasure19 != null) strMeasures.add(strMeasure19!);
-    if (strMeasure20 != null) strMeasures.add(strMeasure20!);
+    if (strMeasures != null) {
+      strMeasures?.addAll(strMeasures ?? []);
+    } else {
+      final strMeasures = <String>[];
+      if (strMeasure1 != null) strMeasures.add(strMeasure1 ?? '');
+      if (strMeasure2 != null) strMeasures.add(strMeasure2 ?? '');
+      if (strMeasure3 != null) strMeasures.add(strMeasure3 ?? '');
+      if (strMeasure4 != null) strMeasures.add(strMeasure4 ?? '');
+      if (strMeasure5 != null) strMeasures.add(strMeasure5 ?? '');
+      if (strMeasure6 != null) strMeasures.add(strMeasure6 ?? '');
+      if (strMeasure7 != null) strMeasures.add(strMeasure7 ?? '');
+      if (strMeasure8 != null) strMeasures.add(strMeasure8 ?? '');
+      if (strMeasure9 != null) strMeasures.add(strMeasure9 ?? '');
+      if (strMeasure10 != null) strMeasures.add(strMeasure10 ?? '');
+      if (strMeasure11 != null) strMeasures.add(strMeasure11 ?? '');
+      if (strMeasure12 != null) strMeasures.add(strMeasure12 ?? '');
+      if (strMeasure13 != null) strMeasures.add(strMeasure13 ?? '');
+      if (strMeasure14 != null) strMeasures.add(strMeasure14 ?? '');
+      if (strMeasure15 != null) strMeasures.add(strMeasure15 ?? '');
+      if (strMeasure16 != null) strMeasures.add(strMeasure16 ?? '');
+      if (strMeasure17 != null) strMeasures.add(strMeasure17 ?? '');
+      if (strMeasure18 != null) strMeasures.add(strMeasure18 ?? '');
+      if (strMeasure19 != null) strMeasures.add(strMeasure19 ?? '');
+      if (strMeasure20 != null) strMeasures.add(strMeasure20 ?? '');
+      return strMeasures;
+    }
     return strMeasures;
   }
 
   List<String?>? getIngredients() {
-    final strIngredients = <String>[];
-    if (strIngredient1 != null) strIngredients.add(strIngredient1!);
-    if (strIngredient2 != null) strIngredients.add(strIngredient2!);
-    if (strIngredient3 != null) strIngredients.add(strIngredient3!);
-    if (strIngredient4 != null) strIngredients.add(strIngredient4!);
-    if (strIngredient5 != null) strIngredients.add(strIngredient5!);
-    if (strIngredient6 != null) strIngredients.add(strIngredient6!);
-    if (strIngredient7 != null) strIngredients.add(strIngredient7!);
-    if (strIngredient8 != null) strIngredients.add(strIngredient8!);
-    if (strIngredient9 != null) strIngredients.add(strIngredient9!);
-    if (strIngredient10 != null) strIngredients.add(strIngredient10!);
-    if (strIngredient11 != null) strIngredients.add(strIngredient11!);
-    if (strIngredient12 != null) strIngredients.add(strIngredient12!);
-    if (strIngredient13 != null) strIngredients.add(strIngredient13!);
-    if (strIngredient14 != null) strIngredients.add(strIngredient14!);
-    if (strIngredient15 != null) strIngredients.add(strIngredient15!);
-    if (strIngredient16 != null) strIngredients.add(strIngredient16!);
-    if (strIngredient17 != null) strIngredients.add(strIngredient17!);
-    if (strIngredient18 != null) strIngredients.add(strIngredient18!);
-    if (strIngredient19 != null) strIngredients.add(strIngredient19!);
-    if (strIngredient20 != null) strIngredients.add(strIngredient20!);
+    if (strIngredients != null) {
+      strIngredients?.addAll(strIngredients ?? []);
+    } else {
+      final strIngredients = <String>[];
+      if (strIngredient1 != null) strIngredients.add(strIngredient1 ?? '');
+      if (strIngredient2 != null) strIngredients.add(strIngredient2 ?? '');
+      if (strIngredient3 != null) strIngredients.add(strIngredient3 ?? '');
+      if (strIngredient4 != null) strIngredients.add(strIngredient4 ?? '');
+      if (strIngredient5 != null) strIngredients.add(strIngredient5 ?? '');
+      if (strIngredient6 != null) strIngredients.add(strIngredient6 ?? '');
+      if (strIngredient7 != null) strIngredients.add(strIngredient7 ?? '');
+      if (strIngredient8 != null) strIngredients.add(strIngredient8 ?? '');
+      if (strIngredient9 != null) strIngredients.add(strIngredient9 ?? '');
+      if (strIngredient10 != null) strIngredients.add(strIngredient10 ?? '');
+      if (strIngredient11 != null) strIngredients.add(strIngredient11 ?? '');
+      if (strIngredient12 != null) strIngredients.add(strIngredient12 ?? '');
+      if (strIngredient13 != null) strIngredients.add(strIngredient13 ?? '');
+      if (strIngredient14 != null) strIngredients.add(strIngredient14 ?? '');
+      if (strIngredient15 != null) strIngredients.add(strIngredient15 ?? '');
+      if (strIngredient16 != null) strIngredients.add(strIngredient16 ?? '');
+      if (strIngredient17 != null) strIngredients.add(strIngredient17 ?? '');
+      if (strIngredient18 != null) strIngredients.add(strIngredient18 ?? '');
+      if (strIngredient19 != null) strIngredients.add(strIngredient19 ?? '');
+      if (strIngredient20 != null) strIngredients.add(strIngredient20 ?? '');
+      return strIngredients;
+    }
     return strIngredients;
   }
 

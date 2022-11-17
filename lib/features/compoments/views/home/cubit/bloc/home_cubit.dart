@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thefood/constants/endpoints.dart';
-import 'package:thefood/models/categories.dart';
-import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/home_service.dart';
-import 'package:thefood/services/managers/cache_manager.dart';
+import 'package:thefood/core/constants/endpoints.dart';
+import 'package:thefood/core/services/home_service.dart';
+import 'package:thefood/core/services/managers/cache_manager.dart';
+import 'package:thefood/features/compoments/models/categories.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 part 'home_state.dart';
 

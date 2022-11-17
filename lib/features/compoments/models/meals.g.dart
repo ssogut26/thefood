@@ -35,9 +35,7 @@ class MealAdapter extends TypeAdapter<Meal> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MealAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is MealAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class MealsAdapter extends TypeAdapter<Meals> {
@@ -231,9 +229,7 @@ class MealsAdapter extends TypeAdapter<Meals> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MealsAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is MealsAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 // **************************************************************************
@@ -280,9 +276,8 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strIngredient18: json['strIngredient18'] as String?,
       strIngredient19: json['strIngredient19'] as String?,
       strIngredient20: json['strIngredient20'] as String?,
-      strIngredients: (json['strIngredients'] as List<dynamic>?)
-          ?.map((e) => e as String?)
-          .toList(),
+      strIngredients:
+          (json['strIngredients'] as List<dynamic>?)?.map((e) => e as String?).toList(),
       strMeasure1: json['strMeasure1'] as String?,
       strMeasure2: json['strMeasure2'] as String?,
       strMeasure3: json['strMeasure3'] as String?,
@@ -303,18 +298,16 @@ Meals _$MealsFromJson(Map<String, dynamic> json) => Meals(
       strMeasure18: json['strMeasure18'] as String?,
       strMeasure19: json['strMeasure19'] as String?,
       strMeasure20: json['strMeasure20'] as String?,
-      strMeasures: (json['strMeasures'] as List<dynamic>?)
-          ?.map((e) => e as String?)
-          .toList(),
+      strMeasures:
+          (json['strMeasures'] as List<dynamic>?)?.map((e) => e as String?).toList(),
       strSource: json['strSource'] as String?,
       strImageSource: json['strImageSource'] as String?,
-      strCreativeCommonsConfirmed:
-          json['strCreativeCommonsConfirmed'] as String?,
+      strCreativeCommonsConfirmed: json['strCreativeCommonsConfirmed'] as String?,
       dateModified: json['dateModified'] as String?,
     );
 
 Map<String, dynamic> _$MealsToJson(Meals instance) => <String, dynamic>{
-      'strIngredients': instance.strIngredients,
+      'strIngredients': instance.strIngredients?.cast<String?>(),
       'idMeal': instance.idMeal,
       'strMeal': instance.strMeal,
       'strDrinkAlternate': instance.strDrinkAlternate,
@@ -368,5 +361,5 @@ Map<String, dynamic> _$MealsToJson(Meals instance) => <String, dynamic>{
       'strImageSource': instance.strImageSource,
       'strCreativeCommonsConfirmed': instance.strCreativeCommonsConfirmed,
       'dateModified': instance.dateModified,
-      'strMeasures': instance.strMeasures,
+      'strMeasures': instance.strMeasures?.cast<String?>(),
     };

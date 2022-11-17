@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/hive_constants.dart';
-import 'package:thefood/constants/texts.dart';
-import 'package:thefood/views/auth/auth_models.dart';
-import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
+import 'package:thefood/core/constants/hive_constants.dart';
+import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/compoments/view_models/auth_view_model.dart';
+import 'package:thefood/features/compoments/views/auth/bloc/login/login_cubit.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});

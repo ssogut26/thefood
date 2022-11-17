@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/texts.dart';
-import 'package:thefood/views/auth/auth_models.dart';
-import 'package:thefood/views/auth/bloc/sign_up/sign_up_cubit.dart';
+import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/compoments/view_models/auth_view_model.dart';
+import 'package:thefood/features/compoments/views/auth/bloc/sign_up/sign_up_cubit.dart';
 
 class SingUpView extends StatefulWidget {
   const SingUpView({super.key});
@@ -96,12 +97,7 @@ class _SingUpViewState extends State<SingUpView> {
                       );
                     },
                   ),
-                  RegisterButton(
-                    formKey: _formKey,
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    nameController: _nameController,
-                  ),
+                  const RegisterButton(),
                   SizedBox(
                     height: context.dynamicHeight(0.07),
                   ),

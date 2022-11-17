@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:thefood/constants/paddings.dart';
-import 'package:thefood/constants/texts.dart';
-import 'package:thefood/views/favorites/cubit/favorite_cubit.dart';
+import 'package:thefood/core/constants/paddings.dart';
+import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/compoments/views/favorites/cubit/favorite_cubit.dart';
 
 class FavoriteView extends StatefulWidget {
   const FavoriteView({super.key});

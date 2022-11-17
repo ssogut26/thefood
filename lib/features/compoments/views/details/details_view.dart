@@ -14,9 +14,9 @@ import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/managers/cache_manager.dart';
 import 'package:thefood/features/compoments/models/meals.dart';
 import 'package:thefood/features/compoments/views/details/cubit/details_cubit.dart';
-import 'package:thefood/services/managers/cache_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailsView extends StatefulWidget {
@@ -72,432 +72,8 @@ class _DetailsViewState extends State<DetailsView> {
               ? const Center(child: CircularProgressIndicator())
               : CustomScrollView(
                   slivers: <Widget>[
-                    SliverAppBar(
-                      leading: Padding(
-                        padding: ProjectPaddings.cardSmall,
-                        child: IconButton(
-                          icon: CircleAvatar(
-                            backgroundColor: ProjectColors.actionsBgColor,
-                            child: SvgPicture.asset(
-                              AssetsPath.back,
-                              color: ProjectColors.black,
-                            ),
-                          ),
-                          onPressed: () {
-                            context.pop();
-                          },
-                        ),
-                      ),
-                      pinned: true,
-                      expandedHeight: 200,
-                      flexibleSpace: Stack(
-                        children: <Widget>[
-                          if (connected || DioErrorType.other == SocketException)
-                            Positioned.fill(
-                              child: CachedNetworkImage(
-                                imageUrl: widget.image ?? '',
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          else
-                            const Center(child: SizedBox.shrink()),
-                        ],
-                      ),
-                    ),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
-                          builder: (context, state) {
-                            return Padding(
-                              padding: context.paddingLow,
-                              child: Container(
-                                width: MediaQuery.of(context).size.width,
-                                decoration: BoxDecoration(
-                                  color: ProjectColors.mainWhite,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: context.lowRadius,
-                                    topRight: context.lowRadius,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: ProjectPaddings.pageLarge,
-                                  child: Column(
-                                    children: [
-                                      if (state.favoriteMealDetail?.meals
-                                              ?.isNotNullOrEmpty ??
-                                          false)
-                                        _MealDetails(
-                                          details: widget,
-                                          items: state.favoriteMealDetail,
-                                          favoriteCacheManager: context
-                                              .read<DetailsCubit>()
-                                              .favoriteCacheManager,
-                                        )
-                                      else if (connected && isUserRecipe == false)
-                                        _MealDetails(
-                                          details: widget,
-                                          items: state.meal,
-                                          favoriteCacheManager: context
-                                              .read<DetailsCubit>()
-                                              .favoriteCacheManager,
-                                        )
-                                      else if (connected && isUserRecipe)
-                                        FutureBuilder<Map<String, dynamic>?>(
-                                          future: context
-                                              .read<DetailsCubit>()
-                                              .getUserRecipe(widget.id),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasData) {
-                                              final data = snapshot.data;
-                                              final ingredientList =
-                                                  data?['strIngredients'] as List;
-                                              final measureList =
-                                                  data?['strMeasures'] as List;
-                                              return ListView.builder(
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
-                                                padding: EdgeInsets.zero,
-                                                shrinkWrap: true,
-                                                itemCount: 1,
-                                                itemBuilder: (context, index) {
-                                                  return Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 12,
-                                                            child: Text(
-                                                              widget.name ?? '',
-                                                              style: Theme.of(
-                                                                context,
-                                                              ).textTheme.headline1,
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 2,
-                                                            child: IconButton(
-                                                              icon: CircleAvatar(
-                                                                backgroundColor:
-                                                                    ProjectColors
-                                                                        .actionsBgColor,
-                                                                child: SvgPicture.asset(
-                                                                  AssetsPath.bookmark,
-                                                                  color:
-                                                                      ProjectColors.black,
-                                                                ),
-                                                              ),
-                                                              onPressed: () async {
-                                                                context
-                                                                    .read<DetailsCubit>()
-                                                                    .favoriteCacheManager
-                                                                    .getValues();
-                                                                if (context
-                                                                        .read<
-                                                                            DetailsCubit>()
-                                                                        .favoriteMealDetail
-                                                                        ?.meals
-                                                                        .isNotNullOrEmpty ??
-                                                                    false) {
-                                                                  await context
-                                                                      .read<
-                                                                          DetailsCubit>()
-                                                                      .favoriteCacheManager
-                                                                      .putItem(
-                                                                        state.id
-                                                                            .toString(),
-                                                                        state
-                                                                            .favoriteMealDetail!,
-                                                                      );
-                                                                }
-                                                                // show snackbar
-                                                                ScaffoldMessenger.of(
-                                                                  context,
-                                                                ).showSnackBar(
-                                                                  const SnackBar(
-                                                                    content: Text(
-                                                                      'Added to favorites',
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 12,
-                                                            child: Padding(
-                                                              padding: ProjectPaddings
-                                                                  .cardLarge,
-                                                              child: Text(
-                                                                'in ${data?['strCategory']}',
-                                                              ).toVisible(
-                                                                '${data?['strCategory']}'
-                                                                    .isNotNullOrNoEmpty,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 2,
-                                                            child: CachedNetworkImage(
-                                                              imageUrl: countryFlagMap[
-                                                                      data?['strArea']] ??
-                                                                  '',
-                                                              height: 32,
-                                                              width: 32,
-                                                              errorWidget: (
-                                                                context,
-                                                                url,
-                                                                error,
-                                                              ) =>
-                                                                  const Icon(
-                                                                Icons.error,
-                                                              ),
-                                                              progressIndicatorBuilder: (
-                                                                context,
-                                                                url,
-                                                                downloadProgress,
-                                                              ) =>
-                                                                  Center(
-                                                                child: SizedBox(
-                                                                  height: 16,
-                                                                  width: 16,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    value:
-                                                                        downloadProgress
-                                                                            .progress,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 50,
-                                                            child: TextButton(
-                                                              autofocus: true,
-                                                              onPressed: () async {
-                                                                setState(() {
-                                                                  selectedIndex = 0;
-                                                                });
-                                                              },
-                                                              child: AnimatedScale(
-                                                                duration: const Duration(
-                                                                  milliseconds: 300,
-                                                                ),
-                                                                scale:
-                                                                    (selectedIndex == 0)
-                                                                        ? 1.2
-                                                                        : 1,
-                                                                child: Text(
-                                                                  ProjectTexts
-                                                                      .ingredients,
-                                                                  style:
-                                                                      (selectedIndex == 0)
-                                                                          ? Theme.of(
-                                                                              context,
-                                                                            )
-                                                                              .textTheme
-                                                                              .headline3
-                                                                          : Theme.of(
-                                                                              context,
-                                                                            )
-                                                                              .textTheme
-                                                                              .bodyText2,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 50,
-                                                            child: TextButton(
-                                                              onPressed: () {
-                                                                setState(() {
-                                                                  selectedIndex = 1;
-                                                                });
-                                                              },
-                                                              child: AnimatedScale(
-                                                                duration: const Duration(
-                                                                  milliseconds: 300,
-                                                                ),
-                                                                scale:
-                                                                    (selectedIndex == 1)
-                                                                        ? 1.2
-                                                                        : 1,
-                                                                child: Text(
-                                                                  ProjectTexts
-                                                                      .instructions,
-                                                                  style:
-                                                                      (selectedIndex == 1)
-                                                                          ? Theme.of(
-                                                                              context,
-                                                                            )
-                                                                              .textTheme
-                                                                              .headline3
-                                                                          : Theme.of(
-                                                                              context,
-                                                                            )
-                                                                              .textTheme
-                                                                              .bodyText2,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      if (selectedIndex == 0)
-                                                        Column(
-                                                          mainAxisSize: MainAxisSize.min,
-                                                          children: [
-                                                            for (int index = 0;
-                                                                index <
-                                                                        ingredientList
-                                                                            .length &&
-                                                                    index.isFinite;
-                                                                index++)
-                                                              ingredientList
-                                                                      .isNotNullOrEmpty
-                                                                  ? SizedBox(
-                                                                      height: 60,
-                                                                      width: 325,
-                                                                      child: Row(
-                                                                        children: [
-                                                                          Expanded(
-                                                                            flex: 2,
-                                                                            child: Card(
-                                                                              color: ProjectColors
-                                                                                  .lightGrey,
-                                                                              child:
-                                                                                  CachedNetworkImage(
-                                                                                errorWidget: (
-                                                                                  context,
-                                                                                  url,
-                                                                                  error,
-                                                                                ) =>
-                                                                                    const Icon(
-                                                                                  Icons
-                                                                                      .error,
-                                                                                ),
-                                                                                width: 60,
-                                                                                height:
-                                                                                    60,
-                                                                                imageUrl:
-                                                                                    '${EndPoints.ingredientsImages}${ingredientList[index]}-small.png',
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Expanded(
-                                                                            flex: 7,
-                                                                            child:
-                                                                                Padding(
-                                                                              padding:
-                                                                                  ProjectPaddings
-                                                                                      .textHorizontalLarge,
-                                                                              child: Text(
-                                                                                '${ingredientList[index]}'
-                                                                                    .capitalize(),
-                                                                                style: Theme
-                                                                                        .of(
-                                                                                  context,
-                                                                                )
-                                                                                    .textTheme
-                                                                                    .headline3,
-                                                                              ).toVisible(
-                                                                                '${ingredientList[index]}' !=
-                                                                                    null,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Expanded(
-                                                                            flex: 3,
-                                                                            child: Text(
-                                                                              '${measureList[index]}',
-                                                                            ).toVisible(
-                                                                              '${measureList[index]}' !=
-                                                                                  null,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    )
-                                                                  : const SizedBox
-                                                                      .shrink(),
-                                                          ],
-                                                        )
-                                                      else
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              '${data?['strInstructions']}',
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: () {},
-                                                              child: const Text(
-                                                                'Watch Video',
-                                                              ),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: () {},
-                                                              child: const Text(
-                                                                'Source',
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                            }
-                                            return const Center(
-                                              child: CircularProgressIndicator(),
-                                            );
-                                          },
-                                        )
-                                      else
-                                        Center(
-                                          child: DecoratedBox(
-                                            decoration: BoxDecoration(
-                                              color: ProjectColors.mainWhite,
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Image.asset(
-                                                  'assets/images/no_connection.png',
-                                                ),
-                                                Text(
-                                                  'No internet connection',
-                                                  style: context.textTheme.headline6,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        childCount: 1,
-                      ),
-                    ),
+                    RecipeImage(connected: connected, widget: widget),
+                    DetailsBody(connected: connected, isUserRecipe: isUserRecipe),
                   ],
                 );
         },
@@ -509,14 +85,171 @@ class _DetailsViewState extends State<DetailsView> {
   }
 }
 
+class DetailsBody extends StatelessWidget {
+  const DetailsBody({
+    super.key,
+    required this.connected,
+    required this.isUserRecipe,
+  });
+  final bool connected;
+  final bool isUserRecipe;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
+          builder: (context, state) {
+            return Padding(
+              padding: context.paddingLow,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: ProjectColors.mainWhite,
+                  borderRadius: BorderRadius.only(
+                    topLeft: context.lowRadius,
+                    topRight: context.lowRadius,
+                  ),
+                ),
+                child: Padding(
+                  padding: ProjectPaddings.pageLarge,
+                  child: AllDetailsView(
+                    connected: connected,
+                    isUserRecipe: isUserRecipe,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        childCount: 1,
+      ),
+    );
+  }
+}
+
+class RecipeImage extends StatelessWidget {
+  const RecipeImage({
+    super.key,
+    required this.connected,
+    required this.widget,
+  });
+
+  final bool connected;
+  final DetailsView widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      leading: Padding(
+        padding: ProjectPaddings.cardSmall,
+        child: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: ProjectColors.actionsBgColor,
+            child: SvgPicture.asset(
+              AssetsPath.back,
+              color: ProjectColors.black,
+            ),
+          ),
+          onPressed: () {
+            context.pop();
+          },
+        ),
+      ),
+      pinned: true,
+      expandedHeight: 200,
+      flexibleSpace: Stack(
+        children: <Widget>[
+          if (connected || DioErrorType.other == SocketException)
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl: widget.image ?? '',
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            const Center(child: SizedBox.shrink()),
+        ],
+      ),
+    );
+  }
+}
+
+class AllDetailsView extends StatelessWidget {
+  const AllDetailsView({
+    super.key,
+    required this.connected,
+    required this.isUserRecipe,
+  });
+
+  final bool connected;
+  final bool isUserRecipe;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DetailsCubit, DetailsState>(
+      builder: (context, state) {
+        return Column(
+          children: [
+            if (state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false)
+              _MealDetails(
+                items: state.favoriteMealDetail,
+                favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
+              )
+            else if (connected && isUserRecipe == false)
+              _MealDetails(
+                items: state.meal,
+                favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
+              )
+            else if (connected && isUserRecipe)
+              _MealDetails(
+                items: state.favoriteMealDetail,
+                favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
+              )
+            else
+              const NoConnectionView(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class NoConnectionView extends StatelessWidget {
+  const NoConnectionView({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: ProjectColors.mainWhite,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              AssetsPath.noConnectionImage,
+            ),
+            Text(
+              ProjectTexts.noConnection,
+              style: context.textTheme.headline6,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MealDetails extends StatefulWidget {
   const _MealDetails({
-    required this.details,
     required this.items,
     required this.favoriteCacheManager,
   });
-
-  final DetailsView details;
   final Meal? items;
   final ICacheManager<Meal>? favoriteCacheManager;
   @override
@@ -555,8 +288,8 @@ class _MealDetailsState extends State<_MealDetails> {
           itemCount: state.favoriteMealDetail?.meals?.length ?? 0,
           itemBuilder: (context, index) {
             final meals = state.favoriteMealDetail?.meals?[index];
-            final ingredientList = meals?.getIngredients();
-            final measureList = meals?.getMeasures();
+            final ingredientList = meals?.strIngredients ?? meals?.getIngredients() ?? [];
+            final measureList = meals?.strMeasures ?? meals?.getMeasures() ?? [];
             return ListView.builder(
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
@@ -571,48 +304,11 @@ class _MealDetailsState extends State<_MealDetails> {
                         Expanded(
                           flex: 12,
                           child: Text(
-                            widget.details.name ?? '',
+                            meals?.strMeal ?? '',
                             style: Theme.of(context).textTheme.headline1,
                           ),
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: IconButton(
-                            icon: CircleAvatar(
-                              backgroundColor: ProjectColors.actionsBgColor,
-                              child: SvgPicture.asset(
-                                AssetsPath.bookmark,
-                                color: ProjectColors.black,
-                              ),
-                            ),
-                            onPressed: () async {
-                              context
-                                  .read<DetailsCubit>()
-                                  .favoriteCacheManager
-                                  .getValues();
-                              if (context
-                                      .read<DetailsCubit>()
-                                      .favoriteMealDetail
-                                      ?.meals
-                                      .isNotNullOrEmpty ??
-                                  false) {
-                                await context
-                                    .read<DetailsCubit>()
-                                    .favoriteCacheManager
-                                    .putItem(
-                                      state.id.toString(),
-                                      state.favoriteMealDetail!,
-                                    );
-                              }
-                              // show snackbar
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Added to favorites'),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                        const AddFavoriteButton(),
                       ],
                     ),
                     Row(
@@ -622,57 +318,13 @@ class _MealDetailsState extends State<_MealDetails> {
                         AreaImage(meals: meals),
                       ],
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 50,
-                          child: TextButton(
-                            autofocus: true,
-                            onPressed: () async {
-                              setState(() {
-                                selectedIndex = 0;
-                              });
-                            },
-                            child: AnimatedScale(
-                              duration: const Duration(milliseconds: 300),
-                              scale: (selectedIndex == 0) ? 1.2 : 1,
-                              child: Text(
-                                ProjectTexts.ingredients,
-                                style: (selectedIndex == 0)
-                                    ? Theme.of(context).textTheme.headline3
-                                    : Theme.of(context).textTheme.bodyText2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 50,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                selectedIndex = 1;
-                              });
-                            },
-                            child: AnimatedScale(
-                              duration: const Duration(milliseconds: 300),
-                              scale: (selectedIndex == 1) ? 1.2 : 1,
-                              child: Text(
-                                ProjectTexts.instructions,
-                                style: (selectedIndex == 1)
-                                    ? Theme.of(context).textTheme.headline3
-                                    : Theme.of(context).textTheme.bodyText2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    CompomentChanger(selectedIndex: selectedIndex),
                     if (selectedIndex == 0)
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           for (int index = 0;
-                              index < ingredientList!.length && index.isFinite;
+                              index < ingredientList.length && index.isFinite;
                               index++)
                             ingredientList[index].isNotNullOrNoEmpty
                                 ? _ingredients(
@@ -685,32 +337,7 @@ class _MealDetailsState extends State<_MealDetails> {
                         ],
                       )
                     else
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(meals?.strInstructions ?? ''),
-                          TextButton(
-                            onPressed: () {
-                              launch(
-                                Uri.parse(
-                                  meals?.strYoutube ?? '',
-                                ),
-                              );
-                            },
-                            child: const Text('Watch Video'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              launch(
-                                Uri.parse(
-                                  meals?.strSource ?? '',
-                                ),
-                              );
-                            },
-                            child: const Text('Source'),
-                          ),
-                        ],
-                      ),
+                      Instructions(meals: meals),
                   ],
                 );
               },
@@ -765,6 +392,183 @@ class _MealDetailsState extends State<_MealDetails> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class AddFavoriteButton extends StatefulWidget {
+  const AddFavoriteButton({
+    super.key,
+  });
+
+  @override
+  State<AddFavoriteButton> createState() => _AddFavoriteButtonState();
+}
+
+class _AddFavoriteButtonState extends State<AddFavoriteButton> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DetailsCubit, DetailsState>(
+      builder: (context, state) {
+        return Expanded(
+          flex: 2,
+          child: IconButton(
+            icon: CircleAvatar(
+              backgroundColor: ProjectColors.actionsBgColor,
+              child: SvgPicture.asset(
+                AssetsPath.bookmark,
+                color: ProjectColors.black,
+              ),
+            ),
+            onPressed: () async {
+              context.read<DetailsCubit>().favoriteCacheManager.getValues();
+              if (context
+                      .read<DetailsCubit>()
+                      .favoriteMealDetail
+                      ?.meals
+                      .isNotNullOrEmpty ??
+                  false) {
+                await context.read<DetailsCubit>().favoriteCacheManager.putItem(
+                      state.id.toString(),
+                      state.favoriteMealDetail!,
+                    );
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Added to favorites'),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class CompomentChanger extends StatefulWidget {
+  CompomentChanger({
+    super.key,
+    required this.selectedIndex,
+  });
+
+  int selectedIndex;
+
+  @override
+  State<CompomentChanger> createState() => _CompomentChangerState();
+}
+
+class _CompomentChangerState extends State<CompomentChanger> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 50,
+          child: TextButton(
+            autofocus: true,
+            onPressed: () async {
+              if (mounted) {
+                setState(() {
+                  widget.selectedIndex = 0;
+                });
+              }
+            },
+            child: AnimatedScale(
+              duration: const Duration(milliseconds: 300),
+              scale: (widget.selectedIndex == 0) ? 1.2 : 1,
+              child: Text(
+                ProjectTexts.ingredients,
+                style: (widget.selectedIndex == 0)
+                    ? Theme.of(context).textTheme.headline3
+                    : Theme.of(context).textTheme.bodyText2,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 50,
+          child: TextButton(
+            onPressed: () {
+              setState(() {
+                widget.selectedIndex = 1;
+              });
+            },
+            child: AnimatedScale(
+              duration: const Duration(milliseconds: 300),
+              scale: (widget.selectedIndex == 1) ? 1.2 : 1,
+              child: Text(
+                ProjectTexts.instructions,
+                style: (widget.selectedIndex == 1)
+                    ? Theme.of(context).textTheme.headline3
+                    : Theme.of(context).textTheme.bodyText2,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class Instructions extends StatelessWidget {
+  const Instructions({
+    super.key,
+    required this.meals,
+  });
+
+  final Meals? meals;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(meals?.strInstructions ?? ''),
+        const GoToYoutube(),
+        const GoToSource(),
+      ],
+    );
+  }
+}
+
+class GoToYoutube extends StatelessWidget {
+  const GoToYoutube({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        // launch(
+        //   Uri.parse(
+        //     meals?.strYoutube ?? '',
+        //   ),
+        // );
+      },
+      child: const Text('Watch Video'),
+    );
+  }
+}
+
+class GoToSource extends StatelessWidget {
+  const GoToSource({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        // launch(
+        //   Uri.parse(
+        //     meals?.strSource ?? '',
+        //   ),
+        // );
+      },
+      child: const Text('Source'),
     );
   }
 }

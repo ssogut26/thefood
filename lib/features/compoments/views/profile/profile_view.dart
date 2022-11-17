@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:card_swiper/card_swiper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -8,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/paddings.dart';
-import 'package:thefood/models/user.dart';
+import 'package:thefood/core/constants/paddings.dart';
+import 'package:thefood/features/compoments/models/user.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -157,8 +156,7 @@ class _ProfileViewState extends State<ProfileView> {
                 if (snapshot.hasError) {
                   return const Text('Something went wrong');
                 }
-
-                if (snapshot.hasData && snapshot.data?.docs.isEmpty == true) {
+                if (snapshot.hasData && (snapshot.data?.docs.isEmpty ?? true)) {
                   return SizedBox(
                     height: context.dynamicHeight(0.2),
                     child: const Card(
@@ -166,31 +164,27 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                   );
                 }
-
                 if (snapshot.connectionState == ConnectionState.done) {
                   final data = snapshot.data?.docs;
-                  return ConstrainedBox(
-                    constraints: BoxConstraints.loose(
-                      Size(context.width, context.dynamicHeight(0.2)),
-                    ),
-                    child: Swiper(
-                      loop: false,
-                      curve: Curves.easeIn,
-                      outer: true,
-                      scale: 0.9,
-                      itemCount: data?.length ?? 0,
+                  return SizedBox(
+                    height: context.dynamicHeight(0.25),
+                    width: context.dynamicWidth(1),
+                    child: ListView.builder(
+                      itemCount: data?.length,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return Card(
-                          child: Row(
+                          child: Column(
                             children: [
-                              SizedBox(
-                                height: context.dynamicHeight(0.2),
-                                width: context.dynamicWidth(0.4),
-                                child: Image.network(
-                                  fit: BoxFit.cover,
-                                  "${data?[index]['strMealThumb']}",
-                                ),
-                              ),
+                              // SizedBox(
+                              //   height: context.dynamicHeight(0.12),
+                              //   width: context.dynamicWidth(0.4),
+                              //   child: Image.network(
+                              //     fit: BoxFit.cover,
+                              //     "${data?[index]['strMealThumb']}",
+                              //   ),
+                              // ),
                               Padding(
                                 padding: ProjectPaddings.textHorizontalMedium,
                                 child: Column(
@@ -205,18 +199,11 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                         );
                       },
-                      pagination: const SwiperPagination(
-                        margin: EdgeInsets.all(5),
-                        builder: DotSwiperPaginationBuilder(
-                          color: Colors.grey,
-                          activeColor: Colors.yellow,
-                        ),
-                      ),
                     ),
                   );
                 }
 
-                return const Text('loading');
+                return const Center(child: CircularProgressIndicator());
               },
             ),
           ],

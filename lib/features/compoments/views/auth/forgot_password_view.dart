@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/texts.dart';
+import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/texts.dart';
 
 class ForgotPassView extends StatefulWidget {
   const ForgotPassView({super.key});

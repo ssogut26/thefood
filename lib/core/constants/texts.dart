@@ -3,8 +3,8 @@ class ProjectTexts {
 
   static const categories = 'Categories';
   static const areas = 'Areas';
-  static const ingredients = 'Ingredients*';
-  static const instructions = 'Instructions*';
+  static const ingredients = 'Ingredients';
+  static const instructions = 'Instructions';
   static const linkError = 'Could not launch link';
   static const searchText = 'Find recipe';
   static const questionText = 'Ready To Cook?';
@@ -56,4 +56,5 @@ class ProjectTexts {
   static const sourceInput = 'Enter a source link';
   static const youtubeInput = 'Enter a youtube link';
   static const recipeNameInput = 'Enter your recipe name';
+  static const noConnection = 'No internet connection';
 }

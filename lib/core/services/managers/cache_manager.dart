@@ -1,4 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:thefood/features/compoments/models/categories.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
 
 part 'category_meals_cache.dart';
 part 'favorite_meal_detail_cache.dart';

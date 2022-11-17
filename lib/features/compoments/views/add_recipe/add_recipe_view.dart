@@ -12,13 +12,15 @@ import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/managers/network_manager.dart';
+import 'package:thefood/core/services/search_service.dart';
 import 'package:thefood/features/compoments/models/categories.dart';
 import 'package:thefood/features/compoments/models/ingredients.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
+import 'package:thefood/features/compoments/models/user.dart';
 import 'package:thefood/features/compoments/views/add_recipe/cubit/add_recipe_cubit.dart';
-import 'package:thefood/services/managers/network_manager.dart';
-import 'package:thefood/services/search_service.dart';
 
-part 'add_recipe_widgets.dart';
+part '../../view_models/add_recipe_view_model.dart';
 
 class AddRecipe extends StatefulWidget {
   const AddRecipe({super.key});
@@ -32,8 +34,8 @@ class _AddRecipeState extends State<AddRecipe> {
 
   Future<void> addIngredientField() async {
     setState(() {
-      _ingredientControllers.add(TextEditingController());
-      _measureControllers.add(TextEditingController());
+      _ingredientControllers?.add(TextEditingController());
+      _measureControllers?.add(TextEditingController());
       widgetList.insert(
         index,
         Padding(
@@ -43,7 +45,8 @@ class _AddRecipeState extends State<AddRecipe> {
               Expanded(
                 flex: 5,
                 child: IngredientName(
-                  ingredientController: _ingredientControllers[index],
+                  ingredientController:
+                      _ingredientControllers?[index] ?? TextEditingController(),
                 ),
               ),
               const SizedBox(
@@ -52,7 +55,7 @@ class _AddRecipeState extends State<AddRecipe> {
               Expanded(
                 flex: 3,
                 child: TextFormField(
-                  controller: _measureControllers[index],
+                  controller: _measureControllers?[index],
                   decoration: InputDecoration(
                     hintText: 'Amount',
                     suffixIcon: IconButton(
@@ -61,8 +64,8 @@ class _AddRecipeState extends State<AddRecipe> {
                         setState(() {
                           index--;
                           widgetList.removeAt(index);
-                          _ingredientControllers.removeAt(index);
-                          _measureControllers.removeAt(index);
+                          _ingredientControllers?.removeAt(index);
+                          _measureControllers?.removeAt(index);
                         });
                       },
                       icon: const Icon(
@@ -89,8 +92,8 @@ class _AddRecipeState extends State<AddRecipe> {
     _sourceController = TextEditingController();
     if (widgetList.length == 1) {
       widgetList.clear();
-      _ingredientControllers.clear();
-      _measureControllers.clear();
+      _ingredientControllers?.clear();
+      _measureControllers?.clear();
       _nameController.clear();
       _instructionController.clear();
       _imageController.clear();
@@ -98,6 +101,8 @@ class _AddRecipeState extends State<AddRecipe> {
       _sourceController.clear();
       _imageController.clear();
     }
+    _ingredientControllers = <TextEditingController>[];
+    _measureControllers = <TextEditingController>[];
     widgetList.add(initialIngredient());
     super.initState();
   }
@@ -126,7 +131,7 @@ class _AddRecipeState extends State<AddRecipe> {
                     const CategoryDropDown(),
                     _headlineBox(context, ProjectTexts.areaName),
                     const AreaDropdown(),
-                    _headlineBox(context, ProjectTexts.ingredients),
+                    _headlineBox(context, ProjectTexts.recipeIngredients),
                     ...widgetList,
                     Padding(
                       padding: ProjectPaddings.cardMedium,
@@ -135,7 +140,7 @@ class _AddRecipeState extends State<AddRecipe> {
                         child: const Icon(Icons.add),
                       ),
                     ),
-                    _headlineBox(context, ProjectTexts.instructions),
+                    _headlineBox(context, ProjectTexts.recipeInstructions),
                     const InstructionInput(),
                     _headlineBox(context, ProjectTexts.image),
                     //Will be added with image picker

@@ -15,8 +15,8 @@ import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/features/compoments/models/meals.dart';
 import 'package:thefood/features/compoments/views/home/cubit/bloc/home_cubit.dart';
 
-part 'shimmers.dart';
-part 'widgets.dart';
+part '../../view_models/home_shimmers_view_model.dart';
+part '../../view_models/home_view_model.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});

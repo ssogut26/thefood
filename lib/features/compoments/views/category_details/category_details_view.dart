@@ -2,12 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/paddings.dart';
-import 'package:thefood/constants/texts.dart';
-import 'package:thefood/models/meals.dart';
-import 'package:thefood/services/managers/network_manager.dart';
-import 'package:thefood/views/home/shimmers.dart';
+import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/paddings.dart';
+import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/managers/network_manager.dart';
+import 'package:thefood/features/compoments/models/meals.dart';
+import 'package:thefood/features/compoments/views/home/home_view.dart';
 
 class CategoryDetailsView extends StatefulWidget {
   const CategoryDetailsView({

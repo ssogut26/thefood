@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:kartal/kartal.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/paddings.dart';
+part of '../views/home/home_view.dart';
 
 class RandomMealShimmer extends StatelessWidget {
   const RandomMealShimmer();

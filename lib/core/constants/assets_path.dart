@@ -7,4 +7,5 @@ class AssetsPath {
   static const String home = 'assets/icons/ic_home.svg';
   static const String love = 'assets/icons/ic_love.svg';
   static const String level = 'assets/icons/ic_level.svg';
+  static const noConnectionImage = 'assets/images/no_connection.png';
 }

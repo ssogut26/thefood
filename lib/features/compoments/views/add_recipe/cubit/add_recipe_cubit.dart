@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/paddings.dart';
-import 'package:thefood/views/add_recipe/add_recipe_view.dart';
+import 'package:thefood/core/constants/paddings.dart';
+import 'package:thefood/features/compoments/views/add_recipe/add_recipe_view.dart';
 
 part 'add_recipe_state.dart';
 
@@ -11,11 +11,10 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   AddRecipeCubit() : super(AddRecipeState());
 
   List<Widget>? widgetList = [];
-  List<String?>? ingredientList = [];
   TextEditingController ingredientNameController = TextEditingController();
   TextEditingController ingredientAmountController = TextEditingController();
 
-  void addValue(List<String>? ingredientList, List<String>? measureList) {
+  void addValue(List<String?>? ingredientList, List<String?>? measureList) {
     emit(
       state.copyWith(
         ingredientList: ingredientList ?? [],

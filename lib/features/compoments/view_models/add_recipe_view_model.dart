@@ -1,4 +1,4 @@
-part of 'add_recipe_view.dart';
+part of '../views/add_recipe/add_recipe_view.dart';
 
 List<Widget> widgetList = [];
 late TextEditingController _nameController;
@@ -6,14 +6,14 @@ late TextEditingController _youtubeController;
 late TextEditingController _sourceController;
 late TextEditingController _instructionController;
 final TextEditingController _imageController = TextEditingController();
-final List<TextEditingController> _ingredientControllers = [];
-final List<TextEditingController> _measureControllers = [];
+late List<TextEditingController?>? _ingredientControllers;
+late List<TextEditingController?>? _measureControllers;
 
 int index = 1;
 Widget initialIngredient() {
   index = 0;
-  _ingredientControllers.add(TextEditingController());
-  _measureControllers.add(TextEditingController());
+  _ingredientControllers?.add(TextEditingController());
+  _measureControllers?.add(TextEditingController());
   return Padding(
     padding: ProjectPaddings.cardMedium,
     child: Row(
@@ -21,7 +21,7 @@ Widget initialIngredient() {
         Expanded(
           flex: 5,
           child: IngredientName(
-            ingredientController: _ingredientControllers[0],
+            ingredientController: _ingredientControllers?[0] ?? TextEditingController(),
           ),
         ),
         const SizedBox(
@@ -71,13 +71,25 @@ class SendButton extends StatefulWidget {
 }
 
 class _SendButtonState extends State<SendButton> {
-  late dynamic id;
-  Future<dynamic> getRecipeId() async {
+  late int id;
+  Future<int> getRecipeId() async {
     final recipeId = FirebaseFirestore.instance.collection('recipes').get();
-    await recipeId.then((value) {
+    await recipeId.then((value) async {
       id = value.docs.length + 1;
-      if (id == value.docs.length + 1) {
-        return id = id + 20;
+      final ref = await FirebaseFirestore.instance
+          .collection('recipes')
+          .where('idMeal', isEqualTo: id.toString())
+          .get()
+          .then((value) {
+        if (value.size > 0) return true;
+        return false;
+      });
+      switch (ref) {
+        case true:
+          id++;
+          break;
+        case false:
+          break;
       }
     });
     return id;
@@ -90,10 +102,13 @@ class _SendButtonState extends State<SendButton> {
   ) async {
     final ref = await FirebaseFirestore.instance
         .collection('recipes')
-        .doc(id.toString())
+        .where('strMeal', isEqualTo: _nameController.text)
         .get()
-        .then((value) => value.data()?['strMeal']);
-    if (ref == _nameController.text) {
+        .then((value) {
+      if (value.size > 0) return true;
+      return false;
+    });
+    if (ref == true) {
       return ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Recipe already exists'),
@@ -118,7 +133,7 @@ class _SendButtonState extends State<SendButton> {
 
   @override
   void initState() {
-    id = getRecipeId();
+    getRecipeId();
     super.initState();
   }
 
@@ -130,8 +145,14 @@ class _SendButtonState extends State<SendButton> {
           onPressed: () async {
             setState(() {
               context.read<AddRecipeCubit>().addValue(
-                    _ingredientControllers.map((e) => e.text).toList(),
-                    _measureControllers.map((e) => e.text).toList(),
+                    _ingredientControllers
+                        ?.map((e) => e?.text ?? '')
+                        .toList()
+                        .cast<String>(),
+                    _measureControllers
+                        ?.map((e) => e?.text ?? '')
+                        .toList()
+                        .cast<String>(),
                   );
             });
             final recipe = Meals().copyWith(
@@ -139,8 +160,8 @@ class _SendButtonState extends State<SendButton> {
               strMeal: _nameController.text,
               strArea: state.recipeArea,
               strCategory: state.recipeCategory,
-              strIngredients: state.ingredientList,
-              strMeasures: state.measureList,
+              strIngredients: state.ingredientList?.cast<String?>(),
+              strMeasures: state.measureList?.cast<String?>(),
               strInstructions: _instructionController.text,
               strMealThumb: _imageController.text,
               strSource: _sourceController.text,
@@ -169,6 +190,9 @@ class SourceField extends StatelessWidget {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextField(
+        decoration: const InputDecoration(
+          label: Text(ProjectTexts.sourceInput),
+        ),
         controller: _sourceController,
       ),
     );
@@ -267,6 +291,9 @@ class InstructionInput extends StatelessWidget {
       margin: const EdgeInsets.all(12),
       height: context.dynamicHeight(0.15),
       child: TextFormField(
+        decoration: const InputDecoration(
+          hintText: ProjectTexts.instructionInput,
+        ),
         maxLength: 2000,
         controller: _instructionController,
         maxLines: 20,
@@ -278,14 +305,14 @@ class InstructionInput extends StatelessWidget {
 class MeasureField extends StatefulWidget {
   const MeasureField({
     super.key,
-    required List<TextEditingController> measureControllers,
+    required List<TextEditingController?>? measureControllers,
     required Widget? suffixIcon,
     required int index,
   })  : _measureControllers = measureControllers,
         _suffixIcon = suffixIcon,
         _index = index;
 
-  final List<TextEditingController> _measureControllers;
+  final List<TextEditingController?>? _measureControllers;
   final int _index;
   final Widget? _suffixIcon;
 
@@ -299,7 +326,7 @@ class _MeasureFieldState extends State<MeasureField> {
     return Expanded(
       flex: 3,
       child: TextFormField(
-        controller: widget._measureControllers[widget._index],
+        controller: widget._measureControllers?[widget._index],
         decoration: InputDecoration(
           hintText: ProjectTexts.measureInput,
           suffixIcon: widget._suffixIcon,

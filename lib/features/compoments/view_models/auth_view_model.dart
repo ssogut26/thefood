@@ -1,14 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/constants/colors.dart';
-import 'package:thefood/constants/hive_constants.dart';
-import 'package:thefood/constants/texts.dart';
-import 'package:thefood/views/auth/bloc/login/login_cubit.dart';
-import 'package:thefood/views/auth/bloc/sign_up/sign_up_cubit.dart';
+import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/hive_constants.dart';
+import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/compoments/views/auth/bloc/login/login_cubit.dart';
+import 'package:thefood/features/compoments/views/auth/bloc/sign_up/sign_up_cubit.dart';
 
 class NameField extends StatelessWidget {
   const NameField({
@@ -295,22 +296,9 @@ class LoginButton extends StatelessWidget {
 }
 
 class RegisterButton extends StatelessWidget {
-  RegisterButton({
+  const RegisterButton({
     super.key,
-    required GlobalKey<FormState> formKey,
-    required TextEditingController emailController,
-    required TextEditingController passwordController,
-    required TextEditingController nameController,
-  })  : _formKey = formKey,
-        _emailController = emailController,
-        _passwordController = passwordController,
-        _nameController = nameController;
-
-  final GlobalKey<FormState> _formKey;
-  final TextEditingController _emailController;
-  final TextEditingController _passwordController;
-  final TextEditingController _nameController;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -334,9 +322,9 @@ class RegisterButton extends StatelessWidget {
                       if (state.status.isValid) {
                         await context.read<SignUpCubit>().signUpFormSubmitted();
                         if (FirebaseAuth.instance.currentUser != null) {
+                          await Future.delayed(const Duration(milliseconds: 500));
                           await FirebaseAuth.instance.currentUser
                               ?.updateDisplayName(state.name.value);
-                          FirebaseAuth.instance.authStateChanges();
                           context.goNamed('/');
                         }
                       } else {
