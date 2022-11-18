@@ -4,8 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:thefood/core/constants/endpoints.dart';
-import 'package:thefood/features/compoments/models/categories.dart';
-import 'package:thefood/features/compoments/models/meals.dart';
+import 'package:thefood/products/models/categories.dart';
+import 'package:thefood/products/models/meals.dart';
 
 class NetworkManager {
   NetworkManager._() {

@@ -57,4 +57,12 @@ class ProjectTexts {
   static const youtubeInput = 'Enter a youtube link';
   static const recipeNameInput = 'Enter your recipe name';
   static const noConnection = 'No internet connection';
+  static const myRecipe = 'My Recipes';
+  static const userRecipes = 'User Recipes';
+  static const randomRecipe = 'Random Recipe';
+  static const userNoRecipesYet = 'You have no recipes yet';
+  static const noRecipeShared = "We did'nt find any recipe shared by users";
+  static const somethingWentWrong = 'Something went wrong';
+  static const account = 'Account';
+  static const offline = 'You are offline';
 }

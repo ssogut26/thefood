@@ -14,21 +14,22 @@ import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/detail_service.dart';
 import 'package:thefood/core/services/home_service.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
-import 'package:thefood/features/compoments/views/add_recipe/add_recipe_view.dart';
-import 'package:thefood/features/compoments/views/auth/bloc/login/login_cubit.dart';
-import 'package:thefood/features/compoments/views/auth/bloc/sign_up/sign_up_cubit.dart';
-import 'package:thefood/features/compoments/views/auth/forgot_password_view.dart';
-import 'package:thefood/features/compoments/views/auth/login_view.dart';
-import 'package:thefood/features/compoments/views/auth/singup_view.dart';
-import 'package:thefood/features/compoments/views/category_details/category_details_view.dart';
-import 'package:thefood/features/compoments/views/details/cubit/details_cubit.dart';
-import 'package:thefood/features/compoments/views/details/details_view.dart';
-import 'package:thefood/features/compoments/views/favorites/cubit/favorite_cubit.dart';
-import 'package:thefood/features/compoments/views/favorites/favorite_view.dart';
-import 'package:thefood/features/compoments/views/home/cubit/bloc/home_cubit.dart';
-import 'package:thefood/features/compoments/views/home/home_view.dart';
-import 'package:thefood/features/compoments/views/profile/profile_view.dart';
 import 'package:thefood/firebase_options.dart';
+import 'package:thefood/products/views/add_recipe/add_recipe_view.dart';
+import 'package:thefood/products/views/auth/bloc/login/login_cubit.dart';
+import 'package:thefood/products/views/auth/bloc/sign_up/sign_up_cubit.dart';
+import 'package:thefood/products/views/auth/forgot_password_view.dart';
+import 'package:thefood/products/views/auth/login_view.dart';
+import 'package:thefood/products/views/auth/singup_view.dart';
+import 'package:thefood/products/views/category_details/category_details_view.dart';
+import 'package:thefood/products/views/details/cubit/details_cubit.dart';
+import 'package:thefood/products/views/details/details_view.dart';
+import 'package:thefood/products/views/favorites/cubit/favorite_cubit.dart';
+import 'package:thefood/products/views/favorites/favorite_view.dart';
+import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
+import 'package:thefood/products/views/home/home_view.dart';
+import 'package:thefood/products/views/profile/cubit/profile_cubit.dart';
+import 'package:thefood/products/views/profile/profile_view.dart';
 
 part 'router.dart';
 
@@ -73,6 +74,9 @@ class _TheFoodState extends State<TheFood> {
             0,
             context,
           ),
+        ),
+        BlocProvider<ProfileCubit>(
+          create: (context) => ProfileCubit(),
         ),
         BlocProvider<FavoritesCubit>(
           create: (context) => FavoritesCubit(),

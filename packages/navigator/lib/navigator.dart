@@ -25,9 +25,11 @@ class _NavigatorViewState extends State<NavigatorView> {
   };
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
@@ -59,6 +61,13 @@ class _NavigatorViewState extends State<NavigatorView> {
 
   Navigator buildNavigator() {
     return Navigator(
+      requestFocus: false,
+      onPopPage: (route, result) {
+        if (!route.didPop(result)) {
+          return false;
+        }
+        return true;
+      },
       key: widget.navigatorKeys[_selectedIndex],
       onGenerateRoute: (RouteSettings settings) {
         return MaterialPageRoute(

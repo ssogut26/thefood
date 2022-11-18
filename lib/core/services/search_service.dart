@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:thefood/core/constants/endpoints.dart';
-import 'package:thefood/features/compoments/models/ingredients.dart';
+import 'package:thefood/products/models/ingredients.dart';
 
 abstract class ISearchService {
   ISearchService(Dio networkManager) : _manager = networkManager;

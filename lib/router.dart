@@ -13,11 +13,24 @@ final GoRouter _router = GoRouter(
       path: '/',
       name: '/',
       builder: (BuildContext context, GoRouterState state) {
-        return const NavigatorView(
+        return NavigatorView(
           widgetOptions: [
-            ProfileView(),
-            HomeView(),
-            FavoriteView(),
+            BlocProvider(
+              create: (context) => ProfileCubit(),
+              child: const ProfileView(),
+            ),
+            BlocProvider(
+              create: (context) => HomeCubit(
+                HomeService(
+                  NetworkManager.instance,
+                ),
+              ),
+              child: const HomeView(),
+            ),
+            BlocProvider(
+              create: (context) => FavoritesCubit(),
+              child: const FavoriteView(),
+            ),
           ],
         );
       },

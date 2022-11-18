@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
-import 'package:thefood/features/compoments/models/meals.dart';
+import 'package:thefood/products/models/meals.dart';
 
 abstract class IDetailService {
   IDetailService(NetworkManager networkManager) : _networkManager = networkManager;
