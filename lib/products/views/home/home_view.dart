@@ -13,6 +13,7 @@ import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/products/models/categories.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
 

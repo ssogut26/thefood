@@ -46,8 +46,8 @@ Padding _headlineBox(BuildContext context, String text) {
       width: context.width,
       height: context.height * 0.05,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.yellow[200],
+        decoration: const BoxDecoration(
+          color: ProjectColors.containerYellow,
         ),
         child: Align(
           alignment: Alignment.centerLeft,

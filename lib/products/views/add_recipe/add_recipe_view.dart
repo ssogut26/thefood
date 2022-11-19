@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/paddings.dart';
@@ -112,9 +113,7 @@ class _AddRecipeState extends State<AddRecipe> {
     return BlocProvider(
       create: (context) => AddRecipeCubit(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(ProjectTexts.addRecipe),
-        ),
+        appBar: _appBar(),
         body: BlocBuilder<AddRecipeCubit, AddRecipeState>(
           builder: (context, state) {
             return SingleChildScrollView(
@@ -122,13 +121,20 @@ class _AddRecipeState extends State<AddRecipe> {
                 padding: ProjectPaddings.pageLarge,
                 child: Column(
                   children: [
+                    //Name
+
                     _headlineBox(context, ProjectTexts.recipeName),
                     BasicCustomField(
                       controller: _nameController,
                       hintText: ProjectTexts.recipeNameInput,
                     ),
+
+                    //Category
+
                     _headlineBox(context, ProjectTexts.categoryName),
                     const CategoryDropDown(),
+
+                    //Ingredients
                     _headlineBox(context, ProjectTexts.areaName),
                     const AreaDropdown(),
                     _headlineBox(context, ProjectTexts.recipeIngredients),
@@ -160,6 +166,25 @@ class _AddRecipeState extends State<AddRecipe> {
           },
         ),
       ),
+    );
+  }
+
+  AppBar _appBar() {
+    return AppBar(
+      toolbarHeight: context.dynamicHeight(0.08),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ProjectColors.lightGrey,
+              ProjectColors.yellow,
+            ],
+          ),
+        ),
+      ),
+      title: const Text(ProjectTexts.addRecipe),
     );
   }
 }

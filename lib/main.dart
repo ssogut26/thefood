@@ -11,6 +11,7 @@ import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/hive_constants.dart';
 import 'package:thefood/core/constants/text_styles.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/category_meal_service.dart';
 import 'package:thefood/core/services/detail_service.dart';
 import 'package:thefood/core/services/home_service.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
@@ -22,6 +23,7 @@ import 'package:thefood/products/views/auth/forgot_password_view.dart';
 import 'package:thefood/products/views/auth/login_view.dart';
 import 'package:thefood/products/views/auth/singup_view.dart';
 import 'package:thefood/products/views/category_details/category_details_view.dart';
+import 'package:thefood/products/views/category_details/cubit/category_details_cubit.dart';
 import 'package:thefood/products/views/details/cubit/details_cubit.dart';
 import 'package:thefood/products/views/details/details_view.dart';
 import 'package:thefood/products/views/favorites/cubit/favorite_cubit.dart';
@@ -91,6 +93,13 @@ class _TheFoodState extends State<TheFood> {
             AuthenticationRepository(),
           ),
         ),
+        BlocProvider(
+          create: (context) => CategoryDetailsCubit(
+            CategoryMealService(
+              NetworkManager.instance,
+            ),
+          ),
+        ),
       ],
       child: MaterialApp.router(
         title: ProjectTexts.appName,
@@ -99,8 +108,9 @@ class _TheFoodState extends State<TheFood> {
           useMaterial3: true,
           textTheme: ProjectTextStyles().textTheme,
           appBarTheme: const AppBarTheme(
+            shadowColor: Colors.black,
             elevation: 0,
-            backgroundColor: Colors.transparent,
+            backgroundColor: ProjectColors.mainWhite,
             systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
           cardTheme: const CardTheme(

@@ -189,6 +189,19 @@ class PullToRefresh extends StatelessWidget {
 
 AppBar _appBar(BuildContext context) {
   return AppBar(
+    toolbarHeight: context.dynamicHeight(0.08),
+    flexibleSpace: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ProjectColors.lightGrey,
+            ProjectColors.yellow,
+          ],
+        ),
+      ),
+    ),
     title: Text(
       ProjectTexts.favoriteBoxName,
       style: Theme.of(context).textTheme.headline1,

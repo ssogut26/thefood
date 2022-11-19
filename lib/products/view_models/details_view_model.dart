@@ -78,6 +78,7 @@ class RecipeImage extends StatelessWidget {
           if (connected || (DioErrorType.other == SocketException))
             Positioned.fill(
               child: CachedNetworkImage(
+                filterQuality: FilterQuality.medium,
                 imageUrl: widget.image ?? '',
                 fit: BoxFit.cover,
               ),
@@ -357,6 +358,7 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
             child: Card(
               color: ProjectColors.lightGrey,
               child: CachedNetworkImage(
+                filterQuality: FilterQuality.medium,
                 errorWidget: (context, url, error) => const Icon(Icons.error),
                 width: 60,
                 height: 60,

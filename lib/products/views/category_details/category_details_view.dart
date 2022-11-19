@@ -1,12 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
-import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/category_meal_service.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
 import 'package:thefood/products/models/meals.dart';
+import 'package:thefood/products/views/category_details/cubit/category_details_cubit.dart';
 import 'package:thefood/products/views/home/home_view.dart';
 
 class CategoryDetailsView extends StatefulWidget {
@@ -34,120 +35,60 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appbar(context),
-      body: Padding(
-        padding: ProjectPaddings.pageMedium,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TopCategory(
-                widget: widget,
-              ),
-              const SizedBox(height: 20),
-              _getMeals(),
-            ],
+    return BlocProvider(
+      create: (context) =>
+          CategoryDetailsCubit(CategoryMealService(NetworkManager.instance)),
+      child: Scaffold(
+        appBar: _appbar(context),
+        body: Padding(
+          padding: ProjectPaddings.pageLarge,
+          child: BlocBuilder<CategoryDetailsCubit, CategoryDetailsState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    FutureBuilder<Meal?>(
+                      future:
+                          context.read<CategoryDetailsCubit>().getMealsByCategory(_name),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return ListCategoryMeals(
+                            meal: snapshot.data,
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text(snapshot.error.toString());
+                        } else {
+                          return const CategoryMealShimmer(
+                            itemCount: 8,
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  FutureBuilder<Meal?> _getMeals() {
-    return FutureBuilder<Meal?>(
-      future: _categoryMeals,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return GridView.builder(
-            physics: const ScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: MediaQuery.of(context).size.width / 2,
-              mainAxisExtent: MediaQuery.of(context).size.height / 3.8,
-            ),
-            shrinkWrap: true,
-            itemCount: snapshot.data?.meals?.length,
-            itemBuilder: (context, index) {
-              final main = snapshot.data?.meals?[index];
-              return Column(
-                children: [
-                  SizedBox(
-                    height: context.dynamicHeight(0.26),
-                    width: MediaQuery.of(context).size.width / 2,
-                    child: Column(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            context.pushNamed(
-                              'details',
-                              params: {
-                                'name': main?.strMeal ?? '',
-                                'image': main?.strMealThumb ?? '',
-                                'id': main?.idMeal ?? '',
-                              },
-                            );
-                          },
-                          child: Stack(
-                            alignment: Alignment.topCenter,
-                            children: <Widget>[
-                              Padding(
-                                padding: ProjectPaddings.cardImagePaddingSmall,
-                                child: SizedBox(
-                                  width: context.dynamicWidth(0.4),
-                                  height: context.dynamicHeight(0.22),
-                                  child: Card(
-                                    elevation: 1,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: context.lowBorderRadius,
-                                    ),
-                                    color: ProjectColors.secondWhite,
-                                    child: Padding(
-                                      padding: ProjectPaddings.cardImagePadding,
-                                      child: Text(
-                                        main?.strMeal ?? '',
-                                        style: context.textTheme.bodyText2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                height: 90,
-                                width: 90,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(),
-                                  color: Colors.transparent,
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                      main?.strMealThumb ?? '',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        } else if (snapshot.hasError) {
-          return Text(snapshot.error.toString());
-        } else {
-          return const CategoryMealShimmer(
-            itemCount: 8,
-          );
-        }
-      },
-    );
-  }
-
   AppBar _appbar(BuildContext context) {
     return AppBar(
+      toolbarHeight: context.dynamicHeight(0.08),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ProjectColors.lightGrey,
+              ProjectColors.yellow,
+            ],
+          ),
+        ),
+      ),
       title: Text(_name),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
@@ -159,28 +100,125 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
   }
 }
 
-class TopCategory extends StatelessWidget {
-  const TopCategory({
-    required this.widget,
+class ListCategoryMeals extends StatelessWidget {
+  const ListCategoryMeals({
+    super.key,
+    required this.meal,
   });
 
-  final CategoryDetailsView widget;
+  final Meal? meal;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Row(
-        children: [
-          CachedNetworkImage(
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-            imageUrl: widget.image ?? '',
-            width: 100,
-            height: 100,
+    return GridView.builder(
+      physics: const ScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: MediaQuery.of(context).size.width / 2,
+        mainAxisExtent: MediaQuery.of(context).size.height / 3.5,
+      ),
+      shrinkWrap: true,
+      itemCount: meal?.meals?.length,
+      itemBuilder: (context, index) {
+        final main = meal?.meals?[index];
+        return CategoryMealCard(main: main);
+      },
+    );
+  }
+}
+
+class CategoryMealCard extends StatelessWidget {
+  const CategoryMealCard({
+    super.key,
+    required this.main,
+  });
+
+  final Meals? main;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: context.dynamicHeight(0.28),
+      width: MediaQuery.of(context).size.width / 2,
+      child: InkWell(
+        overlayColor: MaterialStateProperty.all(Colors.transparent),
+        onTap: () {
+          context.pushNamed(
+            'details',
+            params: {
+              'name': main?.strMeal ?? '',
+              'image': main?.strMealThumb ?? '',
+              'id': main?.idMeal ?? '',
+            },
+          );
+        },
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[
+            MealName(main: main),
+            CircleMealImage(main: main),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MealName extends StatelessWidget {
+  const MealName({
+    super.key,
+    required this.main,
+  });
+
+  final Meals? main;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: ProjectPaddings.cardImagePaddingSmall,
+      child: SizedBox(
+        width: context.dynamicWidth(0.42),
+        height: context.dynamicHeight(0.23),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: context.lowBorderRadius,
           ),
-          Text(
-            '${ProjectTexts.recipiesFor} ${widget.name}',
+          color: ProjectColors.lightGrey,
+          child: Padding(
+            padding: ProjectPaddings.cardImagePadding,
+            child: Text(
+              main?.strMeal ?? '',
+              style: context.textTheme.bodyText2,
+            ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class CircleMealImage extends StatelessWidget {
+  const CircleMealImage({
+    super.key,
+    required this.main,
+  });
+
+  final Meals? main;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: context.dynamicHeight(0.12),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(),
+        color: Colors.transparent,
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: NetworkImage(
+            main?.strMealThumb ?? '',
+          ),
+        ),
       ),
     );
   }

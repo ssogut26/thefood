@@ -45,7 +45,7 @@ class _ChangeCategoryState extends State<ChangeCategory> {
         return Column(
           children: [
             SizedBox(
-              height: 50,
+              height: context.dynamicHeight(0.07),
               width: MediaQuery.of(context).size.width,
               child: ListView.builder(
                 padding: EdgeInsets.zero,
@@ -77,36 +77,14 @@ class _ChangeCategoryState extends State<ChangeCategory> {
                             state.categoryMealItems = await context
                                 .read<HomeCubit>()
                                 .getMealsByCategory(categoryName);
+                            if (mounted) {
+                              setState(() {
+                                selectedIndex = index;
+                              });
+                            }
                           }
-
-                          setState(() {
-                            selectedIndex = index;
-                          });
                         },
-                        child: Card(
-                          color: selectedIndex == index
-                              ? ProjectColors.yellow
-                              : ProjectColors.white,
-                          child: Row(
-                            children: [
-                              Card(
-                                color: ProjectColors.mainWhite,
-                                child: CachedNetworkImage(
-                                  imageUrl: data.strCategoryThumb ?? '',
-                                  height: 32,
-                                  width: 32,
-                                ),
-                              ),
-                              Padding(
-                                padding: ProjectPaddings.textHorizontalSmall,
-                                child: Text(
-                                  data.strCategory ?? '',
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        child: WholeCategoryCard(data: data, index: index),
                       ),
                     ],
                   );
@@ -151,111 +129,69 @@ class _ChangeCategoryState extends State<ChangeCategory> {
   }
 }
 
-BlocBuilder _getCategories(BuildContext context) {
-  return BlocBuilder<HomeCubit, HomeState>(
-    builder: (context, state) {
-      return Column(
+class WholeCategoryCard extends StatelessWidget {
+  const WholeCategoryCard({
+    super.key,
+    required this.data,
+    required this.index,
+  });
+
+  final MealCategory? data;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: selectedIndex == index ? ProjectColors.yellow : ProjectColors.white,
+      child: Row(
         children: [
-          SizedBox(
-            height: 50,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: state.mealCategory?.length ?? 0,
-              itemBuilder: (context, index) {
-                final data = state.mealCategory?[index];
-                if (data == null) {
-                  return const SizedBox.shrink();
-                }
-                return Column(
-                  children: [
-                    InkWell(
-                      onTap: () async {
-                        final categoryName = data.strCategory ?? '';
-                        if (context
-                                .read<HomeCubit>()
-                                .mealCacheManager
-                                .getItem(categoryName)
-                                ?.meals
-                                ?.isNotEmpty ??
-                            false) {
-                          state.categoryMealItems = context
-                              .read<HomeCubit>()
-                              .mealCacheManager
-                              .getItem(categoryName);
-                        } else {
-                          state.categoryMealItems = await context
-                              .read<HomeCubit>()
-                              .getMealsByCategory(categoryName);
-                        }
-                      },
-                      child: Card(
-                        color: selectedIndex == index
-                            ? ProjectColors.yellow
-                            : ProjectColors.white,
-                        child: Row(
-                          children: [
-                            Card(
-                              color: ProjectColors.mainWhite,
-                              child: CachedNetworkImage(
-                                imageUrl: data.strCategoryThumb ?? '',
-                                height: 32,
-                                width: 32,
-                              ),
-                            ),
-                            Padding(
-                              padding: ProjectPaddings.textHorizontalSmall,
-                              child: Text(
-                                data.strCategory ?? '',
-                                style: Theme.of(context).textTheme.bodyText1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          SizedBox(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Preview',
-                  style: Theme.of(context).textTheme.headline1,
-                ),
-                TextButton(
-                  child: Text(
-                    'See all',
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                  onPressed: () {
-                    context.pushNamed(
-                      'category',
-                      params: {
-                        'name':
-                            state.mealCategory!.elementAt(selectedIndex).strCategory ??
-                                '',
-                        'image': state.mealCategory!
-                                .elementAt(selectedIndex)
-                                .strCategoryThumb ??
-                            '',
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+          CardCategoryImage(data: data),
+          CardCategoryName(data: data),
         ],
-      );
-    },
-  );
+      ),
+    );
+  }
+}
+
+class CardCategoryImage extends StatelessWidget {
+  const CardCategoryImage({
+    super.key,
+    required this.data,
+  });
+
+  final MealCategory? data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: ProjectColors.mainWhite,
+      child: CachedNetworkImage(
+        imageUrl: data?.strCategoryThumb ?? '',
+        height: 32,
+        width: 32,
+      ),
+    );
+  }
+}
+
+class CardCategoryName extends StatelessWidget {
+  const CardCategoryName({
+    super.key,
+    required this.data,
+  });
+
+  final MealCategory? data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: ProjectPaddings.textHorizontalSmall,
+      child: Text(
+        data?.strCategory ?? '',
+        style: Theme.of(context).textTheme.bodyText1,
+      ),
+    );
+  }
 }
 
 class CategoryMeals extends StatefulWidget {
@@ -294,7 +230,8 @@ class _CategoryMealsState extends State<CategoryMeals> {
   }
 
   SliverGridDelegateWithMaxCrossAxisExtent _categoryMealGridDelegate(
-      BuildContext context) {
+    BuildContext context,
+  ) {
     return SliverGridDelegateWithMaxCrossAxisExtent(
       crossAxisSpacing: context.dynamicWidth(0.05),
       mainAxisSpacing: context.dynamicWidth(0.02),
@@ -306,7 +243,7 @@ class _CategoryMealsState extends State<CategoryMeals> {
 
 class CategoryMealCard extends StatelessWidget {
   const CategoryMealCard({
-    Key? key,
+    super.key,
     required this.data,
   });
 
@@ -381,9 +318,9 @@ class MealName extends StatelessWidget {
 
 class CircleMealImage extends StatelessWidget {
   const CircleMealImage({
-    Key? key,
+    super.key,
     required this.data,
-  }) : super(key: key);
+  });
 
   final Meals? data;
 
@@ -425,12 +362,12 @@ class _RandomMealState extends State<RandomMeal> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const _AlignedText(text: ProjectTexts.randomRecipe),
+                children: const [
+                  _AlignedText(text: ProjectTexts.randomRecipe),
                   GetNewRandomMealButton(),
                 ],
               ),
-              RandomMealcard(),
+              const RandomMealcard(),
             ],
           ),
         );
@@ -441,8 +378,8 @@ class _RandomMealState extends State<RandomMeal> {
 
 class GetNewRandomMealButton extends StatelessWidget {
   const GetNewRandomMealButton({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -457,8 +394,8 @@ class GetNewRandomMealButton extends StatelessWidget {
 
 class RandomMealcard extends StatelessWidget {
   const RandomMealcard({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -509,9 +446,9 @@ class RandomMealcard extends StatelessWidget {
 
 class RandomMealImage extends StatelessWidget {
   const RandomMealImage({
-    Key? key,
+    super.key,
     required this.data,
-  }) : super(key: key);
+  });
 
   final Meals? data;
 
@@ -530,9 +467,9 @@ class RandomMealImage extends StatelessWidget {
 
 class RandomMealName extends StatelessWidget {
   const RandomMealName({
-    Key? key,
+    super.key,
     required this.data,
-  }) : super(key: key);
+  });
 
   final Meals? data;
 
@@ -555,6 +492,19 @@ AppBar _appBar(BuildContext context) {
   final auth = _auth;
   final userName = auth.currentUser?.displayName?.split(' ')[0];
   return AppBar(
+    toolbarHeight: context.dynamicHeight(0.08),
+    flexibleSpace: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ProjectColors.lightGrey,
+            ProjectColors.yellow,
+          ],
+        ),
+      ),
+    ),
     title: Padding(
       padding: ProjectPaddings.pageMedium,
       child: Row(
@@ -601,8 +551,8 @@ class StreamUserRecipes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('recipes').snapshots(),
+    return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      future: FirebaseFirestore.instance.collection('recipes').get(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         final data = snapshot.data?.docs;
         if (data.isNullOrEmpty) {
@@ -821,6 +771,7 @@ class _GetRandomRecipe extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * 0.40,
                             child: CachedNetworkImage(
                               imageUrl: data?.strMealThumb ?? '',
+                              filterQuality: FilterQuality.medium,
                               fit: BoxFit.fill,
                             ),
                           ),

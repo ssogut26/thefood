@@ -19,7 +19,7 @@ class ProjectPaddings {
   static const textVerticalLarge = EdgeInsets.symmetric(vertical: 12);
 
   static const cardImagePadding = EdgeInsets.only(
-    top: 70,
+    top: 80,
     left: 20,
     right: 10,
   );

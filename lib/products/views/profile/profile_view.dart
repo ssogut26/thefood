@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/products//views/profile/cubit/profile_cubit.dart';
@@ -32,11 +33,10 @@ class _ProfileViewState extends State<ProfileView> {
     return BlocProvider(
       create: (context) => ProfileCubit(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(ProjectTexts.account),
-        ),
+        appBar: _appBar(),
         // for adding recipes to firestore
         floatingActionButton: FloatingActionButton(
+          backgroundColor: ProjectColors.darkGrey,
           onPressed: () {
             context.pushNamed('add');
           },
@@ -52,11 +52,16 @@ class _ProfileViewState extends State<ProfileView> {
                   Row(
                     children: [
                       const PickImageOnTap(),
-                      const SizedBox(width: 20),
+                      SizedBox(
+                        width: context.dynamicWidth(0.04),
+                      ),
                       const UserInfo(),
                       const Spacer(),
                       IconButton(onPressed: () {}, icon: const Icon(Icons.edit))
                     ],
+                  ),
+                  SizedBox(
+                    height: context.dynamicHeight(0.03),
                   ),
                   const Text(
                     ProjectTexts.myRecipe,
@@ -70,6 +75,25 @@ class _ProfileViewState extends State<ProfileView> {
           },
         ),
       ),
+    );
+  }
+
+  AppBar _appBar() {
+    return AppBar(
+      toolbarHeight: context.dynamicHeight(0.08),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ProjectColors.lightGrey,
+              ProjectColors.yellow,
+            ],
+          ),
+        ),
+      ),
+      title: const Text(ProjectTexts.account),
     );
   }
 }
