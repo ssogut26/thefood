@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,9 +7,12 @@ import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/hive_constants.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/products/models/user.dart';
 import 'package:thefood/products/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/products/views/auth/bloc/sign_up/sign_up_cubit.dart';
 
@@ -173,7 +178,7 @@ class _ConfirmPasswordFieldState extends State<ConfirmPasswordField> {
           ),
           controller: widget._confirmPasswordController,
           keyboardType: TextInputType.visiblePassword,
-          textInputAction: TextInputAction.done,
+          textInputAction: TextInputAction.next,
         ),
       ),
     );
@@ -295,6 +300,65 @@ class LoginButton extends StatelessWidget {
   }
 }
 
+class AreaDropdown extends StatefulWidget {
+  const AreaDropdown({
+    super.key,
+  });
+
+  @override
+  State<AreaDropdown> createState() => _AreaDropdownState();
+}
+
+class _AreaDropdownState extends State<AreaDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: context.verticalPaddingLow,
+      child: BlocBuilder<SignUpCubit, SignUpState>(
+        builder: (context, state) {
+          return SizedBox(
+            width: context.dynamicWidth(0.8),
+            height: context.dynamicHeight(0.10),
+            child: DropdownButtonFormField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              hint: const Text(ProjectTexts.selectArea),
+              items: [
+                for (var index = 0; index < countryFlagMap.length; index++)
+                  DropdownMenuItem(
+                    value: countryFlagMap.keys.elementAt(index),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: context.onlyRightPaddingLow,
+                          child: CachedNetworkImage(
+                            imageUrl: countryFlagMap.values.elementAt(index),
+                            height: 32,
+                            width: 32,
+                            errorWidget: (context, url, error) => const Icon(
+                              Icons.error,
+                            ),
+                          ),
+                        ),
+                        Text(countryFlagMap.keys.elementAt(index)),
+                      ],
+                    ),
+                  ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  state.country = value.toString();
+                });
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class RegisterButton extends StatelessWidget {
   const RegisterButton({
     super.key,
@@ -321,11 +385,21 @@ class RegisterButton extends StatelessWidget {
                     onPressed: () async {
                       if (state.status.isValid) {
                         await context.read<SignUpCubit>().signUpFormSubmitted();
-                        if (FirebaseAuth.instance.currentUser != null) {
-                          await Future.delayed(const Duration(milliseconds: 500));
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
                           await FirebaseAuth.instance.currentUser
                               ?.updateDisplayName(state.name.value);
-                          context.goNamed('/');
+                          final userData = UserModels(
+                            id: user.uid,
+                            name: state.name.value,
+                            email: state.email.value,
+                            image: AssetsPath.defaultUserImage,
+                            country: state.country,
+                          );
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .set(userData.toJson());
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

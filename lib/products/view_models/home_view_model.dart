@@ -544,11 +544,16 @@ AppBar _appBar(BuildContext context) {
   );
 }
 
-class StreamUserRecipes extends StatelessWidget {
+class StreamUserRecipes extends StatefulWidget {
   const StreamUserRecipes({
     super.key,
   });
 
+  @override
+  State<StreamUserRecipes> createState() => _StreamUserRecipesState();
+}
+
+class _StreamUserRecipesState extends State<StreamUserRecipes> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -567,8 +572,8 @@ class StreamUserRecipes extends StatelessWidget {
           if (snapshot.hasData) {
             return UserRecipeList(data: data);
           }
-          return const Center(
-            child: CircularProgressIndicator(),
+          return CustomLottieLoading(
+            onLoaded: (controller) {},
           );
         }
       },
@@ -630,14 +635,14 @@ class UserRecipeCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // SizedBox(
-          //   height: context.dynamicHeight(0.12),
-          //   width: context.dynamicWidth(0.4),
-          //   child: Image.network(
-          //     fit: BoxFit.cover,
-          //     "${data?[index]['strMealThumb']}",
-          //   ),
-          // ),
+          SizedBox(
+            height: context.dynamicHeight(0.12),
+            width: context.dynamicWidth(0.4),
+            child: Image.network(
+              fit: BoxFit.cover,
+              "${data?[index]['strMealThumb']}",
+            ),
+          ),
           Padding(
             padding: ProjectPaddings.textVerticalMedium,
             child: Column(
@@ -691,8 +696,39 @@ class _Drawer extends StatelessWidget {
   }
 }
 
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
   const _SearchBar();
+
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  late final ISearchService _searchService;
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    _searchService = SearchService(Dio(BaseOptions(baseUrl: EndPoints.baseUrl)));
+    super.initState();
+  }
+
+  CancelableOperation<void>? _operation;
+
+  Future<List<Meals>> search(String key) async {
+    _operation?.cancel();
+    _operation = CancelableOperation.fromFuture(
+      Future.delayed(
+        const Duration(milliseconds: 500),
+      ),
+    );
+    var meals = <Meals>[];
+    await _operation?.value.whenComplete(() async {
+      meals = await _searchService.searchMeals(key);
+    });
+
+    return meals;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -700,22 +736,81 @@ class _SearchBar extends StatelessWidget {
       builder: (context, state) {
         return Padding(
           padding: ProjectPaddings.cardMedium,
-          child: TextFormField(
-            decoration: InputDecoration(
-              fillColor: ProjectColors.white,
-              suffixIcon: const InkWell(
-                focusColor: ProjectColors.yellow,
-                child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  color: ProjectColors.yellow,
-                  child: Icon(Icons.search),
+          child: RawAutocomplete<Meals>(
+            textEditingController: _controller,
+            focusNode: FocusNode(),
+            onSelected: (value) {
+              context.pushNamed(
+                'details',
+                params: {
+                  'name': value.strMeal ?? '',
+                  'image': value.strMealThumb ?? '',
+                  'id': value.idMeal ?? '',
+                },
+              );
+              _controller.clear();
+            },
+            optionsViewBuilder: (context, onSelected, options) {
+              return Material(
+                elevation: 4,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: ProjectPaddings.textHorizontalMedium,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final meals = options.elementAt(index);
+                    return InkWell(
+                      onTap: () async {
+                        onSelected(meals);
+                      },
+                      child: ListTile(
+                        title: Text(meals.strMeal ?? ''),
+                        leading: CachedNetworkImage(
+                          imageUrl: meals.strMealThumb ?? '',
+                          height: context.dynamicHeight(0.08),
+                          width: context.dynamicWidth(0.08),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
-              hintText: ProjectTexts.searchText,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+              );
+            },
+            displayStringForOption: (option) => option.strMeal ?? '',
+            optionsBuilder: (TextEditingValue textEditingValue) async {
+              return textEditingValue.text.isEmpty
+                  ? []
+                  : await search(textEditingValue.text);
+            },
+            fieldViewBuilder: (
+              BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted,
+            ) {
+              return TextField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                onSubmitted: (String value) {
+                  onFieldSubmitted();
+                },
+                decoration: InputDecoration(
+                  fillColor: ProjectColors.white,
+                  suffixIcon: const InkWell(
+                    focusColor: ProjectColors.yellow,
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      color: ProjectColors.yellow,
+                      child: Icon(Icons.search),
+                    ),
+                  ),
+                  hintText: ProjectTexts.searchText,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

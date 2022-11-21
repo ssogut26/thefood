@@ -6,6 +6,7 @@ import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/compoments/loading.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/favorites/cubit/favorite_cubit.dart';
 
@@ -36,26 +37,23 @@ class _FavoriteViewState extends State<FavoriteView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appBar(context),
-      body: BlocConsumer<FavoritesCubit, FavoritesState>(
-        listenWhen: (previous, current) {
-          return previous.favoriteBox?.length != current.favoriteBox?.length;
-        },
-        listener: (context, state) {
-          if (state.favoriteBox?.length !=
-              context.read<FavoritesCubit>().favoriteCacheManager.getValues()?.length) {
-            context.watch<FavoritesCubit>().fetchListOfFavorites();
-          }
-        },
-        builder: (context, state) {
-          return isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : context.watch<FavoritesCubit>().favoriteBox?.isNotEmpty ?? false
-                  ? const AllFavorites()
-                  : const PullToRefresh();
-        },
-      ),
-    );
+    return isLoading
+        ? Center(
+            child: CustomLottieLoading(
+              onLoaded: (composition) {
+                isLoading = false;
+              },
+            ),
+          )
+        : Scaffold(
+            appBar: _appBar(context),
+            body: BlocBuilder<FavoritesCubit, FavoritesState>(
+              builder: (context, state) {
+                return context.watch<FavoritesCubit>().favoriteBox?.isNotEmpty ?? false
+                    ? const AllFavorites()
+                    : const PullToRefresh();
+              },
+            ),
+          );
   }
 }

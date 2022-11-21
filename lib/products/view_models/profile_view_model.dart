@@ -10,6 +10,7 @@ class PickImageOnTap extends StatelessWidget {
     return InkWell(
       onTap: context.read<ProfileCubit>().pickImage,
       child: CircleAvatar(
+        backgroundColor: ProjectColors.white,
         radius: 35,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(40),
@@ -20,12 +21,17 @@ class PickImageOnTap extends StatelessWidget {
   }
 }
 
-class UserInfo extends StatelessWidget {
+class UserInfo extends StatefulWidget {
   const UserInfo({
     super.key,
   });
 
-  static String place = 'Place';
+  @override
+  State<UserInfo> createState() => _UserInfoState();
+}
+
+class _UserInfoState extends State<UserInfo> {
+  final userRef = FirebaseFirestore.instance.collection('users');
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -34,7 +40,47 @@ class UserInfo extends StatelessWidget {
         Text(
           FirebaseAuth.instance.currentUser?.displayName.toString() ?? '',
         ),
-        Text(place),
+        FutureBuilder(
+          future: userRef.doc(FirebaseAuth.instance.currentUser?.uid).get(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final data = snapshot.data?.data();
+              return Row(
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: countryFlags['${data?['country']}'] ?? '',
+                    height: 32,
+                    width: 32,
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.error,
+                    ),
+                    progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          value: downloadProgress.progress,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: ProjectPaddings.textHorizontalSmall,
+                    child: Text(
+                      '${data?['country']}',
+                    ),
+                  ),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
       ],
     );
   }
@@ -50,34 +96,25 @@ class UserImage extends StatelessWidget {
     return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, state) {
         return Center(
-          child: state.image == null
-              ? FutureBuilder<String>(
-                  future: context.read<ProfileCubit>().getUserImage(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Image.file(
-                        File(snapshot.data ?? ''),
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      );
-                    }
-                    if (snapshot.hasError) {
-                      kDebugMode ? print(snapshot.error) : null;
-                      return const Icon(Icons.error);
-                    } else {
-                      return const CircularProgressIndicator();
-                    }
-                  },
-                )
-              : state.image?.path.isNotNullOrNoEmpty ?? true
-                  ? const Icon(Icons.person)
-                  : Image.file(
-                      File(state.image?.path ?? ''),
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                    ),
+          child: FutureBuilder<String>(
+            future: context.read<ProfileCubit>().getUserImage(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Image.asset(
+                  snapshot.data ?? '',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                );
+              }
+              if (snapshot.hasError) {
+                kDebugMode ? print(snapshot.error) : null;
+                return const Icon(Icons.error);
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
         );
       },
     );

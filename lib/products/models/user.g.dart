@@ -10,7 +10,7 @@ UserModels _$UserModelsFromJson(Map<String, dynamic> json) => UserModels(
       id: json['id'] as String?,
       email: json['email'] as String?,
       name: json['name'] as String?,
-      favorite: json['favorite'] as List<dynamic>?,
+      country: json['country'] as String?,
       image: json['image'] as String?,
     );
 
@@ -19,7 +19,7 @@ UserModels _$UserModelsFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc)
       id: doc.id,
       email: doc.data()?['email'] as String?,
       name: doc.data()?['name'] as String?,
-      favorite: doc.data()?['favorite'] as List<dynamic>?,
+      country: doc.data()?['country'] as String?,
       image: doc.data()?['image'] as String?,
     );
 
@@ -27,7 +27,7 @@ Map<String, dynamic> _$UserModelsToJson(UserModels instance) => <String, dynamic
       'email': instance.email,
       'id': instance.id,
       'name': instance.name,
-      'favorite': instance.favorite,
+      'country': instance.country,
       'image': instance.image,
     };
 
@@ -35,6 +35,6 @@ Map<String, dynamic> _$UserModelsToFirebase(UserModels instance) => <String, dyn
       'email': instance.email,
       'id': instance.id,
       'name': instance.name,
-      'favorite': instance.favorite,
+      'country': instance.country,
       'image': instance.image,
     };

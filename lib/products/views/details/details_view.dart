@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
@@ -15,6 +16,7 @@ import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/managers/cache_manager.dart';
+import 'package:thefood/features/compoments/loading.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/details/cubit/details_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,7 +79,13 @@ class _DetailsViewState extends State<DetailsView> {
         ) {
           final connected = connectivity != ConnectivityResult.none;
           return isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: CustomLottieLoading(
+                    onLoaded: (composition) {
+                      isLoading = false;
+                    },
+                  ),
+                )
               : CustomScrollView(
                   slivers: <Widget>[
                     RecipeImage(connected: connected, widget: widget),

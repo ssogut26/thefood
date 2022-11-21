@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,8 +13,11 @@ import 'package:kartal/kartal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/core/services/search_service.dart';
+import 'package:thefood/features/compoments/loading.dart';
 import 'package:thefood/products/models/categories.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
@@ -60,7 +65,13 @@ class _HomeViewState extends State<HomeView> {
           ) {
             final connected = connectivity != ConnectivityResult.none;
             return isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CustomLottieLoading(
+                      onLoaded: (composition) {
+                        isLoading = false;
+                      },
+                    ),
+                  )
                 : connected
                     ? Scaffold(
                         key: _key,

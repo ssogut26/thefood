@@ -1,9 +1,9 @@
 import 'package:authentication_repository/authentication_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:navigator/navigator.dart';
@@ -32,11 +32,13 @@ import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/products/views/home/home_view.dart';
 import 'package:thefood/products/views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/views/profile/profile_view.dart';
+import 'package:thefood/products/views/splash/splash_view.dart';
 
 part 'router.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Hive.initFlutter();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -57,6 +59,11 @@ class TheFood extends StatefulWidget {
 }
 
 class _TheFoodState extends State<TheFood> {
+  @override
+  dispose() {
+    FlutterNativeSplash.remove();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(

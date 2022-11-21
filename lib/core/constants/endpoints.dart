@@ -10,5 +10,6 @@ class EndPoints {
   static const String filterByArea = 'filter.php?a=';
   static const String getMealDetail = 'lookup.php?i=';
   static const String randomMeal = 'random.php';
+  static const String searchByName = 'search.php?s=';
   static const String ingredientsImages = 'https://www.themealdb.com/images/ingredients/';
 }

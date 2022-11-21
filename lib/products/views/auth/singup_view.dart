@@ -24,11 +24,27 @@ class _SingUpViewState extends State<SingUpView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       body: BlocListener<SignUpCubit, SignUpState>(
         listener: (context, state) {
           if (state.status.isSubmissionSuccess) {
-            Navigator.of(context).pop();
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(
+                  'Success',
+                  style: context.textTheme.headline2,
+                ),
+                content: const Text('Your account has been created.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      context.go('/login');
+                    },
+                    child: const Text('Login'),
+                  ),
+                ],
+              ),
+            );
           } else if (state.status.isSubmissionFailure) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -47,7 +63,9 @@ class _SingUpViewState extends State<SingUpView> {
                 children: [
                   AnimatedContainer(
                     duration: context.durationLow,
-                    height: context.isKeyBoardOpen ? 0 : context.dynamicHeight(0.10),
+                    height: context.isKeyBoardOpen
+                        ? context.dynamicHeight(0.08)
+                        : context.dynamicHeight(0.101),
                     width: context.dynamicWidth(0.3),
                   ),
                   Text(
@@ -95,6 +113,11 @@ class _SingUpViewState extends State<SingUpView> {
                             .read<SignUpCubit>()
                             .confirmedPasswordChanged(password),
                       );
+                    },
+                  ),
+                  BlocBuilder<SignUpCubit, SignUpState>(
+                    builder: (context, state) {
+                      return const AreaDropdown();
                     },
                   ),
                   const RegisterButton(),

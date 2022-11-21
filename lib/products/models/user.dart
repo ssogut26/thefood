@@ -10,7 +10,7 @@ class UserModels extends Equatable {
     this.id,
     this.email,
     this.name,
-    this.favorite,
+    this.country,
     this.image,
   });
   factory UserModels.fromJson(Map<String, dynamic> json) => _$UserModelsFromJson(json);
@@ -26,7 +26,7 @@ class UserModels extends Equatable {
 
   final String? name;
 
-  final List<dynamic>? favorite;
+  final String? country;
 
   final String? image;
 
@@ -37,5 +37,5 @@ class UserModels extends Equatable {
   bool get isNotEmpty => this != UserModels.empty;
 
   @override
-  List<Object?> get props => [email, id, name, favorite, image];
+  List<Object?> get props => [email, id, name, country, image];
 }

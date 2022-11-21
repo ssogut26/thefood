@@ -8,4 +8,6 @@ class AssetsPath {
   static const String love = 'assets/icons/ic_love.svg';
   static const String level = 'assets/icons/ic_level.svg';
   static const noConnectionImage = 'assets/images/no_connection.png';
+  static const splash = 'assets/animations/loading_anim.json';
+  static const defaultUserImage = 'assets/images/default_user_image.png';
 }

@@ -134,9 +134,13 @@ class _AddRecipeState extends State<AddRecipe> {
                     _headlineBox(context, ProjectTexts.categoryName),
                     const CategoryDropDown(),
 
-                    //Ingredients
+                    //Area
+
                     _headlineBox(context, ProjectTexts.areaName),
                     const AreaDropdown(),
+
+                    //Ingredients
+
                     _headlineBox(context, ProjectTexts.recipeIngredients),
                     ...widgetList,
                     Padding(
@@ -146,18 +150,29 @@ class _AddRecipeState extends State<AddRecipe> {
                         child: const Icon(Icons.add),
                       ),
                     ),
+//Instructions
+
                     _headlineBox(context, ProjectTexts.recipeInstructions),
                     const InstructionInput(),
+
+                    //Image
+
                     _headlineBox(context, ProjectTexts.image),
                     //Will be added with image picker
                     const AddImageButtons(),
                     _headlineBox(context, ProjectTexts.youtubeLink),
+
+                    //Youtube Link
                     BasicCustomField(
                       controller: _youtubeController,
                       hintText: ProjectTexts.youtubeInput,
                     ),
+
+                    //Source Link
                     _headlineBox(context, ProjectTexts.source),
                     const SourceField(),
+
+                    //Submit Button
                     const SendButton(),
                   ],
                 ),

@@ -7,7 +7,7 @@ final GoRouter _router = GoRouter(
       child: Text(error.toString()),
     ),
   ),
-  initialLocation: FirebaseAuth.instance.currentUser == null ? '/login' : '/',
+  initialLocation: '/loading',
   routes: [
     GoRoute(
       path: '/',
@@ -67,6 +67,13 @@ final GoRouter _router = GoRouter(
           name: name,
           image: image,
         );
+      },
+    ),
+    GoRoute(
+      path: '/loading',
+      name: 'loading',
+      builder: (BuildContext context, GoRouterState state) {
+        return const SplashView();
       },
     ),
     GoRoute(

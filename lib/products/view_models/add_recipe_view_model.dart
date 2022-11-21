@@ -115,18 +115,24 @@ class _SendButtonState extends State<SendButton> {
         ),
       );
     } else {
-      final goRecipeDocument =
-          FirebaseFirestore.instance.collection('recipes').doc(id.toString());
-      final userDoc = FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection(
-            'recipes',
-          )
-          .doc();
-      await goRecipeDocument.set(recipe);
-      await goRecipeDocument.update(user);
-      await userDoc.set(userDocData);
+      try {
+        final goRecipeDocument =
+            FirebaseFirestore.instance.collection('recipes').doc(id.toString());
+        final userDoc = FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection(
+              'recipes',
+            )
+            .doc();
+        await goRecipeDocument.set(recipe);
+        await goRecipeDocument.update(user);
+        if (ref == false) {
+          await userDoc.set(userDocData);
+        }
+      } catch (e) {
+        print(e);
+      }
     }
     return checkName;
   }
@@ -294,7 +300,7 @@ class InstructionInput extends StatelessWidget {
         decoration: const InputDecoration(
           hintText: ProjectTexts.instructionInput,
         ),
-        maxLength: 2000,
+        maxLength: 3500,
         controller: _instructionController,
         maxLines: 20,
       ),

@@ -40,7 +40,8 @@ dependencies:
   cached_network_image: ^3.2.2
   formz: ^0.4.1
   image_picker: ^0.8.6
-  card_swiper: ^2.0.4
+  flutter_rating_bar: ^4.0.1
+  lottie: ^2.0.0
 
   # Navigation
   go_router: ^5.1.6
@@ -73,6 +74,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/animations/
   #   - images/a_dot_ham.jpeg
 
   # fonts:

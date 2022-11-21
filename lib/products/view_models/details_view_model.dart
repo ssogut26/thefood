@@ -67,7 +67,7 @@ class RecipeImage extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            context.pop();
+            GoRouter.of(context).pop();
           },
         ),
       ),
@@ -274,6 +274,257 @@ class CompomentAndGuide extends StatefulWidget {
 }
 
 class _CompomentAndGuideState extends State<CompomentAndGuide> {
+  Widget getVs() {
+    switch (widget.selectedIndex) {
+      case 0:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int index = 0;
+                index < widget.ingredientList.length && index.isFinite;
+                index++)
+              widget.ingredientList[index].isNotNullOrNoEmpty
+                  ? _requirements(index, context)
+                  : const SizedBox.shrink(),
+          ],
+        );
+      case 1:
+        return Instructions(
+          meals: widget.meals,
+        );
+      case 2:
+        // it will be listview.builder
+        return Column(
+          children: [
+            SizedBox(
+              height: context.dynamicHeight(0.44),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: context.paddingLow,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  // will be user image or dummy image
+                                  const CircleAvatar(),
+                                  const SizedBox(width: 10),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'User name',
+                                        style: context.textTheme.bodyText2,
+                                      ),
+                                      buildRatingStar(4),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Text('Review time', style: context.textTheme.bodyText1)
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Align(
+                                  alignment: Alignment(-0.8, 0),
+                                  child:
+                                      Text('Review', style: context.textTheme.bodyText1)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: context.paddingLow,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  // will be user image or dummy image
+                                  const CircleAvatar(),
+                                  const SizedBox(width: 10),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'User name',
+                                        style: context.textTheme.bodyText2,
+                                      ),
+                                      buildRatingStar(4),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Text('Review time', style: context.textTheme.bodyText1)
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Align(
+                                  alignment: Alignment(-0.8, 0),
+                                  child:
+                                      Text('Review', style: context.textTheme.bodyText1)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: context.paddingLow,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  // will be user image or dummy image
+                                  const CircleAvatar(),
+                                  const SizedBox(width: 10),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'User name',
+                                        style: context.textTheme.bodyText2,
+                                      ),
+                                      buildRatingStar(4),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Text('Review time', style: context.textTheme.bodyText1)
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Align(
+                                  alignment: Alignment(-0.8, 0),
+                                  child:
+                                      Text('Review', style: context.textTheme.bodyText1)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: context.paddingLow,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  // will be user image or dummy image
+                                  const CircleAvatar(),
+                                  const SizedBox(width: 10),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'User name',
+                                        style: context.textTheme.bodyText2,
+                                      ),
+                                      buildRatingStar(4),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Text('Review time', style: context.textTheme.bodyText1)
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Align(
+                                  alignment: Alignment(-0.8, 0),
+                                  child:
+                                      Text('Review', style: context.textTheme.bodyText1)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(
+                          'Add Review',
+                          style: context.textTheme.headline2,
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Send'),
+                          ),
+                        ],
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            buildRatingStar(4),
+                            SizedBox(height: context.dynamicHeight(0.04)),
+                            SizedBox(
+                              height: context.dynamicHeight(0.2),
+                              child: const TextField(
+                                maxLines: 5,
+                                decoration: InputDecoration(
+                                  hintText: 'Add your comment',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: const Text('Add Review'),
+              ),
+            )
+          ],
+        );
+      default:
+        return const SizedBox(
+          child: Center(
+            child: Text('No review'),
+          ),
+        );
+    }
+  }
+
+  Widget buildRatingStar(double starValue) {
+    final Color color = starValue < 2 ? Colors.red : Colors.green;
+    final starIconsMap = [1, 2, 3, 4, 5].map((e) {
+      if (starValue >= e) {
+        return Icon(
+          size: 15,
+          Icons.star_rate,
+          color: color,
+        );
+      } else if (starValue < e && starValue > e - 1) {
+        return Icon(
+          size: 15,
+          Icons.star_half,
+          color: color,
+        );
+      } else {
+        return Icon(size: 15, Icons.star_border, color: color);
+      }
+    }).toList();
+
+    return Row(children: starIconsMap);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -281,7 +532,7 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
         Row(
           children: [
             Expanded(
-              flex: 50,
+              flex: 33,
               child: TextButton(
                 autofocus: true,
                 onPressed: () {
@@ -304,7 +555,7 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
               ),
             ),
             Expanded(
-              flex: 50,
+              flex: 33,
               child: TextButton(
                 onPressed: () {
                   if (mounted) {
@@ -325,24 +576,31 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
                 ),
               ),
             ),
+            Expanded(
+              flex: 33,
+              child: TextButton(
+                onPressed: () {
+                  if (mounted) {
+                    setState(() {
+                      widget.selectedIndex = 2;
+                    });
+                  }
+                },
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 300),
+                  scale: (widget.selectedIndex == 2) ? 1.2 : 1,
+                  child: Text(
+                    'Comments',
+                    style: (widget.selectedIndex == 2)
+                        ? Theme.of(context).textTheme.headline3
+                        : Theme.of(context).textTheme.bodyText2,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-        if (widget.selectedIndex == 0)
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (int index = 0;
-                  index < widget.ingredientList.length && index.isFinite;
-                  index++)
-                widget.ingredientList[index].isNotNullOrNoEmpty
-                    ? _requirements(index, context)
-                    : const SizedBox.shrink(),
-            ],
-          )
-        else
-          Instructions(
-            meals: widget.meals,
-          ),
+        getVs()
       ],
     );
   }
