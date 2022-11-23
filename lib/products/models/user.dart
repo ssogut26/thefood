@@ -11,7 +11,7 @@ class UserModels extends Equatable {
     this.email,
     this.name,
     this.country,
-    this.image,
+    this.photoURL,
   });
   factory UserModels.fromJson(Map<String, dynamic> json) => _$UserModelsFromJson(json);
   factory UserModels.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -28,7 +28,7 @@ class UserModels extends Equatable {
 
   final String? country;
 
-  final String? image;
+  final String? photoURL;
 
   static const empty = UserModels(id: '');
 
@@ -37,5 +37,5 @@ class UserModels extends Equatable {
   bool get isNotEmpty => this != UserModels.empty;
 
   @override
-  List<Object?> get props => [email, id, name, country, image];
+  List<Object?> get props => [email, id, name, country, photoURL];
 }

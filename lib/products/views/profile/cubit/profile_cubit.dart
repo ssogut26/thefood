@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kartal/kartal.dart';
 import 'package:thefood/products/models/user.dart';
 
 part 'profile_state.dart';
@@ -17,31 +16,6 @@ class ProfileCubit extends Cubit<ProfileState> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
-  Future<void> pickImage() async {
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (image == null) return;
-    final imageTempPath = File(image.path);
-    emit(state.copyWith(image: imageTempPath));
-    final user = UserModels(
-      image: imageTempPath.toString().getPath(),
-    );
-    final docRef = _firestore
-        .collection('users')
-        .withConverter(
-          fromFirestore: (snapshot, _) => UserModels.fromFirestore(snapshot),
-          toFirestore: (UserModels user, options) => user.toFirestore(),
-        )
-        .doc(_auth.currentUser?.uid);
-    if (user.image?.isNotNullOrNoEmpty ?? false) {
-      await docRef.set(user);
-    } else {
-      await docRef.update(user.toFirestore());
-    }
-  }
-
   Future<String> getUserImage() async {
     final ref = FirebaseFirestore.instance
         .collection('users')
@@ -52,7 +26,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         );
     final docSnap = await ref.get();
     final userImage = docSnap.data();
-    return userImage?.image ?? '';
+    return userImage?.photoURL ?? '';
   }
 
   late Future<String> userImage;

@@ -88,12 +88,18 @@ class PasswordField extends StatefulWidget {
   const PasswordField({
     super.key,
     required void Function(String)? onChanged,
-    required TextEditingController passwordController,
+    TextEditingController? passwordController,
+    String? initialValue,
+    Widget? suffixIcon,
   })  : _passwordController = passwordController,
+        _initialValue = initialValue,
+        _suffixIcon = suffixIcon,
         _onChanged = onChanged;
 
   static bool isVisible = true;
-  final TextEditingController _passwordController;
+  final TextEditingController? _passwordController;
+  final String? _initialValue;
+  final Widget? _suffixIcon;
   final void Function(String)? _onChanged;
   @override
   State<PasswordField> createState() => _PasswordFieldState();
@@ -108,20 +114,23 @@ class _PasswordFieldState extends State<PasswordField> {
         width: context.dynamicWidth(0.8),
         height: context.dynamicHeight(0.10),
         child: TextFormField(
+          enabled: widget._suffixIcon == null,
           key: const Key('loginForm_passwordInput_textField'),
           onChanged: widget._onChanged,
+          initialValue: widget._initialValue,
           obscureText: PasswordField.isVisible,
           decoration: InputDecoration(
-            suffixIcon: IconButton(
-              onPressed: () {
-                setState(() {
-                  PasswordField.isVisible = !PasswordField.isVisible;
-                });
-              },
-              icon: PasswordField.isVisible
-                  ? const Icon(Icons.visibility)
-                  : const Icon(Icons.visibility_off),
-            ),
+            suffixIcon: widget._suffixIcon ??
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      PasswordField.isVisible = !PasswordField.isVisible;
+                    });
+                  },
+                  icon: PasswordField.isVisible
+                      ? const Icon(Icons.visibility)
+                      : const Icon(Icons.visibility_off),
+                ),
             border: const OutlineInputBorder(),
             labelText: ProjectTexts.password,
           ),
@@ -389,11 +398,13 @@ class RegisterButton extends StatelessWidget {
                         if (user != null) {
                           await FirebaseAuth.instance.currentUser
                               ?.updateDisplayName(state.name.value);
+                          await FirebaseAuth.instance.currentUser
+                              ?.updatePhotoURL(AssetsPath.defaultUserImage);
                           final userData = UserModels(
                             id: user.uid,
                             name: state.name.value,
                             email: state.email.value,
-                            image: AssetsPath.defaultUserImage,
+                            photoURL: AssetsPath.defaultUserImage,
                             country: state.country,
                           );
                           await FirebaseFirestore.instance

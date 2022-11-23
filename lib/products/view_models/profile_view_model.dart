@@ -1,26 +1,5 @@
 part of '../views/profile/profile_view.dart';
 
-class PickImageOnTap extends StatelessWidget {
-  const PickImageOnTap({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: context.read<ProfileCubit>().pickImage,
-      child: CircleAvatar(
-        backgroundColor: ProjectColors.white,
-        radius: 35,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
-          child: const UserImage(),
-        ),
-      ),
-    );
-  }
-}
-
 class UserInfo extends StatefulWidget {
   const UserInfo({
     super.key,

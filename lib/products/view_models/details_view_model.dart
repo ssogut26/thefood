@@ -218,7 +218,7 @@ class _MealDetailsState extends State<_MealDetails> {
                         AreaImage(meals: meals),
                       ],
                     ),
-                    CompomentAndGuide(
+                    ComponentAndGuide(
                       selectedIndex: selectedIndex,
                       meals: meals,
                       ingredientList: ingredientList,
@@ -255,8 +255,8 @@ class MealName extends StatelessWidget {
   }
 }
 
-class CompomentAndGuide extends StatefulWidget {
-  CompomentAndGuide({
+class ComponentAndGuide extends StatefulWidget {
+  ComponentAndGuide({
     super.key,
     required this.selectedIndex,
     required this.ingredientList,
@@ -270,10 +270,13 @@ class CompomentAndGuide extends StatefulWidget {
   final Meals? meals;
 
   @override
-  State<CompomentAndGuide> createState() => _CompomentAndGuideState();
+  State<ComponentAndGuide> createState() => _ComponentAndGuideState();
 }
 
-class _CompomentAndGuideState extends State<CompomentAndGuide> {
+class _ComponentAndGuideState extends State<ComponentAndGuide> {
+  final _titleController = TextEditingController();
+  final _reviewController = TextEditingController();
+
   Widget getVs() {
     switch (widget.selectedIndex) {
       case 0:
@@ -296,150 +299,86 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
         // it will be listview.builder
         return Column(
           children: [
-            SizedBox(
-              height: context.dynamicHeight(0.44),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: context.paddingLow,
+            FutureBuilder(
+              future: FirebaseFirestore.instance
+                  .collection('reviews')
+                  .where('meal_id', isEqualTo: widget.meals?.idMeal)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final data = snapshot.data;
+                  return ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: data?.docs.length,
+                    itemBuilder: (context, index) {
+                      final review = data?.docs[index];
+                      var timestamp = review?.data()['review_time'] as Timestamp;
+                      var date = timestamp.toDate();
+
+                      return SizedBox(
+                        height: context.dynamicHeight(0.44),
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              Row(
-                                children: [
-                                  // will be user image or dummy image
-                                  const CircleAvatar(),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        'User name',
-                                        style: context.textTheme.bodyText2,
-                                      ),
-                                      buildRatingStar(4),
-                                    ],
+                              Card(
+                                child: Padding(
+                                  padding: context.paddingLow,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            // will be user image or dummy image
+                                            CircleAvatar(
+                                                foregroundImage: NetworkImage(
+                                                    '${review?['photoURL']}')),
+                                            const SizedBox(width: 10),
+                                            Column(
+                                              children: [
+                                                Text(
+                                                  '${review?['user_name']}',
+                                                  style: context.textTheme.bodyText2,
+                                                ),
+                                                buildRatingStar(
+                                                  double.parse('${review?['rating']}'),
+                                                ),
+                                              ],
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              timeago.format(
+                                                DateTime.parse(
+                                                  timestamp.toDate().toString(),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Align(
+                                          alignment: const Alignment(-0.8, 0),
+                                          child: Text(
+                                            '${review?['review']}',
+                                            style: context.textTheme.bodyText1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const Spacer(),
-                                  Text('Review time', style: context.textTheme.bodyText1)
-                                ],
+                                ),
                               ),
-                              const SizedBox(height: 10),
-                              Align(
-                                  alignment: Alignment(-0.8, 0),
-                                  child:
-                                      Text('Review', style: context.textTheme.bodyText1)),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: context.paddingLow,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  // will be user image or dummy image
-                                  const CircleAvatar(),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        'User name',
-                                        style: context.textTheme.bodyText2,
-                                      ),
-                                      buildRatingStar(4),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Text('Review time', style: context.textTheme.bodyText1)
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Align(
-                                  alignment: Alignment(-0.8, 0),
-                                  child:
-                                      Text('Review', style: context.textTheme.bodyText1)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: context.paddingLow,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  // will be user image or dummy image
-                                  const CircleAvatar(),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        'User name',
-                                        style: context.textTheme.bodyText2,
-                                      ),
-                                      buildRatingStar(4),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Text('Review time', style: context.textTheme.bodyText1)
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Align(
-                                  alignment: Alignment(-0.8, 0),
-                                  child:
-                                      Text('Review', style: context.textTheme.bodyText1)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: context.paddingLow,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  // will be user image or dummy image
-                                  const CircleAvatar(),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        'User name',
-                                        style: context.textTheme.bodyText2,
-                                      ),
-                                      buildRatingStar(4),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Text('Review time', style: context.textTheme.bodyText1)
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Align(
-                                  alignment: Alignment(-0.8, 0),
-                                  child:
-                                      Text('Review', style: context.textTheme.bodyText1)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                      );
+                    },
+                  );
+                }
+
+                return const Center(child: CircularProgressIndicator());
+              },
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -461,28 +400,80 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
                             child: const Text('Cancel'),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
+                            onPressed: () async {
+                              final checkAlreadyReviewed = FirebaseFirestore.instance
+                                  .collection('reviews')
+                                  .where(
+                                    'user_id',
+                                    isEqualTo: FirebaseAuth.instance.currentUser?.uid,
+                                  )
+                                  .get();
+
+                              await FirebaseFirestore.instance.collection('reviews').add({
+                                'user_id': FirebaseAuth.instance.currentUser?.uid,
+                                'user_name':
+                                    FirebaseAuth.instance.currentUser?.displayName,
+                                'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
+                                'meal_id': widget.meals?.idMeal,
+                                'title': _titleController.text,
+                                'review': _reviewController.text,
+                                'rating': 4,
+                                'review_time': Timestamp.now(),
+                              });
+                              // } else {
+                              //   return showDialog(
+                              //     context: context,
+                              //     builder: (context) {
+                              //       return AlertDialog(
+                              //         title: Text(
+                              //           'You have already reviewed this meal',
+                              //           style: context.textTheme.headline2,
+                              //         ),
+                              //         actions: [
+                              //           ElevatedButton(
+                              //             onPressed: () {
+                              //               Navigator.pop(context);
+                              //             },
+                              //             child: const Text('OK'),
+                              //           ),
+                              //         ],
+                              //       );
+                              //     },
+                              //   );
+                              // }
                             },
                             child: const Text('Send'),
                           ),
                         ],
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            buildRatingStar(4),
-                            SizedBox(height: context.dynamicHeight(0.04)),
-                            SizedBox(
-                              height: context.dynamicHeight(0.2),
-                              child: const TextField(
-                                maxLines: 5,
-                                decoration: InputDecoration(
-                                  hintText: 'Add your comment',
-                                  border: OutlineInputBorder(),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              buildRatingStar(4),
+                              SizedBox(height: context.dynamicHeight(0.03)),
+                              SizedBox(
+                                height: context.dynamicHeight(0.07),
+                                child: TextField(
+                                  controller: _titleController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Title',
+                                    border: OutlineInputBorder(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                              SizedBox(
+                                height: context.dynamicHeight(0.2),
+                                child: TextField(
+                                  controller: _reviewController,
+                                  maxLines: 4,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Add your comment',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -493,6 +484,7 @@ class _CompomentAndGuideState extends State<CompomentAndGuide> {
             )
           ],
         );
+
       default:
         return const SizedBox(
           child: Center(

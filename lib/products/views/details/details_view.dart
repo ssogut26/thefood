@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
@@ -19,6 +21,7 @@ import 'package:thefood/core/services/managers/cache_manager.dart';
 import 'package:thefood/features/compoments/loading.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/details/cubit/details_cubit.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
 part '../../view_models/details_view_model.dart';
