@@ -7,7 +7,7 @@ part of 'user.dart';
 // **************************************************************************
 
 UserModels _$UserModelsFromJson(Map<String, dynamic> json) => UserModels(
-      id: json['id'] as String?,
+      userId: json['id'] as String?,
       email: json['email'] as String?,
       name: json['name'] as String?,
       country: json['country'] as String?,
@@ -16,7 +16,7 @@ UserModels _$UserModelsFromJson(Map<String, dynamic> json) => UserModels(
 
 UserModels _$UserModelsFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
     UserModels(
-      id: doc.id,
+      userId: doc.id,
       email: doc.data()?['email'] as String?,
       name: doc.data()?['name'] as String?,
       country: doc.data()?['country'] as String?,
@@ -25,16 +25,16 @@ UserModels _$UserModelsFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc)
 
 Map<String, dynamic> _$UserModelsToJson(UserModels instance) => <String, dynamic>{
       'email': instance.email,
-      'id': instance.id,
+      'userId': instance.userId,
       'name': instance.name,
       'country': instance.country,
-      'image': instance.photoURL,
+      'photoURL': instance.photoURL,
     };
 
 Map<String, dynamic> _$UserModelsToFirebase(UserModels instance) => <String, dynamic>{
       'email': instance.email,
-      'id': instance.id,
+      'userId': instance.userId,
       'name': instance.name,
       'country': instance.country,
-      'image': instance.photoURL,
+      'photoURL': instance.photoURL,
     };

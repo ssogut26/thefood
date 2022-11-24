@@ -174,7 +174,7 @@ class _SendButtonState extends State<SendButton> {
               strYoutube: _youtubeController.text,
             );
             final user = UserModels(
-              id: FirebaseAuth.instance.currentUser?.uid,
+              userId: FirebaseAuth.instance.currentUser?.uid,
               name: FirebaseAuth.instance.currentUser?.displayName,
             );
             checkName(recipe.toJson(), user.toJson(), recipe.toJson());
@@ -256,30 +256,6 @@ class AddImageButtons extends StatelessWidget {
       children: [
         TextField(
           controller: _imageController,
-        ),
-        Padding(
-          padding: ProjectPaddings.cardMedium,
-          child: SizedBox(
-            width: context.dynamicWidth(0.5),
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.image,
-              ),
-              label: const Text(ProjectTexts.pickGallery),
-            ),
-          ),
-        ),
-        Padding(
-          padding: ProjectPaddings.cardMedium,
-          child: SizedBox(
-            width: context.dynamicWidth(0.5),
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              label: const Text(ProjectTexts.pickCamera),
-              icon: const Icon(Icons.camera_alt),
-            ),
-          ),
         ),
       ],
     );

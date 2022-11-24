@@ -334,15 +334,15 @@ class _AreaDropdownState extends State<AreaDropdown> {
               ),
               hint: const Text(ProjectTexts.selectArea),
               items: [
-                for (var index = 0; index < countryFlagMap.length; index++)
+                for (var index = 0; index < countryFlags.length; index++)
                   DropdownMenuItem(
-                    value: countryFlagMap.keys.elementAt(index),
+                    value: countryFlags.keys.elementAt(index),
                     child: Row(
                       children: [
                         Padding(
                           padding: context.onlyRightPaddingLow,
                           child: CachedNetworkImage(
-                            imageUrl: countryFlagMap.values.elementAt(index),
+                            imageUrl: countryFlags.values.elementAt(index),
                             height: 32,
                             width: 32,
                             errorWidget: (context, url, error) => const Icon(
@@ -350,7 +350,7 @@ class _AreaDropdownState extends State<AreaDropdown> {
                             ),
                           ),
                         ),
-                        Text(countryFlagMap.keys.elementAt(index)),
+                        Text(countryFlags.keys.elementAt(index)),
                       ],
                     ),
                   ),
@@ -401,7 +401,7 @@ class RegisterButton extends StatelessWidget {
                           await FirebaseAuth.instance.currentUser
                               ?.updatePhotoURL(AssetsPath.defaultUserImage);
                           final userData = UserModels(
-                            id: user.uid,
+                            userId: user.uid,
                             name: state.name.value,
                             email: state.email.value,
                             photoURL: AssetsPath.defaultUserImage,

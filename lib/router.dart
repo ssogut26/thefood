@@ -16,7 +16,7 @@ final GoRouter _router = GoRouter(
         return NavigatorView(
           widgetOptions: [
             BlocProvider(
-              create: (context) => ProfileCubit(),
+              create: (_) => ProfileCubit(),
               child: const ProfileView(),
             ),
             BlocProvider(
@@ -129,6 +129,16 @@ final GoRouter _router = GoRouter(
       name: 'add',
       builder: (BuildContext context, GoRouterState state) {
         return const AddRecipe();
+      },
+    ),
+    GoRoute(
+      path: '/profile',
+      name: 'profile',
+      builder: (BuildContext context, GoRouterState state) {
+        return BlocProvider(
+          create: (_) => ProfileCubit(),
+          child: const ProfileView(),
+        );
       },
     ),
   ],

@@ -6,7 +6,7 @@ import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
-import 'package:thefood/features/compoments/loading.dart';
+import 'package:thefood/features/components/loading.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/favorites/cubit/favorite_cubit.dart';
 

@@ -47,21 +47,8 @@ Future<void> main() async {
   await Hive.openBox<String>(HiveConstants.loginCredentials);
   final authenticationRepository = AuthenticationRepository();
   await authenticationRepository.user.first;
-  runApp(const TheFood());
-}
-
-class TheFood extends StatefulWidget {
-  const TheFood({super.key});
-
-  @override
-  State<TheFood> createState() => _TheFoodState();
-}
-
-class _TheFoodState extends State<TheFood> {
-  @override
-  @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
+  runApp(
+    MultiBlocProvider(
       providers: [
         BlocProvider<HomeCubit>(
           create: (context) => HomeCubit(
@@ -103,27 +90,49 @@ class _TheFoodState extends State<TheFood> {
           ),
         ),
       ],
-      child: MaterialApp.router(
-        title: ProjectTexts.appName,
-        theme: ThemeData(
-          scaffoldBackgroundColor: ProjectColors.mainWhite,
-          useMaterial3: true,
-          textTheme: ProjectTextStyles().textTheme,
-          appBarTheme: const AppBarTheme(
-            shadowColor: Colors.black,
-            elevation: 0,
-            backgroundColor: ProjectColors.mainWhite,
-            systemOverlayStyle: SystemUiOverlayStyle.light,
+      child: const TheFood(),
+    ),
+  );
+}
+
+class TheFood extends StatefulWidget {
+  const TheFood({super.key});
+
+  @override
+  State<TheFood> createState() => _TheFoodState();
+}
+
+class _TheFoodState extends State<TheFood> {
+  @override
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: ProjectTexts.appName,
+      theme: ThemeData(
+        scaffoldBackgroundColor: ProjectColors.mainWhite,
+        useMaterial3: true,
+        textTheme: ProjectTextStyles().textTheme,
+        appBarTheme: const AppBarTheme(
+          shadowColor: Colors.black,
+          elevation: 0,
+          backgroundColor: ProjectColors.mainWhite,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+        ),
+        cardTheme: const CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
-          cardTheme: const CardTheme(
-            elevation: 0,
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
         ),
-        routerConfig: _router,
       ),
+      routerConfig: _router,
     );
   }
 }

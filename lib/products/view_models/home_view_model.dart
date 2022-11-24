@@ -716,7 +716,7 @@ class _SearchBarState extends State<_SearchBar> {
   CancelableOperation<void>? _operation;
 
   Future<List<Meals>> search(String key) async {
-    _operation?.cancel();
+    await _operation?.cancel();
     _operation = CancelableOperation.fromFuture(
       Future.delayed(
         const Duration(milliseconds: 500),

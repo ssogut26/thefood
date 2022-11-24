@@ -1,20 +1,20 @@
 part of 'profile_cubit.dart';
 
 class ProfileState extends Equatable {
-  const ProfileState({
-    this.image,
+  ProfileState({
+    this.country,
   });
 
-  final File? image;
+  String? country;
 
   @override
-  List<Object?> get props => [image];
+  List<Object?> get props => [country];
 
   ProfileState copyWith({
-    File? image,
+    String? country,
   }) {
     return ProfileState(
-      image: image ?? this.image,
+      country: country ?? this.country,
     );
   }
 }

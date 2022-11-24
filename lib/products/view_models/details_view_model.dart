@@ -278,6 +278,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
   final _reviewController = TextEditingController();
 
   Widget getVs() {
+    double userRating = 0.0;
     switch (widget.selectedIndex) {
       case 0:
         return Column(
@@ -296,7 +297,6 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
           meals: widget.meals,
         );
       case 2:
-        // it will be listview.builder
         return Column(
           children: [
             FutureBuilder(
@@ -305,7 +305,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                   .where('meal_id', isEqualTo: widget.meals?.idMeal)
                   .get(),
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
+                if (snapshot.hasData && (snapshot.data?.docs.isNotNullOrEmpty ?? false)) {
                   final data = snapshot.data;
                   return ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
@@ -314,9 +314,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                     itemCount: data?.docs.length,
                     itemBuilder: (context, index) {
                       final review = data?.docs[index];
-                      var timestamp = review?.data()['review_time'] as Timestamp;
-                      var date = timestamp.toDate();
-
+                      final timestamp = review?.data()['review_time'] as Timestamp;
                       return SizedBox(
                         height: context.dynamicHeight(0.44),
                         child: SingleChildScrollView(
@@ -330,16 +328,22 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                                       children: [
                                         Row(
                                           children: [
-                                            // will be user image or dummy image
                                             CircleAvatar(
-                                                foregroundImage: NetworkImage(
-                                                    '${review?['photoURL']}')),
+                                              radius: context.dynamicWidth(0.07),
+                                              backgroundColor: ProjectColors.mainWhite,
+                                              foregroundImage: AssetImage(
+                                                '${review?['photoURL']}',
+                                              ),
+                                            ),
                                             const SizedBox(width: 10),
                                             Column(
                                               children: [
                                                 Text(
                                                   '${review?['user_name']}',
-                                                  style: context.textTheme.bodyText2,
+                                                  style: context.textTheme.bodyText2
+                                                      ?.copyWith(
+                                                    fontSize: 15,
+                                                  ),
                                                 ),
                                                 buildRatingStar(
                                                   double.parse('${review?['rating']}'),
@@ -347,10 +351,14 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                                               ],
                                             ),
                                             const Spacer(),
-                                            Text(
-                                              timeago.format(
-                                                DateTime.parse(
-                                                  timestamp.toDate().toString(),
+                                            Align(
+                                              alignment: Alignment.topRight,
+                                              child: Text(
+                                                TimeAgo.format(
+                                                  DateTime.parse(
+                                                    timestamp.toDate().toString(),
+                                                  ),
+                                                  locale: 'en_short',
                                                 ),
                                               ),
                                             ),
@@ -358,10 +366,21 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                                         ),
                                         const SizedBox(height: 10),
                                         Align(
+                                          alignment: const Alignment(-0.8, -0.1),
+                                          child: Text(
+                                            '${review?['title']}',
+                                            style: context.textTheme.bodyText2?.copyWith(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ),
+                                        Align(
                                           alignment: const Alignment(-0.8, 0),
                                           child: Text(
                                             '${review?['review']}',
-                                            style: context.textTheme.bodyText1,
+                                            style: context.textTheme.bodyText1?.copyWith(
+                                              fontSize: 14,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -375,109 +394,117 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                       );
                     },
                   );
+                } else if (snapshot.data?.docs.isNullOrEmpty ?? false) {
+                  return SizedBox(
+                    height: context.dynamicHeight(0.44),
+                    child: Card(
+                      child: Center(
+                        child: Text(
+                          'No reviews yet',
+                          style: context.textTheme.headline1,
+                        ),
+                      ),
+                    ),
+                  );
                 }
-
-                return const Center(child: CircularProgressIndicator());
+                return SizedBox(
+                  height: context.dynamicHeight(0.44),
+                  child: const Card(
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                );
               },
             ),
             Align(
               alignment: Alignment.bottomCenter,
               child: ElevatedButton(
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text(
-                          'Add Review',
-                          style: context.textTheme.headline2,
-                        ),
-                        actions: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
+                  AlertWidgets.showActionDialog(
+                      context,
+                      'Add Review',
+                      Column(
+                        children: [
+                          RatingBar(
+                            itemSize: context.dynamicWidth(0.1),
+                            glow: false,
+                            ratingWidget: RatingWidget(
+                              full: const Icon(Icons.star, color: Colors.amber),
+                              half: const Icon(Icons.star_half, color: Colors.amber),
+                              empty: const Icon(Icons.star_border, color: Colors.amber),
+                            ),
+                            onRatingUpdate: (rating) {
+                              userRating = rating;
                             },
-                            child: const Text('Cancel'),
+                            allowHalfRating: true,
                           ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final checkAlreadyReviewed = FirebaseFirestore.instance
-                                  .collection('reviews')
-                                  .where(
-                                    'user_id',
-                                    isEqualTo: FirebaseAuth.instance.currentUser?.uid,
-                                  )
-                                  .get();
-
-                              await FirebaseFirestore.instance.collection('reviews').add({
-                                'user_id': FirebaseAuth.instance.currentUser?.uid,
-                                'user_name':
-                                    FirebaseAuth.instance.currentUser?.displayName,
-                                'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
-                                'meal_id': widget.meals?.idMeal,
-                                'title': _titleController.text,
-                                'review': _reviewController.text,
-                                'rating': 4,
-                                'review_time': Timestamp.now(),
-                              });
-                              // } else {
-                              //   return showDialog(
-                              //     context: context,
-                              //     builder: (context) {
-                              //       return AlertDialog(
-                              //         title: Text(
-                              //           'You have already reviewed this meal',
-                              //           style: context.textTheme.headline2,
-                              //         ),
-                              //         actions: [
-                              //           ElevatedButton(
-                              //             onPressed: () {
-                              //               Navigator.pop(context);
-                              //             },
-                              //             child: const Text('OK'),
-                              //           ),
-                              //         ],
-                              //       );
-                              //     },
-                              //   );
-                              // }
-                            },
-                            child: const Text('Send'),
+                          SizedBox(height: context.dynamicHeight(0.03)),
+                          SizedBox(
+                            height: context.dynamicHeight(0.07),
+                            width: context.dynamicWidth(0.6),
+                            child: TextField(
+                              controller: _titleController,
+                              decoration: const InputDecoration(
+                                hintText: 'Title',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: context.dynamicHeight(0.01)),
+                          SizedBox(
+                            height: context.dynamicHeight(0.15),
+                            width: context.dynamicWidth(0.6),
+                            child: TextField(
+                              controller: _reviewController,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                hintText: 'Add your comment',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
                           ),
                         ],
-                        content: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              buildRatingStar(4),
-                              SizedBox(height: context.dynamicHeight(0.03)),
-                              SizedBox(
-                                height: context.dynamicHeight(0.07),
-                                child: TextField(
-                                  controller: _titleController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Title',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: context.dynamicHeight(0.2),
-                                child: TextField(
-                                  controller: _reviewController,
-                                  maxLines: 4,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Add your comment',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _titleController.clear();
+                            _reviewController.clear();
+                          },
+                          child: const Text('Cancel'),
                         ),
-                      );
-                    },
-                  );
+                        TextButton(
+                          onPressed: () async {
+                            final checkAlreadyReviewed = FirebaseFirestore.instance
+                                .collection('reviews')
+                                .where(
+                                  'user_id',
+                                  isEqualTo: FirebaseAuth.instance.currentUser?.uid,
+                                )
+                                .get();
+                            await FirebaseFirestore.instance.collection('reviews').add({
+                              'user_id': FirebaseAuth.instance.currentUser?.uid,
+                              'user_name': FirebaseAuth.instance.currentUser?.displayName,
+                              'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
+                              'meal_id': widget.meals?.idMeal,
+                              'title': _titleController.text,
+                              'review': _reviewController.text,
+                              'rating': userRating,
+                              'review_time': Timestamp.now(),
+                            }).whenComplete(
+                              () => AlertWidgets.showMessageDialog(
+                                context,
+                                'Success',
+                                'Review added successfully',
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Send'),
+                        )
+                      ]);
                 },
                 child: const Text('Add Review'),
               ),
@@ -499,13 +526,13 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
     final starIconsMap = [1, 2, 3, 4, 5].map((e) {
       if (starValue >= e) {
         return Icon(
-          size: 15,
+          size: 20,
           Icons.star_rate,
           color: color,
         );
       } else if (starValue < e && starValue > e - 1) {
         return Icon(
-          size: 15,
+          size: 20,
           Icons.star_half,
           color: color,
         );
