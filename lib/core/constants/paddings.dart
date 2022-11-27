@@ -15,7 +15,7 @@ class ProjectPaddings {
   static const textHorizontalLarge = EdgeInsets.symmetric(horizontal: 12);
 
   static const textVerticalSmall = EdgeInsets.symmetric(vertical: 4);
-  static const textVerticalMedium = EdgeInsets.symmetric(vertical: 8);
+  static const textVerticalMedium = EdgeInsets.only(top: 8);
   static const textVerticalLarge = EdgeInsets.symmetric(vertical: 12);
 
   static const cardImagePadding = EdgeInsets.only(

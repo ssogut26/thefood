@@ -1,13 +1,43 @@
 part of '../views/home/home_view.dart';
 
 late int selectedIndex;
-late int dataLenght;
+late int dataLength;
 late String categoryName;
 int itemLength() {
-  if (dataLenght < 4) {
-    return dataLenght;
+  if (dataLength < 4) {
+    return dataLength;
   }
   return 4;
+}
+
+List<double> ratings = <double>[];
+Future<Widget> getRatings(int index, BuildContext context, String mealId) async {
+  ratings = <double>[];
+  final ref = FirebaseFirestore.instance.collection('reviews').doc(mealId).get();
+  await ref.then((value) {
+    if (value.exists) {
+      final data = value.data()?['review'] as List;
+      for (var i = 0; i < data.length; i++) {
+        ratings.add(data[i]['rating'] as double);
+      }
+    }
+  });
+  if (ratings.isEmpty) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ProjectWidgets.buildRatingStar(0),
+        Text('(${ratings.length})', style: context.textTheme.headline5),
+      ],
+    );
+  }
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      ProjectWidgets.buildRatingStar(ratings.average),
+      Text('(${ratings.length})', style: context.textTheme.headline5),
+    ],
+  );
 }
 
 final GlobalKey<ScaffoldState> _key = GlobalKey();
@@ -202,11 +232,24 @@ class CategoryMeals extends StatefulWidget {
 }
 
 class _CategoryMealsState extends State<CategoryMeals> {
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (previous, current) {
+        if (previous.mealsByCategory != current.mealsByCategory) {
+          Future.delayed(const Duration(seconds: 1), () {
+            setState(() {
+              isLoading = !isLoading;
+            });
+          });
+          return isLoading = true;
+        } else {
+          return false;
+        }
+      },
       builder: (context, state) {
-        dataLenght = state.mealsByCategory?.meals?.length ?? 0;
+        dataLength = state.mealsByCategory?.meals?.length ?? 0;
         return GridView.builder(
           padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
@@ -218,11 +261,18 @@ class _CategoryMealsState extends State<CategoryMeals> {
             if (data == null) {
               return const SizedBox.shrink();
             }
-            return Column(
-              children: [
-                CategoryMealCard(data: data),
-              ],
-            );
+            return isLoading
+                ? Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: context.lowBorderRadius,
+                    ),
+                    color: ProjectColors.secondWhite,
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : CategoryMealCard(data: data);
           },
         );
       },
@@ -241,7 +291,7 @@ class _CategoryMealsState extends State<CategoryMeals> {
   }
 }
 
-class CategoryMealCard extends StatelessWidget {
+class CategoryMealCard extends StatefulWidget {
   const CategoryMealCard({
     super.key,
     required this.data,
@@ -249,6 +299,11 @@ class CategoryMealCard extends StatelessWidget {
 
   final Meals? data;
 
+  @override
+  State<CategoryMealCard> createState() => _CategoryMealCardState();
+}
+
+class _CategoryMealCardState extends State<CategoryMealCard> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -260,17 +315,17 @@ class CategoryMealCard extends StatelessWidget {
               context.pushNamed(
                 'details',
                 params: {
-                  'name': data?.strMeal ?? '',
-                  'image': data?.strMealThumb ?? '',
-                  'id': data?.idMeal ?? '',
+                  'name': widget.data?.strMeal ?? '',
+                  'image': widget.data?.strMealThumb ?? '',
+                  'id': widget.data?.idMeal ?? '',
                 },
               );
             },
             child: Stack(
               alignment: Alignment.topCenter,
               children: <Widget>[
-                MealName(data: data),
-                CircleMealImage(data: data),
+                MealName(data: widget.data),
+                CircleMealImage(data: widget.data),
               ],
             ),
           ),
@@ -280,7 +335,7 @@ class CategoryMealCard extends StatelessWidget {
   }
 }
 
-class MealName extends StatelessWidget {
+class MealName extends StatefulWidget {
   const MealName({
     super.key,
     required this.data,
@@ -289,29 +344,92 @@ class MealName extends StatelessWidget {
   final Meals? data;
 
   @override
+  State<MealName> createState() => _MealNameState();
+}
+
+class _MealNameState extends State<MealName> {
+  List<double> ratings = <double>[];
+  Future<Widget> getRatings(int index) async {
+    ratings = <double>[];
+    final ref =
+        FirebaseFirestore.instance.collection('reviews').doc(widget.data?.idMeal).get();
+    await ref.then((value) {
+      if (value.exists) {
+        final data = value.data()?['review'] as List;
+        for (var i = 0; i < data.length; i++) {
+          ratings.add(data[i]['rating'] as double);
+        }
+      }
+    });
+    if (ratings.isEmpty) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ProjectWidgets.buildRatingStar(0),
+          Text('(${ratings.length})', style: context.textTheme.headline5),
+        ],
+      );
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ProjectWidgets.buildRatingStar(ratings.average),
+        Text('(${ratings.length})', style: context.textTheme.headline5),
+      ],
+    );
+  }
+
+  Widget getRating = const SizedBox.shrink();
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: ProjectPaddings.cardImagePaddingSmall,
-      child: SizedBox(
-        width: context.dynamicWidth(0.5),
-        height: context.dynamicHeight(0.23),
-        child: Card(
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: context.lowBorderRadius,
-          ),
-          color: ProjectColors.secondWhite,
-          child: Padding(
-            padding: ProjectPaddings.cardImagePadding,
-            child: Text(
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-              data?.strMeal ?? '',
-              style: context.textTheme.bodyText2,
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        return Padding(
+          padding: ProjectPaddings.cardImagePaddingSmall,
+          child: SizedBox(
+            width: context.dynamicWidth(0.5),
+            height: context.dynamicHeight(0.23),
+            child: Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: context.lowBorderRadius,
+              ),
+              color: ProjectColors.secondWhite,
+              child: Padding(
+                padding: ProjectPaddings.cardImagePadding,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Text(
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      widget.data?.strMeal ?? '',
+                      style: context.textTheme.bodyText2,
+                    ),
+                    SizedBox(height: context.dynamicHeight(0.02)),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: 1,
+                      itemBuilder: (context, index) {
+                        return FutureBuilder(
+                          future: getRatings(index),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return snapshot.data ?? const SizedBox.shrink();
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -367,7 +485,7 @@ class _RandomMealState extends State<RandomMeal> {
                   GetNewRandomMealButton(),
                 ],
               ),
-              const RandomMealcard(),
+              const RandomMealCard(),
             ],
           ),
         );
@@ -392,8 +510,8 @@ class GetNewRandomMealButton extends StatelessWidget {
   }
 }
 
-class RandomMealcard extends StatelessWidget {
-  const RandomMealcard({
+class RandomMealCard extends StatelessWidget {
+  const RandomMealCard({
     super.key,
   });
 
@@ -430,7 +548,34 @@ class RandomMealcard extends StatelessWidget {
                     child: Row(
                       children: [
                         RandomMealImage(data: data),
-                        RandomMealName(data: data),
+                        Stack(
+                          children: [
+                            Align(
+                              alignment: const Alignment(0, -0.8),
+                              child: RandomMealName(data: data),
+                            ),
+                            Align(
+                              alignment: const Alignment(0, 0.8),
+                              child: FutureBuilder(
+                                future: ProjectWidgets.getRatings(
+                                  index,
+                                  ratings,
+                                  context,
+                                  data?.idMeal ?? '',
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Padding(
+                                      padding: ProjectPaddings.textHorizontalMedium,
+                                      child: snapshot.data ?? const SizedBox.shrink(),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -475,13 +620,13 @@ class RandomMealName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: Padding(
-        padding: ProjectPaddings.textHorizontalMedium,
+    return Padding(
+      padding: ProjectPaddings.textHorizontalMedium,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.40,
         child: Text(
-          softWrap: true,
+          overflow: TextOverflow.visible,
           data?.strMeal ?? '',
-          style: Theme.of(context).textTheme.bodyText2,
         ),
       ),
     );
@@ -592,7 +737,7 @@ class UserRecipeList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: context.dynamicHeight(0.2),
+      height: context.dynamicHeight(0.25),
       width: context.dynamicWidth(1),
       child: ListView.builder(
         itemCount: data?.length,
@@ -633,27 +778,41 @@ class UserRecipeCard extends StatelessWidget {
     return Card(
       elevation: 2,
       clipBehavior: Clip.antiAlias,
-      child: Column(
+      child: Stack(
+        alignment: Alignment.topCenter,
         children: [
           SizedBox(
-            height: context.dynamicHeight(0.12),
+            height: context.dynamicHeight(0.16),
             width: context.dynamicWidth(0.4),
             child: Image.network(
               fit: BoxFit.cover,
               "${data?[index]['strMealThumb']}",
             ),
           ),
-          Padding(
-            padding: ProjectPaddings.textVerticalMedium,
-            child: Column(
-              children: [
-                Center(
-                  child: Text(
-                    '${data?[index]['strMeal']}\n',
-                  ),
-                ),
-              ],
+          Align(
+            alignment: Alignment(0, 0.7),
+            child: Padding(
+              padding: ProjectPaddings.textVerticalMedium,
+              child: Text(
+                '${data?[index]['strMeal']}\n',
+              ),
             ),
+          ),
+          Align(
+            alignment: Alignment(0, 0.9),
+            child: FutureBuilder(
+                future: ProjectWidgets.getRatings(
+                  index,
+                  ratings,
+                  context,
+                  '${data?[index]['idMeal']}',
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return snapshot.data as Widget;
+                  }
+                  return const SizedBox();
+                }),
           ),
         ],
       ),

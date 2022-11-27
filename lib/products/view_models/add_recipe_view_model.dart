@@ -8,8 +8,10 @@ late TextEditingController _instructionController;
 final TextEditingController _imageController = TextEditingController();
 late List<TextEditingController?>? _ingredientControllers;
 late List<TextEditingController?>? _measureControllers;
+final _formKey = GlobalKey<FormState>();
 
 int index = 1;
+
 Widget initialIngredient() {
   index = 0;
   _ingredientControllers?.add(TextEditingController());
@@ -76,7 +78,7 @@ class _SendButtonState extends State<SendButton> {
     final recipeId = FirebaseFirestore.instance.collection('recipes').get();
     await recipeId.then((value) async {
       id = value.docs.length + 1;
-      final ref = await FirebaseFirestore.instance
+      final result = await FirebaseFirestore.instance
           .collection('recipes')
           .where('idMeal', isEqualTo: id.toString())
           .get()
@@ -84,9 +86,9 @@ class _SendButtonState extends State<SendButton> {
         if (value.size > 0) return true;
         return false;
       });
-      switch (ref) {
+      switch (result) {
         case true:
-          id++;
+          id + 10;
           break;
         case false:
           break;
@@ -100,7 +102,7 @@ class _SendButtonState extends State<SendButton> {
     Map<String, dynamic> user,
     Map<String, dynamic> userDocData,
   ) async {
-    final ref = await FirebaseFirestore.instance
+    final result = await FirebaseFirestore.instance
         .collection('recipes')
         .where('strMeal', isEqualTo: _nameController.text)
         .get()
@@ -108,7 +110,7 @@ class _SendButtonState extends State<SendButton> {
       if (value.size > 0) return true;
       return false;
     });
-    if (ref == true) {
+    if (result == true) {
       return ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Recipe already exists'),
@@ -127,14 +129,17 @@ class _SendButtonState extends State<SendButton> {
             .doc();
         await goRecipeDocument.set(recipe);
         await goRecipeDocument.update(user);
-        if (ref == false) {
+        if (result == false) {
           await userDoc.set(userDocData);
         }
       } catch (e) {
-        print(e);
+        return ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong'),
+          ),
+        );
       }
     }
-    return checkName;
   }
 
   @override
@@ -149,35 +154,37 @@ class _SendButtonState extends State<SendButton> {
       builder: (context, state) {
         return ElevatedButton(
           onPressed: () async {
-            setState(() {
-              context.read<AddRecipeCubit>().addValue(
-                    _ingredientControllers
-                        ?.map((e) => e?.text ?? '')
-                        .toList()
-                        .cast<String>(),
-                    _measureControllers
-                        ?.map((e) => e?.text ?? '')
-                        .toList()
-                        .cast<String>(),
-                  );
-            });
-            final recipe = Meals().copyWith(
-              idMeal: id.toString(),
-              strMeal: _nameController.text,
-              strArea: state.recipeArea,
-              strCategory: state.recipeCategory,
-              strIngredients: state.ingredientList?.cast<String?>(),
-              strMeasures: state.measureList?.cast<String?>(),
-              strInstructions: _instructionController.text,
-              strMealThumb: _imageController.text,
-              strSource: _sourceController.text,
-              strYoutube: _youtubeController.text,
-            );
-            final user = UserModels(
-              userId: FirebaseAuth.instance.currentUser?.uid,
-              name: FirebaseAuth.instance.currentUser?.displayName,
-            );
-            checkName(recipe.toJson(), user.toJson(), recipe.toJson());
+            if (_formKey.currentState?.validate() ?? false) {
+              setState(() {
+                context.read<AddRecipeCubit>().addValue(
+                      _ingredientControllers
+                          ?.map((e) => e?.text ?? '')
+                          .toList()
+                          .cast<String>(),
+                      _measureControllers
+                          ?.map((e) => e?.text ?? '')
+                          .toList()
+                          .cast<String>(),
+                    );
+              });
+              final recipe = Meals().copyWith(
+                idMeal: id.toString(),
+                strMeal: _nameController.text,
+                strArea: state.recipeArea,
+                strCategory: state.recipeCategory,
+                strIngredients: state.ingredientList?.cast<String?>(),
+                strMeasures: state.measureList?.cast<String?>(),
+                strInstructions: _instructionController.text,
+                strMealThumb: _imageController.text,
+                strSource: _sourceController.text,
+                strYoutube: _youtubeController.text,
+              );
+              final user = UserModels(
+                userId: FirebaseAuth.instance.currentUser?.uid,
+                name: FirebaseAuth.instance.currentUser?.displayName,
+              );
+              checkName(recipe.toJson(), user.toJson(), recipe.toJson());
+            }
           },
           child: const Text(ProjectTexts.send),
         );
@@ -219,7 +226,13 @@ class BasicCustomField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
-      child: TextField(
+      child: TextFormField(
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter some text';
+          }
+          return null;
+        },
         controller: _controller,
         decoration: InputDecoration(
           hintText: _hintText,
@@ -254,7 +267,13 @@ class AddImageButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
+        TextFormField(
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter an image url';
+            }
+            return null;
+          },
           controller: _imageController,
         ),
       ],
@@ -266,6 +285,14 @@ class InstructionInput extends StatelessWidget {
   const InstructionInput({
     super.key,
   });
+  String? Function(String?)? validator() {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return 'Please write instructions';
+      }
+      return null;
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -276,6 +303,7 @@ class InstructionInput extends StatelessWidget {
         decoration: const InputDecoration(
           hintText: ProjectTexts.instructionInput,
         ),
+        validator: validator(),
         maxLength: 3500,
         controller: _instructionController,
         maxLines: 20,
@@ -308,6 +336,12 @@ class _MeasureFieldState extends State<MeasureField> {
     return Expanded(
       flex: 3,
       child: TextFormField(
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a value';
+          }
+          return null;
+        },
         controller: widget._measureControllers?[widget._index],
         decoration: InputDecoration(
           hintText: ProjectTexts.measureInput,
@@ -368,6 +402,12 @@ class _IngredientNameState extends State<IngredientName> {
             fieldViewBuilder:
                 (context, textEditingController, focusNode, onFieldSubmitted) {
               return TextFormField(
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an ingredient';
+                  }
+                  return null;
+                },
                 controller: textEditingController,
                 focusNode: focusNode,
                 onFieldSubmitted: (value) {
@@ -449,6 +489,14 @@ class NameInput extends StatelessWidget {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextFormField(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        validator: (value) {
+          value = _nameController.text;
+          if (value.isEmpty) {
+            return 'Please write a recipe name';
+          }
+          return null;
+        },
         controller: _nameController,
       ),
     );

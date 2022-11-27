@@ -8,14 +8,14 @@ class HomeState extends Equatable {
     this.mealsByCategory,
     this.randomMealItems,
     this.categoryName,
-    this.isCompleted = false,
+    this.isLoading = true,
     this.selectedIndex = 0,
   });
 
   List<MealCategory>? mealCategory;
   Meal? categoryMealItems;
   Meal? randomMealItems;
-  final bool? isCompleted;
+  final bool? isLoading;
   final Meal? mealsByCategory;
   final Meal? randomMeal;
   final String? categoryName;
@@ -29,7 +29,7 @@ class HomeState extends Equatable {
         mealsByCategory,
         randomMeal,
         categoryName,
-        isCompleted,
+        isLoading,
         selectedIndex,
       ];
 
@@ -40,13 +40,13 @@ class HomeState extends Equatable {
     Meal? categoryMealItems,
     Meal? randomMeal,
     String? categoryName,
-    bool? isCompleted,
+    bool? isLoading,
     int? selectedIndex,
   }) {
     return HomeState(
       mealCategory: mealCategory ?? this.mealCategory,
       categoryMealItems: categoryMealItems ?? this.categoryMealItems,
-      isCompleted: isCompleted ?? this.isCompleted,
+      isLoading: isLoading ?? this.isLoading,
       randomMealItems: randomMealItems ?? this.randomMealItems,
       mealsByCategory: mealsByCategory ?? this.mealsByCategory,
       randomMeal: randomMeal ?? this.randomMeal,

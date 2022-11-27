@@ -18,6 +18,7 @@ import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/search_service.dart';
 import 'package:thefood/features/components/loading.dart';
+import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products/models/categories.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
@@ -35,7 +36,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
-    dataLenght = 0;
+    dataLength = 0;
     selectedIndex = 0;
     itemLength();
     isLoading = changeLoading();
@@ -85,20 +86,18 @@ class _HomeViewState extends State<HomeView> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const _SearchBar(),
-                                  if (context.read<HomeCubit>().fetchCategoryData() !=
-                                      null)
+                                  if (state.mealCategory.isNotNullOrEmpty)
                                     const ChangeCategory()
                                   else
                                     const CategoryShimmer(),
-                                  if (context.read<HomeCubit>().fetchCategoryMealData() !=
-                                      null)
+                                  if (state.mealsByCategory?.meals?.isNotNullOrEmpty ??
+                                      false)
                                     const CategoryMeals()
                                   else
                                     const CategoryMealShimmer(
                                       itemCount: 4,
                                     ),
-                                  if (context.read<HomeCubit>().fetchRandomMealData() !=
-                                      null)
+                                  if (state.randomMeal?.meals.isNotNullOrEmpty ?? false)
                                     const RandomMeal()
                                   else
                                     const RandomMealShimmer(),

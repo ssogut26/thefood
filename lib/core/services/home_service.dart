@@ -18,7 +18,8 @@ class HomeService extends IHomeService {
   @override
   Future<List<MealCategory>?> getCategories() async {
     try {
-      final response = await _networkManager.service.get(EndPoints.categories);
+      final response =
+          await _networkManager.service.get<Map<String, dynamic>?>(EndPoints.categories);
       if (response.statusCode == 200) {
         final categories = response.data;
         if (categories is Map<String, dynamic>) {
@@ -36,7 +37,7 @@ class HomeService extends IHomeService {
 
   @override
   Future<Meal?> getMealsByCategory(String name) async {
-    final response = await _networkManager.service.get(
+    final response = await _networkManager.service.get<Map<String, dynamic>>(
       EndPoints.filterByCategory + name,
     );
     if (response.statusCode == 200) {
@@ -50,7 +51,8 @@ class HomeService extends IHomeService {
 
   @override
   Future<Meal?> getRandomMeal() async {
-    final response = await _networkManager.service.get(EndPoints.randomMeal);
+    final response =
+        await _networkManager.service.get<Map<String, dynamic>>(EndPoints.randomMeal);
     if (response.statusCode == 200) {
       final meals = response.data;
       if (meals is Map<String, dynamic>) {

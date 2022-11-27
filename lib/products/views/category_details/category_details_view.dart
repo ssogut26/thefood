@@ -6,6 +6,7 @@ import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/services/category_meal_service.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
+import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/category_details/cubit/category_details_cubit.dart';
 import 'package:thefood/products/views/home/home_view.dart';
@@ -137,7 +138,7 @@ class CategoryMealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: context.dynamicHeight(0.28),
+      height: context.dynamicHeight(0.25),
       width: MediaQuery.of(context).size.width / 2,
       child: InkWell(
         overlayColor: MaterialStateProperty.all(Colors.transparent),
@@ -156,6 +157,29 @@ class CategoryMealCard extends StatelessWidget {
           children: <Widget>[
             MealName(main: main),
             CircleMealImage(main: main),
+            Align(
+              alignment: const Alignment(0, 0.8),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: 1,
+                itemBuilder: (context, index) {
+                  return FutureBuilder(
+                    future: ProjectWidgets.getRatings(
+                      index,
+                      ratings,
+                      context,
+                      main?.idMeal ?? '',
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data ?? const SizedBox.shrink();
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -187,6 +211,8 @@ class MealName extends StatelessWidget {
           child: Padding(
             padding: ProjectPaddings.cardImagePadding,
             child: Text(
+              overflow: TextOverflow.ellipsis,
+              maxLines: 4,
               main?.strMeal ?? '',
               style: context.textTheme.bodyText2,
             ),

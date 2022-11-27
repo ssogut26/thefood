@@ -58,26 +58,42 @@ class HomeCubit extends Cubit<HomeState> {
     if (categoryCacheManager.getValues()?.isNotEmpty ?? false) {
       state.mealCategory = categoryCacheManager.getValues();
     } else {
-      state.mealCategory = await homeService.getCategories();
+      Future.delayed(const Duration(seconds: 1), () async {
+        state.mealCategory = await homeService.getCategories();
+      });
+      emit(
+        state.copyWith(
+          mealCategory: state.mealCategory,
+        ),
+      );
     }
-    emit(
-      state.copyWith(
-        mealCategory: state.mealCategory,
-      ),
-    );
   }
 
   Future<void> fetchCategoryMealData() async {
     await mealCacheManager.init();
     if (mealCacheManager.getItem('Beef')?.meals?.isNotEmpty ?? false) {
       state.categoryMealItems = mealCacheManager.getItem('Beef');
-    } else {
-      state.categoryMealItems = await homeService.getMealsByCategory('Beef');
       emit(
         state.copyWith(
           categoryMealItems: state.categoryMealItems,
+          isLoading: false,
         ),
       );
+    } else {
+      emit(
+        state.copyWith(
+          isLoading: true,
+        ),
+      );
+      Future.delayed(const Duration(seconds: 1), () async {
+        state.categoryMealItems = await homeService.getMealsByCategory('Beef');
+        emit(
+          state.copyWith(
+            categoryMealItems: state.categoryMealItems,
+            isLoading: false,
+          ),
+        );
+      });
     }
   }
 

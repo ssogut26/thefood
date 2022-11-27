@@ -56,17 +56,23 @@ class _AddRecipeState extends State<AddRecipe> {
               Expanded(
                 flex: 3,
                 child: TextFormField(
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Please enter a value';
+                    }
+                    return null;
+                  },
                   controller: _measureControllers?[index],
                   decoration: InputDecoration(
-                    hintText: 'Amount',
+                    hintText: 'Measure',
                     suffixIcon: IconButton(
                       iconSize: 20,
                       onPressed: () {
                         setState(() {
-                          index--;
                           widgetList.removeAt(index);
                           _ingredientControllers?.removeAt(index);
                           _measureControllers?.removeAt(index);
+                          index--;
                         });
                       },
                       icon: const Icon(
@@ -91,7 +97,12 @@ class _AddRecipeState extends State<AddRecipe> {
     _instructionController = TextEditingController();
     _youtubeController = TextEditingController();
     _sourceController = TextEditingController();
+    _ingredientControllers = <TextEditingController>[];
+    _measureControllers = <TextEditingController>[];
+    widgetList.add(initialIngredient());
     if (widgetList.length == 1) {
+      return;
+    } else {
       widgetList.clear();
       _ingredientControllers?.clear();
       _measureControllers?.clear();
@@ -102,9 +113,7 @@ class _AddRecipeState extends State<AddRecipe> {
       _sourceController.clear();
       _imageController.clear();
     }
-    _ingredientControllers = <TextEditingController>[];
-    _measureControllers = <TextEditingController>[];
-    widgetList.add(initialIngredient());
+
     super.initState();
   }
 
@@ -116,65 +125,68 @@ class _AddRecipeState extends State<AddRecipe> {
         appBar: _appBar(),
         body: BlocBuilder<AddRecipeCubit, AddRecipeState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: ProjectPaddings.pageLarge,
-                child: Column(
-                  children: [
-                    //Name
+            return Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: ProjectPaddings.pageLarge,
+                  child: Column(
+                    children: [
+                      //Name
 
-                    _headlineBox(context, ProjectTexts.recipeName),
-                    BasicCustomField(
-                      controller: _nameController,
-                      hintText: ProjectTexts.recipeNameInput,
-                    ),
-
-                    //Category
-
-                    _headlineBox(context, ProjectTexts.categoryName),
-                    const CategoryDropDown(),
-
-                    //Area
-
-                    _headlineBox(context, ProjectTexts.areaName),
-                    const AreaDropdown(),
-
-                    //Ingredients
-
-                    _headlineBox(context, ProjectTexts.recipeIngredients),
-                    ...widgetList,
-                    Padding(
-                      padding: ProjectPaddings.cardMedium,
-                      child: ElevatedButton(
-                        onPressed: addIngredientField,
-                        child: const Icon(Icons.add),
+                      _headlineBox(context, ProjectTexts.recipeName),
+                      BasicCustomField(
+                        controller: _nameController,
+                        hintText: ProjectTexts.recipeNameInput,
                       ),
-                    ),
-//Instructions
 
-                    _headlineBox(context, ProjectTexts.recipeInstructions),
-                    const InstructionInput(),
+                      //Category
 
-                    //Image
+                      _headlineBox(context, ProjectTexts.categoryName),
+                      const CategoryDropDown(),
 
-                    _headlineBox(context, ProjectTexts.image),
-                    //Will be added with image picker
-                    const AddImageButtons(),
-                    _headlineBox(context, ProjectTexts.youtubeLink),
+                      //Area
 
-                    //Youtube Link
-                    BasicCustomField(
-                      controller: _youtubeController,
-                      hintText: ProjectTexts.youtubeInput,
-                    ),
+                      _headlineBox(context, ProjectTexts.areaName),
+                      const AreaDropdown(),
 
-                    //Source Link
-                    _headlineBox(context, ProjectTexts.source),
-                    const SourceField(),
+                      //Ingredients
 
-                    //Submit Button
-                    const SendButton(),
-                  ],
+                      _headlineBox(context, ProjectTexts.recipeIngredients),
+                      ...widgetList,
+                      Padding(
+                        padding: ProjectPaddings.cardMedium,
+                        child: ElevatedButton(
+                          onPressed: addIngredientField,
+                          child: const Icon(Icons.add),
+                        ),
+                      ),
+                      //Instructions
+
+                      _headlineBox(context, ProjectTexts.recipeInstructions),
+                      const InstructionInput(),
+
+                      //Image
+
+                      _headlineBox(context, ProjectTexts.image),
+                      //Will be added with image picker
+                      const AddImageButtons(),
+                      _headlineBox(context, ProjectTexts.youtubeLink),
+
+                      //Youtube Link
+                      BasicCustomField(
+                        controller: _youtubeController,
+                        hintText: ProjectTexts.youtubeInput,
+                      ),
+
+                      //Source Link
+                      _headlineBox(context, ProjectTexts.source),
+                      const SourceField(),
+
+                      //Submit Button
+                      const SendButton(),
+                    ],
+                  ),
                 ),
               ),
             );
