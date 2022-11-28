@@ -79,8 +79,9 @@ class Meals with EquatableMixin {
     this.strMeasures,
     this.strSource,
     this.strImageSource,
-    this.strCreativeCommonsConfirmed,
     this.dateModified,
+    this.comments,
+    this.strCreativeCommonsConfirmed,
   });
   factory Meals.fromJson(Map<String, dynamic> json) => _$MealsFromJson(json);
   @HiveField(0)
@@ -248,6 +249,8 @@ class Meals with EquatableMixin {
   @JsonKey(name: 'strMeasures')
   @HiveField(54)
   List<String?>? strMeasures;
+  @HiveField(55)
+  List<String?>? comments;
 
   Map<String, dynamic> toJson() => _$MealsToJson(this);
 
@@ -368,6 +371,7 @@ class Meals with EquatableMixin {
         strImageSource,
         strCreativeCommonsConfirmed,
         dateModified,
+        comments,
       ];
 
   Meals copyWith({
@@ -426,6 +430,7 @@ class Meals with EquatableMixin {
     String? strImageSource,
     String? strCreativeCommonsConfirmed,
     String? dateModified,
+    List<String>? comments,
   }) {
     return Meals(
       idMeal: idMeal ?? this.idMeal,
@@ -484,6 +489,7 @@ class Meals with EquatableMixin {
       strCreativeCommonsConfirmed:
           strCreativeCommonsConfirmed ?? this.strCreativeCommonsConfirmed,
       dateModified: dateModified ?? this.dateModified,
+      comments: comments ?? this.comments,
     );
   }
 }

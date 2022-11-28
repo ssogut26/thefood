@@ -68,28 +68,27 @@ class DetailsCubit extends Cubit<DetailsState> {
 
   Future<void> fetchMealData(int id) async {
     await favoriteCacheManager.init();
-    final userRecipeResponse = await detailService.isUserRecipe(id);
-    final mealDetail = await detailService.getMeal(id);
+    // final userRecipeResponse = await detailService.isUserRecipe(id);
     if (state.id == id) {
       if (favoriteCacheManager.getItem(id.toString())?.meals?.isNotEmpty ?? false) {
         favoriteMealDetail = favoriteCacheManager.getItem(id.toString());
-      } else if (userRecipeResponse.isNotEmpty) {
+      } else if (userRecipe?.isNotEmpty ?? false) {
         favoriteMealDetail = Meal(
           meals: [
             Meals().copyWith(
-              idMeal: userRecipeResponse['idMeal'] as String?,
-              strMeal: userRecipeResponse['strMeal'] as String?,
-              strMealThumb: userRecipeResponse['strMealThumb'] as String?,
-              strInstructions: userRecipeResponse['strInstructions'] as String?,
-              strYoutube: userRecipeResponse['strYoutube'] as String?,
-              strSource: userRecipeResponse['strSource'] as String?,
-              strArea: userRecipeResponse['strArea'] as String?,
-              strCategory: userRecipeResponse['strCategory'] as String?,
-              strTags: userRecipeResponse['strTags'] as String?,
-              strIngredients: (userRecipeResponse['strIngredients'] as List<dynamic>)
+              idMeal: userRecipe?['idMeal'] as String?,
+              strMeal: userRecipe?['strMeal'] as String?,
+              strMealThumb: userRecipe?['strMealThumb'] as String?,
+              strInstructions: userRecipe?['strInstructions'] as String?,
+              strYoutube: userRecipe?['strYoutube'] as String?,
+              strSource: userRecipe?['strSource'] as String?,
+              strArea: userRecipe?['strArea'] as String?,
+              strCategory: userRecipe?['strCategory'] as String?,
+              strTags: userRecipe?['strTags'] as String?,
+              strIngredients: (userRecipe?['strIngredients'] as List<dynamic>)
                   .map((e) => e as String)
                   .toList(),
-              strMeasures: (userRecipeResponse['strMeasures'] as List<dynamic>)
+              strMeasures: (userRecipe?['strMeasures'] as List<dynamic>)
                   .map((e) => e as String)
                   .toList(),
             )
@@ -98,6 +97,7 @@ class DetailsCubit extends Cubit<DetailsState> {
       } else {
         favoriteMealDetail = await detailService.getMeal(id);
       }
+
       emit(state.copyWith(favoriteMealDetail: favoriteMealDetail));
     }
   }

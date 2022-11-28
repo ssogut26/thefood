@@ -56,25 +56,25 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) {
-        return OfflineBuilder(
-          connectivityBuilder: (
-            BuildContext context,
-            ConnectivityResult connectivity,
-            Widget child,
-          ) {
-            final connected = connectivity != ConnectivityResult.none;
-            return isLoading
-                ? Center(
-                    child: CustomLottieLoading(
-                      onLoaded: (composition) {
-                        isLoading = false;
-                      },
-                    ),
-                  )
-                : connected
-                    ? Scaffold(
+    return OfflineBuilder(
+      connectivityBuilder: (
+        BuildContext context,
+        ConnectivityResult connectivity,
+        Widget child,
+      ) {
+        final connected = connectivity != ConnectivityResult.none;
+        return isLoading
+            ? Center(
+                child: CustomLottieLoading(
+                  onLoaded: (composition) {
+                    isLoading = false;
+                  },
+                ),
+              )
+            : connected == true
+                ? BlocBuilder<HomeCubit, HomeState>(
+                    builder: (context, state) {
+                      return Scaffold(
                         key: _key,
                         appBar: _appBar(context),
                         endDrawer: _Drawer(auth: _auth),
@@ -108,24 +108,24 @@ class _HomeViewState extends State<HomeView> {
                             ),
                           ),
                         ),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Center(child: Image.asset(AssetsPath.noConnectionImage)),
-                          const Text(
-                            ProjectTexts.noConnection,
-                          ),
-                        ],
                       );
-          },
-          child: const Scaffold(
-            body: Center(
-              child: Text(ProjectTexts.offline),
-            ),
-          ),
-        );
+                    },
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(child: Image.asset(AssetsPath.noConnectionImage)),
+                      const Text(
+                        ProjectTexts.noConnection,
+                      ),
+                    ],
+                  );
       },
+      child: const Scaffold(
+        body: Center(
+          child: Text(ProjectTexts.offline),
+        ),
+      ),
     );
   }
 }

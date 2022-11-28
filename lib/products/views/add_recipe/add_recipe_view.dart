@@ -15,6 +15,7 @@ import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
 import 'package:thefood/core/services/search_service.dart';
+import 'package:thefood/features/components/extensions.dart';
 import 'package:thefood/products/models/categories.dart';
 import 'package:thefood/products/models/ingredients.dart';
 import 'package:thefood/products/models/meals.dart';

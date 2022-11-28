@@ -48,7 +48,7 @@ class _CategoryDetailsViewState extends State<CategoryDetailsView> {
               return SingleChildScrollView(
                 child: Column(
                   children: [
-                    FutureBuilder<Meal?>(
+                    FutureBuilder<List<Meals>?>(
                       future:
                           context.read<CategoryDetailsCubit>().getMealsByCategory(_name),
                       builder: (context, snapshot) {
@@ -107,7 +107,7 @@ class ListCategoryMeals extends StatelessWidget {
     required this.meal,
   });
 
-  final Meal? meal;
+  final List<Meals>? meal;
 
   @override
   Widget build(BuildContext context) {
@@ -118,74 +118,179 @@ class ListCategoryMeals extends StatelessWidget {
         mainAxisExtent: MediaQuery.of(context).size.height / 3.5,
       ),
       shrinkWrap: true,
-      itemCount: meal?.meals?.length,
+      itemCount: meal?.length,
       itemBuilder: (context, index) {
-        final main = meal?.meals?[index];
-        return CategoryMealCard(main: main);
+        final main = meal?[index];
+        return SizedBox(
+          height: context.dynamicHeight(0.27),
+          child: Stack(
+            children: [
+              InkWell(
+                onTap: () {
+                  context.pushNamed(
+                    'details',
+                    params: {
+                      'name': main?.strMeal ?? '',
+                      'image': main?.strMealThumb ?? '',
+                      'id': main?.idMeal ?? '',
+                    },
+                  );
+                },
+                child: Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: MealName(main: main),
+                    ),
+                    Align(
+                      alignment: const Alignment(0, 0.8),
+                      child: FutureBuilder(
+                        future: ProjectWidgets.getRatings(
+                          index,
+                          ratings,
+                          context,
+                          main?.idMeal ?? '',
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return snapshot.data ?? const SizedBox.shrink();
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: CircleMealImage(main: main),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
 }
 
-class CategoryMealCard extends StatelessWidget {
-  const CategoryMealCard({
-    super.key,
-    required this.main,
-  });
+// class CategoryMealCard extends StatelessWidget {
+//   const CategoryMealCard({
+//     super.key,
+//     required this.main,
+//   });
 
-  final Meals? main;
+//   final Meals? main;
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: context.dynamicHeight(0.25),
-      width: MediaQuery.of(context).size.width / 2,
-      child: InkWell(
-        overlayColor: MaterialStateProperty.all(Colors.transparent),
-        onTap: () {
-          context.pushNamed(
-            'details',
-            params: {
-              'name': main?.strMeal ?? '',
-              'image': main?.strMealThumb ?? '',
-              'id': main?.idMeal ?? '',
-            },
-          );
-        },
-        child: Stack(
-          alignment: Alignment.topCenter,
-          children: <Widget>[
-            MealName(main: main),
-            CircleMealImage(main: main),
-            Align(
-              alignment: const Alignment(0, 0.8),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: 1,
-                itemBuilder: (context, index) {
-                  return FutureBuilder(
-                    future: ProjectWidgets.getRatings(
-                      index,
-                      ratings,
-                      context,
-                      main?.idMeal ?? '',
-                    ),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return snapshot.data ?? const SizedBox.shrink();
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       height: context.dynamicHeight(0.27),
+//       child: Stack(
+//         children: [
+//           InkWell(
+//             onTap: () {
+//               context.pushNamed(
+//                 'details',
+//                 params: {
+//                   'name': data.strMeal ?? '',
+//                   'image': data.strMealThumb ?? '',
+//                   'id': data.idMeal ?? '',
+//                 },
+//               );
+//             },
+//             child: Stack(
+//               children: <Widget>[
+//                 Align(
+//                   alignment: Alignment.bottomCenter,
+//                   child: MealName(main: main),
+//                 ),
+//                 Align(
+//                   alignment: const Alignment(0, 0.8),
+//                   child: FutureBuilder(
+//                     future: ProjectWidgets.getRatings(
+//                       index,
+//                       ratings,
+//                       context,
+//                       main?.idMeal ?? '',
+//                     ),
+//                     builder: (context, snapshot) {
+//                       if (snapshot.hasData) {
+//                         return snapshot.data ?? const SizedBox.shrink();
+//                       }
+//                       return const SizedBox.shrink();
+//                     },
+//                   ),
+//                 ),
+//                 Align(
+//                   alignment: Alignment.topCenter,
+//                   child: CircleMealImage(main: main),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+
+//     Stack(
+//       children: [
+//         SizedBox(
+//           height: context.dynamicHeight(0.25),
+//           width: MediaQuery.of(context).size.width / 2,
+//           child: InkWell(
+//             overlayColor: MaterialStateProperty.all(Colors.transparent),
+//             onTap: () {
+//               context.pushNamed(
+//                 'details',
+//                 params: {
+//                   'name': main?.strMeal ?? '',
+//                   'image': main?.strMealThumb ?? '',
+//                   'id': main?.idMeal ?? '',
+//                 },
+//               );
+//             },
+//             child: Stack(
+//               children: <Widget>[
+//                 Align(
+//                   alignment: Alignment.bottomCenter,
+//                   child: MealName(main: main),
+//                 ),
+//                 Align(
+//                   alignment: Alignment.topCenter,
+//                   child: CircleMealImage(main: main),
+//                 ),
+//                 Align(
+//                   alignment: const Alignment(0, 0.8),
+//                   child: ListView.builder(
+//                     shrinkWrap: true,
+//                     itemCount: 1,
+//                     itemBuilder: (context, index) {
+//                       return FutureBuilder(
+//                         future: ProjectWidgets.getRatings(
+//                           index,
+//                           ratings,
+//                           context,
+//                           main?.idMeal ?? '',
+//                         ),
+//                         builder: (context, snapshot) {
+//                           if (snapshot.hasData) {
+//                             return snapshot.data ?? const SizedBox.shrink();
+//                           }
+//                           return const SizedBox.shrink();
+//                         },
+//                       );
+//                     },
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 class MealName extends StatelessWidget {
   const MealName({
@@ -197,25 +302,29 @@ class MealName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: ProjectPaddings.cardImagePaddingSmall,
-      child: SizedBox(
-        width: context.dynamicWidth(0.42),
-        height: context.dynamicHeight(0.23),
-        child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: context.lowBorderRadius,
-          ),
-          color: ProjectColors.lightGrey,
-          child: Padding(
-            padding: ProjectPaddings.cardImagePadding,
-            child: Text(
-              overflow: TextOverflow.ellipsis,
-              maxLines: 4,
-              main?.strMeal ?? '',
-              style: context.textTheme.bodyText2,
-            ),
+    return SizedBox(
+      width: context.dynamicWidth(0.5),
+      height: context.dynamicHeight(0.23),
+      child: Card(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: context.lowBorderRadius,
+        ),
+        color: ProjectColors.secondWhite,
+        child: Padding(
+          padding: ProjectPaddings.textHorizontalLarge,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(
+                softWrap: true,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                main?.strMeal ?? '',
+                style: context.textTheme.bodyText2,
+              ),
+            ],
           ),
         ),
       ),
@@ -239,13 +348,8 @@ class CircleMealImage extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(),
         color: Colors.transparent,
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: NetworkImage(
-            main?.strMealThumb ?? '',
-          ),
-        ),
       ),
+      child: ProjectWidgets.circleImage(main?.strMealThumb ?? ''),
     );
   }
 }

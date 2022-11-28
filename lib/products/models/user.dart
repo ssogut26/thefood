@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -14,10 +13,6 @@ class UserModels extends Equatable {
     this.photoURL,
   });
   factory UserModels.fromJson(Map<String, dynamic> json) => _$UserModelsFromJson(json);
-  factory UserModels.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      _$UserModelsFromFirestore(doc);
-
-  Map<String, dynamic> toFirestore() => _$UserModelsToFirebase(this);
   Map<String, dynamic> toJson() => _$UserModelsToJson(this);
 
   final String? email;

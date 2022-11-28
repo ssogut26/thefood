@@ -75,7 +75,15 @@ class RecipeImage extends StatelessWidget {
       expandedHeight: 200,
       flexibleSpace: Stack(
         children: <Widget>[
-          if (connected || (DioErrorType.other == SocketException))
+          if (connected)
+            Positioned.fill(
+              child: CachedNetworkImage(
+                filterQuality: FilterQuality.medium,
+                imageUrl: widget.image ?? '',
+                fit: BoxFit.cover,
+              ),
+            )
+          else if (!connected && widget.image != null)
             Positioned.fill(
               child: CachedNetworkImage(
                 filterQuality: FilterQuality.medium,
@@ -107,14 +115,14 @@ class AllDetailsView extends StatelessWidget {
       builder: (context, state) {
         return Column(
           children: [
-            if (state.favoriteMealDetail?.meals?.isNotNullOrEmpty ?? false)
-              _MealDetails(
-                items: state.favoriteMealDetail,
-                favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
-              )
-            else if (connected && isUserRecipe == false)
+            if (connected && isUserRecipe == false)
               _MealDetails(
                 items: state.meal,
+                favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
+              )
+            else if (connected == false)
+              _MealDetails(
+                items: state.favoriteMealDetail,
                 favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
               )
             else if (connected && isUserRecipe)
@@ -277,8 +285,11 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
   final _titleController = TextEditingController();
   final _reviewController = TextEditingController();
 
+  final _formKey = GlobalKey<FormState>();
+
   Widget bodyChanger() {
-    double userRating = 0.0;
+    // ignore: omit_local_variable_types
+    double userRating = 0;
     switch (widget.selectedIndex) {
       case 0:
         return Column(
@@ -305,19 +316,8 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                   .doc(widget.meals?.idMeal)
                   .get(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return SizedBox(
-                    height: context.dynamicHeight(0.44),
-                    child: Card(
-                      child: Center(
-                        child: Text(
-                          'No reviews yet',
-                          style: context.textTheme.headline1,
-                        ),
-                      ),
-                    ),
-                  );
-                } else if (snapshot.hasData) {
+                if (snapshot.hasData &&
+                    snapshot.connectionState == ConnectionState.done) {
                   if (snapshot.data?.data()?['review'] != null) {
                     final data = snapshot.data?.data()?['review'] as List;
                     return SizedBox(
@@ -357,7 +357,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                                                       fontSize: 15,
                                                     ),
                                                   ),
-                                                  buildRatingStar(
+                                                  ProjectWidgets.buildRatingStar(
                                                     double.parse('${review['rating']}'),
                                                   ),
                                                 ],
@@ -412,9 +412,23 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                 } else if (snapshot.hasError) {
                   return SizedBox(
                     height: context.dynamicHeight(0.44),
-                    child: const Card(
+                    child: Card(
                       child: Center(
-                        child: CircularProgressIndicator(),
+                        child: Text(snapshot.error.toString()),
+                      ),
+                    ),
+                  );
+                }
+                if (snapshot.data?.data() == null &&
+                    snapshot.connectionState == ConnectionState.done) {
+                  return SizedBox(
+                    height: context.dynamicHeight(0.44),
+                    child: Card(
+                      child: Center(
+                        child: Text(
+                          'No reviews yet',
+                          style: context.textTheme.headline1,
+                        ),
                       ),
                     ),
                   );
@@ -436,47 +450,62 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                   AlertWidgets.showActionDialog(
                       context,
                       'Add Review',
-                      Column(
-                        children: [
-                          RatingBar(
-                            itemSize: context.dynamicWidth(0.1),
-                            glow: false,
-                            ratingWidget: RatingWidget(
-                              full: const Icon(Icons.star, color: Colors.amber),
-                              half: const Icon(Icons.star_half, color: Colors.amber),
-                              empty: const Icon(Icons.star_border, color: Colors.amber),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            RatingBar(
+                              itemSize: context.dynamicWidth(0.1),
+                              glow: false,
+                              ratingWidget: RatingWidget(
+                                full: const Icon(Icons.star, color: Colors.amber),
+                                half: const Icon(Icons.star_half, color: Colors.amber),
+                                empty: const Icon(Icons.star_border, color: Colors.amber),
+                              ),
+                              onRatingUpdate: (rating) {
+                                userRating = rating;
+                              },
+                              allowHalfRating: true,
                             ),
-                            onRatingUpdate: (rating) {
-                              userRating = rating;
-                            },
-                            allowHalfRating: true,
-                          ),
-                          SizedBox(height: context.dynamicHeight(0.03)),
-                          SizedBox(
-                            height: context.dynamicHeight(0.07),
-                            width: context.dynamicWidth(0.6),
-                            child: TextField(
-                              controller: _titleController,
-                              decoration: const InputDecoration(
-                                hintText: 'Title',
-                                border: OutlineInputBorder(),
+                            SizedBox(height: context.dynamicHeight(0.03)),
+                            SizedBox(
+                              height: context.dynamicHeight(0.10),
+                              width: context.dynamicWidth(0.6),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return 'Please enter a title';
+                                  }
+                                  return null;
+                                },
+                                controller: _titleController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Title',
+                                  border: OutlineInputBorder(),
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: context.dynamicHeight(0.01)),
-                          SizedBox(
-                            height: context.dynamicHeight(0.15),
-                            width: context.dynamicWidth(0.6),
-                            child: TextField(
-                              controller: _reviewController,
-                              maxLines: 5,
-                              decoration: const InputDecoration(
-                                hintText: 'Add your comment',
-                                border: OutlineInputBorder(),
+                            SizedBox(height: context.dynamicHeight(0.01)),
+                            SizedBox(
+                              height: context.dynamicHeight(0.15),
+                              width: context.dynamicWidth(0.6),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return 'Please enter a review';
+                                  }
+                                  return null;
+                                },
+                                controller: _reviewController,
+                                maxLines: 5,
+                                decoration: const InputDecoration(
+                                  hintText: 'Add your comment',
+                                  border: OutlineInputBorder(),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       [
                         TextButton(
@@ -489,41 +518,37 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                         ),
                         TextButton(
                           onPressed: () async {
-                            final checkAlreadyReviewed = FirebaseFirestore.instance
-                                .collection('reviews')
-                                .where(
-                                  'user_id',
-                                  isEqualTo: FirebaseAuth.instance.currentUser?.uid,
-                                )
-                                .get();
-                            final reviewData = <Map<String, dynamic>>[
-                              {
-                                'user_id': FirebaseAuth.instance.currentUser?.uid,
-                                'user_name':
-                                    FirebaseAuth.instance.currentUser?.displayName,
-                                'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
-                                'title': _titleController.text,
-                                'review': _reviewController.text,
-                                'rating': userRating,
-                                'review_time': Timestamp.now(),
-                              }
-                            ];
-                            await FirebaseFirestore.instance
-                                .collection('reviews')
-                                .doc(widget.meals?.idMeal)
-                                .set(
-                              {
-                                'review': FieldValue.arrayUnion(reviewData),
-                              },
-                              SetOptions(merge: true),
-                            ).whenComplete(
-                              () => AlertWidgets.showMessageDialog(
-                                context,
-                                'Success',
-                                'Review added successfully',
-                              ),
-                            );
-                            Navigator.pop(context);
+                            if (_formKey.currentState?.validate() ?? false) {
+                              final reviewData = <Map<String, dynamic>>[
+                                {
+                                  'idMeal': widget.meals?.idMeal ?? '',
+                                  'user_id': FirebaseAuth.instance.currentUser?.uid,
+                                  'user_name':
+                                      FirebaseAuth.instance.currentUser?.displayName,
+                                  'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
+                                  'title': _titleController.text,
+                                  'review': _reviewController.text,
+                                  'rating': userRating,
+                                  'review_time': Timestamp.now(),
+                                }
+                              ];
+                              await FirebaseFirestore.instance
+                                  .collection('reviews')
+                                  .doc(widget.meals?.idMeal)
+                                  .set(
+                                {
+                                  'review': FieldValue.arrayUnion(reviewData),
+                                },
+                                SetOptions(merge: true),
+                              ).whenComplete(
+                                () => AlertWidgets.showMessageDialog(
+                                  context,
+                                  'Success',
+                                  'Review added successfully',
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
                           },
                           child: const Text('Send'),
                         )
@@ -531,7 +556,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                 },
                 child: const Text('Add Review'),
               ),
-            )
+            ),
           ],
         );
 
@@ -542,29 +567,6 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
           ),
         );
     }
-  }
-
-  Widget buildRatingStar(double starValue) {
-    final Color color = starValue < 2 ? Colors.red : Colors.green;
-    final starIconsMap = [1, 2, 3, 4, 5].map((e) {
-      if (starValue >= e) {
-        return Icon(
-          size: 20,
-          Icons.star_rate,
-          color: color,
-        );
-      } else if (starValue < e && starValue > e - 1) {
-        return Icon(
-          size: 20,
-          Icons.star_half,
-          color: color,
-        );
-      } else {
-        return Icon(size: 15, Icons.star_border, color: color);
-      }
-    }).toList();
-
-    return Row(children: starIconsMap);
   }
 
   @override
@@ -741,8 +743,8 @@ class _AddFavoriteButtonState extends State<AddFavoriteButton> {
   }
 }
 
-class CompomentChanger extends StatefulWidget {
-  CompomentChanger({
+class ComponentChanger extends StatefulWidget {
+  ComponentChanger({
     super.key,
     required this.selectedIndex,
   });
@@ -750,10 +752,10 @@ class CompomentChanger extends StatefulWidget {
   late int selectedIndex;
 
   @override
-  State<CompomentChanger> createState() => _CompomentChangerState();
+  State<ComponentChanger> createState() => _ComponentChangerState();
 }
 
-class _CompomentChangerState extends State<CompomentChanger> {
+class _ComponentChangerState extends State<ComponentChanger> {
   late int selectedIndex;
   @override
   void initState() {
@@ -968,11 +970,5 @@ class AreaImage extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-extension StringExtension on String {
-  String capitalize() {
-    return '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
   }
 }

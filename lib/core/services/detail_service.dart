@@ -15,7 +15,8 @@ class DetailService extends IDetailService {
 
   @override
   Future<Meal?> getMeal(int id) async {
-    final response = await _networkManager.service.get('${EndPoints.getMealDetail}$id');
+    final response = await _networkManager.service
+        .get<Map<String, dynamic>>('${EndPoints.getMealDetail}$id');
     if (response.statusCode == 200) {
       final meals = response.data;
       if (meals is Map<String, dynamic>) {

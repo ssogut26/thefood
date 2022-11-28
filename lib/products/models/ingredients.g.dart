@@ -12,11 +12,13 @@ Ingredients _$IngredientsFromJson(Map<String, dynamic> json) => Ingredients(
           .toList(),
     );
 
-Map<String, dynamic> _$IngredientsToJson(Ingredients instance) => <String, dynamic>{
-      'ingredients': instance.meals,
+Map<String, dynamic> _$IngredientsToJson(Ingredients instance) =>
+    <String, dynamic>{
+      'meals': instance.meals,
     };
 
-MealsIngredient _$MealsIngredientFromJson(Map<String, dynamic> json) => MealsIngredient(
+MealsIngredient _$MealsIngredientFromJson(Map<String, dynamic> json) =>
+    MealsIngredient(
       idIngredient: json['idIngredient'] as String?,
       strIngredient: json['strIngredient'] as String?,
       strDescription: json['strDescription'] as String?,

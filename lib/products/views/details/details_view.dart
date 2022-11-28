@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,7 +18,9 @@ import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/managers/cache_manager.dart';
 import 'package:thefood/features/components/alerts.dart';
+import 'package:thefood/features/components/extensions.dart';
 import 'package:thefood/features/components/loading.dart';
+import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/views/details/cubit/details_cubit.dart';
 import 'package:timeago/timeago.dart' as TimeAgo;
@@ -57,6 +57,7 @@ class _DetailsViewState extends State<DetailsView> {
   @override
   void initState() {
     isLoading = changeLoading();
+
     isUserRecipe = checkUserRecipe();
     super.initState();
   }

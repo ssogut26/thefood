@@ -16,7 +16,7 @@ class CategoryDetailsCubit extends Cubit<CategoryDetailsState> {
   final ICategoryMealService categoryMealService;
   final String key = '';
 
-  Future<Meal?> getMealsByCategory(String key) async {
+  Future<List<Meals>?>? getMealsByCategory(String key) async {
     final categoryMeals = await categoryMealService.getMealsByCategory(key);
     emit(
       state.copyWith(

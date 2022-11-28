@@ -7,6 +7,7 @@ class DetailsState extends Equatable {
     this.favoriteMealDetail,
     this.detailService,
     this.userRecipe,
+    this.comments,
     this.selectedIndex,
     this.connectionStatus,
   });
@@ -14,6 +15,7 @@ class DetailsState extends Equatable {
   final int id;
   final Meal? meal;
   late Meal? favoriteMealDetail;
+  final String? comments;
   late Map<String, dynamic>? userRecipe;
   final int? selectedIndex;
   final IDetailService? detailService;
@@ -21,12 +23,13 @@ class DetailsState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, userRecipe, meal, selectedIndex, favoriteMealDetail, detailService];
+      [id, userRecipe, meal, selectedIndex, comments, favoriteMealDetail, detailService];
 
   DetailsState copyWith({
     int? id,
     Map<String, dynamic>? userRecipe,
     Meal? meal,
+    String? comments,
     Meal? favoriteMealDetail,
     int? selectedIndex,
     IDetailService? detailService,
@@ -35,6 +38,7 @@ class DetailsState extends Equatable {
     return DetailsState(
       id: id ?? this.id,
       userRecipe: userRecipe ?? this.userRecipe,
+      comments: comments ?? this.comments,
       meal: meal ?? this.meal,
       selectedIndex: selectedIndex ?? this.selectedIndex,
       favoriteMealDetail: favoriteMealDetail ?? this.favoriteMealDetail,

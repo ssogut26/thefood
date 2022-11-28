@@ -15,7 +15,8 @@ class SearchService extends ISearchService {
   SearchService(super.networkManager);
   @override
   Future<List<MealsIngredient>?> fetchIngredients(String? key) async {
-    final response = await _manager.get(EndPoints.listByIngredients);
+    final response =
+        await _manager.get<Map<String, dynamic>>(EndPoints.listByIngredients);
     if (response.statusCode == 200) {
       final ingredients = response.data;
       if (ingredients is Map<String, dynamic>) {

@@ -52,10 +52,10 @@ class MealCard extends StatelessWidget {
           context.pushNamed(
             'details',
             params: {
-              'id': meal?.map((e) => e.idMeal).toString().deletePharanteses() ?? '',
-              'name': meal?.map((e) => e.strMeal).toString().deletePharanteses() ?? '',
+              'id': meal?.map((e) => e.idMeal).toString().deleteParentheses() ?? '',
+              'name': meal?.map((e) => e.strMeal).toString().deleteParentheses() ?? '',
               'image':
-                  meal?.map((e) => e.strMealThumb).toString().deletePharanteses() ?? '',
+                  meal?.map((e) => e.strMealThumb).toString().deleteParentheses() ?? '',
             },
           );
         },
@@ -92,7 +92,7 @@ class MealImage extends StatelessWidget {
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width * 0.40,
       child: CachedNetworkImage(
-        imageUrl: meal?.map((e) => e.strMealThumb).toString().deletePharanteses() ?? '',
+        imageUrl: meal?.map((e) => e.strMealThumb).toString().deleteParentheses() ?? '',
         fit: BoxFit.fill,
       ),
     );
@@ -114,7 +114,7 @@ class MealName extends StatelessWidget {
         padding: ProjectPaddings.textHorizontalMedium,
         child: Text(
           softWrap: true,
-          meal?.map((e) => e.strMeal).toString().deletePharanteses() ?? '',
+          meal?.map((e) => e.strMeal).toString().deleteParentheses() ?? '',
           style: Theme.of(context).textTheme.bodyText2,
         ),
       ),
@@ -135,7 +135,7 @@ class DeleteButton extends StatelessWidget {
     return IconButton(
       onPressed: () {
         context.read<FavoritesCubit>().removeItem(
-              meal?.map((e) => e.idMeal).toString().deletePharanteses() ?? '',
+              meal?.map((e) => e.idMeal).toString().deleteParentheses() ?? '',
             );
       },
       icon: const Icon(Icons.delete),
@@ -207,10 +207,4 @@ AppBar _appBar(BuildContext context) {
       style: Theme.of(context).textTheme.headline1,
     ),
   );
-}
-
-extension on String {
-  String deletePharanteses() {
-    return substring(1, length - 1);
-  }
 }

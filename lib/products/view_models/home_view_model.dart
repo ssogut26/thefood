@@ -272,7 +272,54 @@ class _CategoryMealsState extends State<CategoryMeals> {
                       child: CircularProgressIndicator(),
                     ),
                   )
-                : CategoryMealCard(data: data);
+                : SizedBox(
+                    height: context.dynamicHeight(0.27),
+                    child: Stack(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            context.pushNamed(
+                              'details',
+                              params: {
+                                'name': data.strMeal ?? '',
+                                'image': data.strMealThumb ?? '',
+                                'id': data.idMeal ?? '',
+                              },
+                            );
+                          },
+                          child: Stack(
+                            children: <Widget>[
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: MealName(data: data),
+                              ),
+                              Align(
+                                alignment: const Alignment(0, 0.8),
+                                child: FutureBuilder(
+                                  future: ProjectWidgets.getRatings(
+                                    index,
+                                    ratings,
+                                    context,
+                                    data.idMeal ?? '',
+                                  ),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return snapshot.data ?? const SizedBox.shrink();
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.topCenter,
+                                child: CircleMealImage(data: data),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
           },
         );
       },
@@ -322,10 +369,26 @@ class _CategoryMealCardState extends State<CategoryMealCard> {
               );
             },
             child: Stack(
-              alignment: Alignment.topCenter,
               children: <Widget>[
-                MealName(data: widget.data),
+                Align(child: MealName(data: widget.data)),
                 CircleMealImage(data: widget.data),
+                const Align(
+                  alignment: Alignment(0, 0.9),
+                  // child: FutureBuilder(
+                  //   future: ProjectWidgets.getRatings(
+                  //     index,
+                  //     ratings,
+                  //     context,
+                  //     widget.data?.idMeal ?? '',
+                  //   ),
+                  //   builder: (context, snapshot) {
+                  //     if (snapshot.hasData) {
+                  //       return snapshot.data ?? const SizedBox.shrink();
+                  //     }
+                  //     return const SizedBox.shrink();
+                  //   },
+                  // ),
+                ),
               ],
             ),
           ),
@@ -348,83 +411,33 @@ class MealName extends StatefulWidget {
 }
 
 class _MealNameState extends State<MealName> {
-  List<double> ratings = <double>[];
-  Future<Widget> getRatings(int index) async {
-    ratings = <double>[];
-    final ref =
-        FirebaseFirestore.instance.collection('reviews').doc(widget.data?.idMeal).get();
-    await ref.then((value) {
-      if (value.exists) {
-        final data = value.data()?['review'] as List;
-        for (var i = 0; i < data.length; i++) {
-          ratings.add(data[i]['rating'] as double);
-        }
-      }
-    });
-    if (ratings.isEmpty) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ProjectWidgets.buildRatingStar(0),
-          Text('(${ratings.length})', style: context.textTheme.headline5),
-        ],
-      );
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ProjectWidgets.buildRatingStar(ratings.average),
-        Text('(${ratings.length})', style: context.textTheme.headline5),
-      ],
-    );
-  }
-
-  Widget getRating = const SizedBox.shrink();
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        return Padding(
-          padding: ProjectPaddings.cardImagePaddingSmall,
-          child: SizedBox(
-            width: context.dynamicWidth(0.5),
-            height: context.dynamicHeight(0.23),
-            child: Card(
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: context.lowBorderRadius,
-              ),
-              color: ProjectColors.secondWhite,
-              child: Padding(
-                padding: ProjectPaddings.cardImagePadding,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      widget.data?.strMeal ?? '',
-                      style: context.textTheme.bodyText2,
-                    ),
-                    SizedBox(height: context.dynamicHeight(0.02)),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: 1,
-                      itemBuilder: (context, index) {
-                        return FutureBuilder(
-                          future: getRatings(index),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return snapshot.data ?? const SizedBox.shrink();
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
+        return SizedBox(
+          width: context.dynamicWidth(0.5),
+          height: context.dynamicHeight(0.23),
+          child: Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: context.lowBorderRadius,
+            ),
+            color: ProjectColors.secondWhite,
+            child: Padding(
+              padding: ProjectPaddings.textHorizontalLarge,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    softWrap: true,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    widget.data?.strMeal ?? '',
+                    style: context.textTheme.bodyText2,
+                  ),
+                ],
               ),
             ),
           ),
@@ -445,19 +458,13 @@ class CircleMealImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 90,
-      width: 90,
+      height: context.dynamicHeight(0.11),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(),
         color: Colors.transparent,
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: NetworkImage(
-            data?.strMealThumb ?? '',
-          ),
-        ),
       ),
+      child: ProjectWidgets.circleImage(data?.strMealThumb ?? ''),
     );
   }
 }
@@ -790,7 +797,7 @@ class UserRecipeCard extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: Alignment(0, 0.7),
+            alignment: const Alignment(0, 0.7),
             child: Padding(
               padding: ProjectPaddings.textVerticalMedium,
               child: Text(
@@ -799,20 +806,21 @@ class UserRecipeCard extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: Alignment(0, 0.9),
+            alignment: const Alignment(0, 0.9),
             child: FutureBuilder(
-                future: ProjectWidgets.getRatings(
-                  index,
-                  ratings,
-                  context,
-                  '${data?[index]['idMeal']}',
-                ),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return snapshot.data as Widget;
-                  }
-                  return const SizedBox();
-                }),
+              future: ProjectWidgets.getRatings(
+                index,
+                ratings,
+                context,
+                '${data?[index]['idMeal']}',
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return snapshot.data as Widget;
+                }
+                return const SizedBox();
+              },
+            ),
           ),
         ],
       ),

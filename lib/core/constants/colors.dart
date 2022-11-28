@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
 class ProjectColors {
-  static const mainWhite = Color(0xFFF4F9F9);
+  static const mainWhite = Color.fromARGB(255, 234, 238, 238);
   static const secondWhite = Color(0xFFFFFFFF);
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF1A1A1A);

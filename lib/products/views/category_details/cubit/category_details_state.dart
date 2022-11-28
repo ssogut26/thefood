@@ -5,13 +5,13 @@ class CategoryDetailsState extends Equatable {
     this.categoryMeals,
   });
 
-  final Meal? categoryMeals;
+  final List<Meals>? categoryMeals;
 
   @override
   List<Object?> get props => [categoryMeals];
 
   CategoryDetailsState copyWith({
-    Meal? categoryMeals,
+    List<Meals>? categoryMeals,
   }) {
     return CategoryDetailsState(
       categoryMeals: categoryMeals ?? this.categoryMeals,
