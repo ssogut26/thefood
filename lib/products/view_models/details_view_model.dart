@@ -15,23 +15,20 @@ class DetailsBody extends StatelessWidget {
       delegate: SliverChildBuilderDelegate(
         (context, index) => BlocBuilder<DetailsCubit, DetailsState>(
           builder: (context, state) {
-            return Padding(
-              padding: context.paddingLow,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: ProjectColors.mainWhite,
-                  borderRadius: BorderRadius.only(
-                    topLeft: context.lowRadius,
-                    topRight: context.lowRadius,
-                  ),
+            return Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: ProjectColors.mainWhite,
+                borderRadius: BorderRadius.only(
+                  topLeft: context.lowRadius,
+                  topRight: context.lowRadius,
                 ),
-                child: Padding(
-                  padding: ProjectPaddings.pageLarge,
-                  child: AllDetailsView(
-                    connected: connected,
-                    isUserRecipe: isUserRecipe,
-                  ),
+              ),
+              child: Padding(
+                padding: ProjectPaddings.pageLarge,
+                child: AllDetailsView(
+                  connected: connected,
+                  isUserRecipe: isUserRecipe,
                 ),
               ),
             );
@@ -292,17 +289,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
     double userRating = 0;
     switch (widget.selectedIndex) {
       case 0:
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (int index = 0;
-                index < widget.ingredientList.length && index.isFinite;
-                index++)
-              widget.ingredientList[index].isNotNullOrNoEmpty
-                  ? _requirements(index, context)
-                  : const SizedBox.shrink(),
-          ],
-        );
+        return _ingredientListBody();
       case 1:
         return Instructions(
           meals: widget.meals,
@@ -329,82 +316,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                         itemBuilder: (context, index) {
                           final review = data[index] as Map;
                           final timestamp = review['review_time'] as Timestamp;
-                          return SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Card(
-                                  child: Padding(
-                                    padding: context.paddingLow,
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              CircleAvatar(
-                                                radius: context.dynamicWidth(0.07),
-                                                backgroundColor: ProjectColors.mainWhite,
-                                                foregroundImage: AssetImage(
-                                                  '${review['photoURL']}',
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Column(
-                                                children: [
-                                                  Text(
-                                                    '${review['user_name']}',
-                                                    style: context.textTheme.bodyText2
-                                                        ?.copyWith(
-                                                      fontSize: 15,
-                                                    ),
-                                                  ),
-                                                  ProjectWidgets.buildRatingStar(
-                                                    double.parse('${review['rating']}'),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              Align(
-                                                alignment: Alignment.topRight,
-                                                child: Text(
-                                                  TimeAgo.format(
-                                                    DateTime.parse(
-                                                      timestamp.toDate().toString(),
-                                                    ),
-                                                    locale: 'en_short',
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: const Alignment(-0.8, -0.1),
-                                            child: Text(
-                                              '${review['title']}',
-                                              style:
-                                                  context.textTheme.bodyText2?.copyWith(
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: const Alignment(-0.8, 0),
-                                            child: Text(
-                                              '${review['review']}',
-                                              style:
-                                                  context.textTheme.bodyText1?.copyWith(
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
+                          return UserReviewCard(review: review, timestamp: timestamp);
                         },
                       ),
                     );
@@ -435,9 +347,15 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                 }
                 return SizedBox(
                   height: context.dynamicHeight(0.44),
-                  child: const Card(
+                  child: Card(
                     child: Center(
-                      child: CircularProgressIndicator(),
+                      child: SizedBox(
+                        height: context.dynamicHeight(0.2),
+                        child: CustomLottieLoading(
+                          path: AssetsPath.progression,
+                          onLoaded: (composition) {},
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -472,6 +390,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                               height: context.dynamicHeight(0.10),
                               width: context.dynamicWidth(0.6),
                               child: TextFormField(
+                                style: context.textTheme.headline4,
                                 validator: (value) {
                                   if (value?.isEmpty ?? true) {
                                     return 'Please enter a title';
@@ -490,6 +409,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                               height: context.dynamicHeight(0.15),
                               width: context.dynamicWidth(0.6),
                               child: TextFormField(
+                                style: context.textTheme.headline4,
                                 validator: (value) {
                                   if (value?.isEmpty ?? true) {
                                     return 'Please enter a review';
@@ -516,41 +436,13 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                           },
                           child: const Text('Cancel'),
                         ),
-                        TextButton(
-                          onPressed: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              final reviewData = <Map<String, dynamic>>[
-                                {
-                                  'idMeal': widget.meals?.idMeal ?? '',
-                                  'user_id': FirebaseAuth.instance.currentUser?.uid,
-                                  'user_name':
-                                      FirebaseAuth.instance.currentUser?.displayName,
-                                  'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
-                                  'title': _titleController.text,
-                                  'review': _reviewController.text,
-                                  'rating': userRating,
-                                  'review_time': Timestamp.now(),
-                                }
-                              ];
-                              await FirebaseFirestore.instance
-                                  .collection('reviews')
-                                  .doc(widget.meals?.idMeal)
-                                  .set(
-                                {
-                                  'review': FieldValue.arrayUnion(reviewData),
-                                },
-                                SetOptions(merge: true),
-                              ).whenComplete(
-                                () => AlertWidgets.showMessageDialog(
-                                  context,
-                                  'Success',
-                                  'Review added successfully',
-                                ),
-                              );
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: const Text('Send'),
+                        _SendReviewToDb(
+                          formKey: _formKey,
+                          widget: widget,
+                          titleController: _titleController,
+                          reviewController: _reviewController,
+                          userRating: userRating,
+                          context: context,
                         )
                       ]);
                 },
@@ -567,6 +459,20 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
           ),
         );
     }
+  }
+
+  Column _ingredientListBody() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int index = 0;
+            index < widget.ingredientList.length && index.isFinite;
+            index++)
+          widget.ingredientList[index].isNotNullOrNoEmpty
+              ? _requirements(index, context)
+              : const SizedBox.shrink(),
+      ],
+    );
   }
 
   @override
@@ -660,7 +566,6 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
             child: Card(
               color: ProjectColors.lightGrey,
               child: CachedNetworkImage(
-                filterQuality: FilterQuality.medium,
                 errorWidget: (context, url, error) => const Icon(Icons.error),
                 width: 60,
                 height: 60,
@@ -675,6 +580,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
               padding: ProjectPaddings.textHorizontalLarge,
               child: Text(
                 '${widget.ingredientList[index]}'.capitalize(),
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headline3,
               ).toVisible(
                 widget.ingredientList[index] != null,
@@ -683,8 +589,164 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
           ),
           Expanded(
             flex: 3,
-            child: Text('${widget.measureList[index]}').toVisible(
+            child: Text(
+              '${widget.measureList[index]}',
+              overflow: TextOverflow.ellipsis,
+            ).toVisible(
               widget.measureList[index] != null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SendReviewToDb extends StatelessWidget {
+  const _SendReviewToDb({
+    Key? key,
+    required GlobalKey<FormState> formKey,
+    required this.widget,
+    required TextEditingController titleController,
+    required TextEditingController reviewController,
+    required this.userRating,
+    required this.context,
+  })  : _formKey = formKey,
+        _titleController = titleController,
+        _reviewController = reviewController,
+        super(key: key);
+
+  final GlobalKey<FormState> _formKey;
+  final ComponentAndGuide widget;
+  final TextEditingController _titleController;
+  final TextEditingController _reviewController;
+  final double userRating;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () async {
+        if (_formKey.currentState?.validate() ?? false) {
+          final reviewData = <Map<String, dynamic>>[
+            {
+              'idMeal': widget.meals?.idMeal ?? '',
+              'user_id': FirebaseAuth.instance.currentUser?.uid,
+              'user_name': FirebaseAuth.instance.currentUser?.displayName,
+              'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
+              'title': _titleController.text,
+              'review': _reviewController.text,
+              'rating': userRating,
+              'review_time': Timestamp.now(),
+            }
+          ];
+          await FirebaseFirestore.instance
+              .collection('reviews')
+              .doc(widget.meals?.idMeal)
+              .set(
+            {
+              'review': FieldValue.arrayUnion(reviewData),
+            },
+            SetOptions(merge: true),
+          ).whenComplete(
+            () => AlertWidgets.showMessageDialog(
+              context,
+              'Success',
+              'Review added successfully',
+            ),
+          );
+          Navigator.pop(context);
+          _titleController.clear();
+          _reviewController.clear();
+        }
+      },
+      child: const Text('Send'),
+    );
+  }
+}
+
+class UserReviewCard extends StatelessWidget {
+  const UserReviewCard({
+    Key? key,
+    required this.review,
+    required this.timestamp,
+  }) : super(key: key);
+
+  final Map review;
+  final Timestamp timestamp;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: context.paddingLow,
+      child: Column(
+        children: [
+          Card(
+            child: Padding(
+              padding: context.paddingLow,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: context.dynamicWidth(0.07),
+                          backgroundColor: ProjectColors.mainWhite,
+                          foregroundImage: AssetImage(
+                            '${review['photoURL']}',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          children: [
+                            Text(
+                              '${review['user_name']}'.replaceRange(
+                                  2, '${review['user_name']}'.length, "*******"),
+                              style: context.textTheme.bodyText2?.copyWith(
+                                fontSize: 15,
+                              ),
+                            ),
+                            ProjectWidgets.buildRatingStar(
+                              double.parse('${review['rating']}'),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Text(
+                            TimeAgo.format(
+                              DateTime.parse(
+                                timestamp.toDate().toString(),
+                              ),
+                              locale: 'en_short',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: const Alignment(-0.8, -0.1),
+                      child: Text(
+                        '${review['title']}',
+                        style: context.textTheme.bodyText2?.copyWith(
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: const Alignment(-0.8, 0),
+                      child: Text(
+                        '${review['review']}',
+                        style: context.textTheme.bodyText1?.copyWith(
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -963,8 +1025,11 @@ class AreaImage extends StatelessWidget {
           child: SizedBox(
             height: 16,
             width: 16,
-            child: CircularProgressIndicator(
-              value: downloadProgress.progress,
+            child: CustomLottieLoading(
+              path: AssetsPath.progression,
+              onLoaded: (composition) {
+                downloadProgress.progress;
+              },
             ),
           ),
         ),

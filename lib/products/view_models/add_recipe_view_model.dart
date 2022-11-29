@@ -13,7 +13,7 @@ final _formKey = GlobalKey<FormState>();
 int index = 1;
 
 Widget initialIngredient() {
-  index = 0;
+  const initialIndex = 0;
   _ingredientControllers?.add(TextEditingController());
   _measureControllers?.add(TextEditingController());
   return Padding(
@@ -23,7 +23,8 @@ Widget initialIngredient() {
         Expanded(
           flex: 5,
           child: IngredientName(
-            ingredientController: _ingredientControllers?[0] ?? TextEditingController(),
+            ingredientController:
+                _ingredientControllers?[initialIndex] ?? TextEditingController(),
           ),
         ),
         const SizedBox(
@@ -31,7 +32,7 @@ Widget initialIngredient() {
         ),
         MeasureField(
           measureControllers: _measureControllers,
-          index: index,
+          index: initialIndex,
           suffixIcon: const SizedBox.shrink(),
         ),
       ],
@@ -73,7 +74,7 @@ class SendButton extends StatefulWidget {
 }
 
 class _SendButtonState extends State<SendButton> {
-  late int id;
+  int id = 0;
   Future<int> getRecipeId() async {
     final recipeId = FirebaseFirestore.instance.collection('recipes').get();
     await recipeId.then((value) async {
@@ -111,10 +112,9 @@ class _SendButtonState extends State<SendButton> {
       return false;
     });
     if (result == true) {
-      return ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Recipe already exists'),
-        ),
+      return AlertWidgets.showSnackBar(
+        context,
+        'Recipe already exists',
       );
     } else {
       try {
@@ -132,20 +132,18 @@ class _SendButtonState extends State<SendButton> {
         if (result == false) {
           await userDoc.set(userDocData);
         }
+        AlertWidgets.showSnackBar(
+          context,
+          'Recipe added',
+        );
+        Navigator.of(context).pop();
       } catch (e) {
-        return ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Something went wrong'),
-          ),
+        return AlertWidgets.showSnackBar(
+          context,
+          'Something went wrong',
         );
       }
     }
-  }
-
-  @override
-  void initState() {
-    getRecipeId();
-    super.initState();
   }
 
   @override
@@ -265,18 +263,24 @@ class AddImageButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextFormField(
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter an image url';
-            }
-            return null;
-          },
-          controller: _imageController,
-        ),
-      ],
+    return Padding(
+      padding: ProjectPaddings.cardMedium,
+      child: Column(
+        children: [
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter an image url';
+              }
+              return null;
+            },
+            controller: _imageController,
+            decoration: const InputDecoration(
+              hintText: ProjectTexts.imageInput,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -441,8 +445,11 @@ class _IngredientNameState extends State<IngredientName> {
                                     const Icon(Icons.error),
                                 progressIndicatorBuilder:
                                     (context, url, downloadProgress) => Center(
-                                  child: CircularProgressIndicator(
-                                    value: downloadProgress.progress,
+                                  child: CustomLottieLoading(
+                                    path: AssetsPath.progression,
+                                    onLoaded: (composition) {
+                                      downloadProgress.progress;
+                                    },
                                   ),
                                 ),
                                 imageUrl:

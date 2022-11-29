@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/features/components/loading.dart';
 
 class ProjectWidgets {
   ProjectWidgets._();
@@ -67,8 +69,11 @@ class ProjectWidgets {
     return CachedNetworkImage(
       fit: BoxFit.cover,
       progressIndicatorBuilder: (context, url, downloadProgress) => Center(
-        child: CircularProgressIndicator(
-          value: downloadProgress.progress,
+        child: CustomLottieLoading(
+          path: AssetsPath.progression,
+          onLoaded: (composition) {
+            downloadProgress.progress;
+          },
         ),
       ),
       errorWidget: (context, url, error) => const Icon(Icons.error),

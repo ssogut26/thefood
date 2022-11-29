@@ -93,14 +93,18 @@ class _DetailsViewState extends State<DetailsView> {
                   ),
                 )
               : CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
                   slivers: <Widget>[
                     RecipeImage(connected: connected, widget: widget),
                     DetailsBody(connected: connected, isUserRecipe: isUserRecipe),
                   ],
                 );
         },
-        child: const Center(
-          child: CircularProgressIndicator(),
+        child: Center(
+          child: CustomLottieLoading(
+            path: AssetsPath.progression,
+            onLoaded: (composition) {},
+          ),
         ),
       ),
     );

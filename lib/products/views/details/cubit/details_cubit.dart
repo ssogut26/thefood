@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:thefood/core/services/detail_service.dart';
 import 'package:thefood/core/services/managers/cache_manager.dart';
+import 'package:thefood/features/components/alerts.dart';
 import 'package:thefood/products/models/meals.dart';
 
 part 'details_state.dart';
@@ -38,6 +40,31 @@ class DetailsCubit extends Cubit<DetailsState> {
     return mealDetail;
   }
 
+  Future putReviewToDb(String idMeal, {List<dynamic> reviewData = const []}) async {
+    final db = FirebaseFirestore.instance.collection('reviews').doc(idMeal);
+    final toDb = await db.set(
+      {
+        'review': FieldValue.arrayUnion(reviewData),
+      },
+      SetOptions(merge: true),
+    ).whenComplete(() async {
+      await AlertWidgets.showMessageDialog(
+        context,
+        'Success',
+        'Review added successfully',
+      );
+    }).onError(
+      (error, stackTrace) async {
+        await AlertWidgets.showMessageDialog(
+          context,
+          'Error',
+          error.toString(),
+        );
+      },
+    );
+    return toDb;
+  }
+
   Future<Map<String, dynamic>?> getUserRecipe(int id) async {
     state.userRecipe = await detailService.isUserRecipe(id);
     userRecipe = await detailService.isUserRecipe(id);
@@ -68,27 +95,27 @@ class DetailsCubit extends Cubit<DetailsState> {
 
   Future<void> fetchMealData(int id) async {
     await favoriteCacheManager.init();
-    // final userRecipeResponse = await detailService.isUserRecipe(id);
+    final userRecipeResponse = await detailService.isUserRecipe(id);
     if (state.id == id) {
       if (favoriteCacheManager.getItem(id.toString())?.meals?.isNotEmpty ?? false) {
         favoriteMealDetail = favoriteCacheManager.getItem(id.toString());
-      } else if (userRecipe?.isNotEmpty ?? false) {
+      } else if (userRecipeResponse.isNotEmpty) {
         favoriteMealDetail = Meal(
           meals: [
             Meals().copyWith(
-              idMeal: userRecipe?['idMeal'] as String?,
-              strMeal: userRecipe?['strMeal'] as String?,
-              strMealThumb: userRecipe?['strMealThumb'] as String?,
-              strInstructions: userRecipe?['strInstructions'] as String?,
-              strYoutube: userRecipe?['strYoutube'] as String?,
-              strSource: userRecipe?['strSource'] as String?,
-              strArea: userRecipe?['strArea'] as String?,
-              strCategory: userRecipe?['strCategory'] as String?,
-              strTags: userRecipe?['strTags'] as String?,
-              strIngredients: (userRecipe?['strIngredients'] as List<dynamic>)
+              idMeal: userRecipeResponse['idMeal'] as String?,
+              strMeal: userRecipeResponse['strMeal'] as String?,
+              strMealThumb: userRecipeResponse['strMealThumb'] as String?,
+              strInstructions: userRecipeResponse['strInstructions'] as String?,
+              strYoutube: userRecipeResponse['strYoutube'] as String?,
+              strSource: userRecipeResponse['strSource'] as String?,
+              strArea: userRecipeResponse['strArea'] as String?,
+              strCategory: userRecipeResponse['strCategory'] as String?,
+              strTags: userRecipeResponse['strTags'] as String?,
+              strIngredients: (userRecipeResponse['strIngredients'] as List<dynamic>)
                   .map((e) => e as String)
                   .toList(),
-              strMeasures: (userRecipe?['strMeasures'] as List<dynamic>)
+              strMeasures: (userRecipeResponse['strMeasures'] as List<dynamic>)
                   .map((e) => e as String)
                   .toList(),
             )

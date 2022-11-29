@@ -37,8 +37,11 @@ class _UserInfoState extends State<UserInfo> {
                       child: SizedBox(
                         height: 16,
                         width: 16,
-                        child: CircularProgressIndicator(
-                          value: downloadProgress.progress,
+                        child: CustomLottieLoading(
+                          path: AssetsPath.progression,
+                          onLoaded: (composition) {
+                            downloadProgress.progress;
+                          },
                         ),
                       ),
                     ),
@@ -54,8 +57,13 @@ class _UserInfoState extends State<UserInfo> {
             } else if (snapshot.hasError) {
               return Text(snapshot.error.toString());
             } else {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return SizedBox(
+                width: context.dynamicWidth(0.10),
+                height: context.dynamicHeight(0.04),
+                child: CustomLottieLoading(
+                  path: AssetsPath.progression,
+                  onLoaded: (composition) {},
+                ),
               );
             }
           },
@@ -81,8 +89,8 @@ class UserImage extends StatelessWidget {
               if (snapshot.hasData) {
                 return Image.asset(
                   snapshot.data ?? '',
-                  width: 80,
-                  height: 80,
+                  width: context.dynamicWidth(0.22),
+                  height: context.dynamicHeight(0.1),
                   fit: BoxFit.cover,
                 );
               }
@@ -90,7 +98,16 @@ class UserImage extends StatelessWidget {
                 kDebugMode ? print(snapshot.error) : null;
                 return const Icon(Icons.error);
               } else {
-                return const CircularProgressIndicator();
+                return SizedBox(
+                  width: context.dynamicWidth(0.10),
+                  height: context.dynamicHeight(0.04),
+                  child: CustomLottieLoading(
+                    path: AssetsPath.progression,
+                    onLoaded: (composition) {
+                      context.read<ProfileCubit>().getUserImage();
+                    },
+                  ),
+                );
               }
             },
           ),
@@ -123,7 +140,14 @@ class FutureUserRecipe extends StatelessWidget {
           final data = snapshot.data?.docs;
           return UserRecipesCard(data: data);
         }
-        return const Center(child: CircularProgressIndicator());
+        return SizedBox(
+          width: context.dynamicWidth(0.10),
+          height: context.dynamicHeight(0.04),
+          child: CustomLottieLoading(
+            path: AssetsPath.progression,
+            onLoaded: (composition) {},
+          ),
+        );
       },
     );
   }

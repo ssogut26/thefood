@@ -4,12 +4,12 @@ import 'package:thefood/core/constants/assets_path.dart';
 class CustomLottieLoading extends LottieBuilder {
   CustomLottieLoading({
     super.key,
-    String path = AssetsPath.splash,
+    String? path,
     bool animate = true,
     bool repeat = true,
     required Function onLoaded,
   }) : super.asset(
-          path,
+          path ?? AssetsPath.splash,
           animate: animate,
           repeat: repeat,
           onLoaded: (composition) {

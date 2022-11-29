@@ -2,9 +2,9 @@ import 'package:flutter/widgets.dart';
 
 class ProjectPaddings {
   ProjectPaddings._();
-  static const pageSmall = EdgeInsets.all(4);
-  static const pageMedium = EdgeInsets.all(8);
-  static const pageLarge = EdgeInsets.all(24);
+  static const pageSmall = EdgeInsets.symmetric(horizontal: 6, vertical: 4);
+  static const pageMedium = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+  static const pageLarge = EdgeInsets.symmetric(horizontal: 24, vertical: 12);
 
   static const cardSmall = EdgeInsets.only(bottom: 4);
   static const cardMedium = EdgeInsets.only(bottom: 8);

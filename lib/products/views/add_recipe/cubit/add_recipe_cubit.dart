@@ -25,7 +25,6 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
 
   final List<TextEditingController> _ingredientControllers = [];
   final List<TextEditingController> _measureControllers = [];
-
   Future<void>? addIngredientField() async {
     _ingredientControllers.add(TextEditingController());
     _measureControllers.add(TextEditingController());

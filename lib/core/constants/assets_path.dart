@@ -7,7 +7,8 @@ class AssetsPath {
   static const String home = 'assets/icons/ic_home.svg';
   static const String love = 'assets/icons/ic_love.svg';
   static const String level = 'assets/icons/ic_level.svg';
-  static const noConnectionImage = 'assets/images/no_connection.png';
-  static const splash = 'assets/animations/loading_anim.json';
-  static const defaultUserImage = 'assets/images/default_user_image.png';
+  static const String noConnectionImage = 'assets/images/no_connection.png';
+  static const String splash = 'assets/animations/loading_anim.json';
+  static const String defaultUserImage = 'assets/images/default_user_image.png';
+  static const String progression = 'assets/animations/circular_progression.json';
 }

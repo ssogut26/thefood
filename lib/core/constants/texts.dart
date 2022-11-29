@@ -43,6 +43,7 @@ class ProjectTexts {
   static const areaName = 'Area*';
   static const youtubeLink = 'Youtube Link';
   static const image = 'Image*';
+  static const imageInput = 'Image URL';
   static const source = 'Source';
   static const ingredientInput = 'Ingredient';
   static const measureInput = 'Measure';

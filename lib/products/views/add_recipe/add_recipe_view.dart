@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/endpoints.dart';
 import 'package:thefood/core/constants/flags.dart';
@@ -15,7 +16,9 @@ import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
 import 'package:thefood/core/services/search_service.dart';
+import 'package:thefood/features/components/alerts.dart';
 import 'package:thefood/features/components/extensions.dart';
+import 'package:thefood/features/components/loading.dart';
 import 'package:thefood/products/models/categories.dart';
 import 'package:thefood/products/models/ingredients.dart';
 import 'package:thefood/products/models/meals.dart';
@@ -33,7 +36,7 @@ class AddRecipe extends StatefulWidget {
 
 class _AddRecipeState extends State<AddRecipe> {
   int index = 1;
-
+  // it have bug
   Future<void> addIngredientField() async {
     setState(() {
       _ingredientControllers?.add(TextEditingController());
@@ -70,10 +73,10 @@ class _AddRecipeState extends State<AddRecipe> {
                       iconSize: 20,
                       onPressed: () {
                         setState(() {
+                          index--;
                           widgetList.removeAt(index);
                           _ingredientControllers?.removeAt(index);
                           _measureControllers?.removeAt(index);
-                          index--;
                         });
                       },
                       icon: const Icon(
@@ -101,9 +104,7 @@ class _AddRecipeState extends State<AddRecipe> {
     _ingredientControllers = <TextEditingController>[];
     _measureControllers = <TextEditingController>[];
     widgetList.add(initialIngredient());
-    if (widgetList.length == 1) {
-      return;
-    } else {
+    if (widgetList.length != 1) {
       widgetList.clear();
       _ingredientControllers?.clear();
       _measureControllers?.clear();
@@ -126,67 +127,92 @@ class _AddRecipeState extends State<AddRecipe> {
         appBar: _appBar(),
         body: BlocBuilder<AddRecipeCubit, AddRecipeState>(
           builder: (context, state) {
-            return Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: ProjectPaddings.pageLarge,
-                  child: Column(
-                    children: [
-                      //Name
+            return WillPopScope(
+              onWillPop: () async {
+                var isPop = false;
+                await AlertWidgets.showActionDialog(
+                  context,
+                  'Alert',
+                  const Text('Are you sure you want to exit?'),
+                  [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context, isPop = false);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context, isPop = true);
+                      },
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                );
+                return isPop;
+              },
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: ProjectPaddings.pageLarge,
+                    child: Column(
+                      children: [
+                        //Name
 
-                      _headlineBox(context, ProjectTexts.recipeName),
-                      BasicCustomField(
-                        controller: _nameController,
-                        hintText: ProjectTexts.recipeNameInput,
-                      ),
-
-                      //Category
-
-                      _headlineBox(context, ProjectTexts.categoryName),
-                      const CategoryDropDown(),
-
-                      //Area
-
-                      _headlineBox(context, ProjectTexts.areaName),
-                      const AreaDropdown(),
-
-                      //Ingredients
-
-                      _headlineBox(context, ProjectTexts.recipeIngredients),
-                      ...widgetList,
-                      Padding(
-                        padding: ProjectPaddings.cardMedium,
-                        child: ElevatedButton(
-                          onPressed: addIngredientField,
-                          child: const Icon(Icons.add),
+                        _headlineBox(context, ProjectTexts.recipeName),
+                        BasicCustomField(
+                          controller: _nameController,
+                          hintText: ProjectTexts.recipeNameInput,
                         ),
-                      ),
-                      //Instructions
 
-                      _headlineBox(context, ProjectTexts.recipeInstructions),
-                      const InstructionInput(),
+                        //Category
 
-                      //Image
+                        _headlineBox(context, ProjectTexts.categoryName),
+                        const CategoryDropDown(),
 
-                      _headlineBox(context, ProjectTexts.image),
-                      //Will be added with image picker
-                      const AddImageButtons(),
-                      _headlineBox(context, ProjectTexts.youtubeLink),
+                        //Area
 
-                      //Youtube Link
-                      BasicCustomField(
-                        controller: _youtubeController,
-                        hintText: ProjectTexts.youtubeInput,
-                      ),
+                        _headlineBox(context, ProjectTexts.areaName),
+                        const AreaDropdown(),
 
-                      //Source Link
-                      _headlineBox(context, ProjectTexts.source),
-                      const SourceField(),
+                        //Ingredients
 
-                      //Submit Button
-                      const SendButton(),
-                    ],
+                        _headlineBox(context, ProjectTexts.recipeIngredients),
+                        ...widgetList,
+                        Padding(
+                          padding: ProjectPaddings.cardMedium,
+                          child: ElevatedButton(
+                            onPressed: addIngredientField,
+                            child: const Icon(Icons.add),
+                          ),
+                        ),
+                        //Instructions
+
+                        _headlineBox(context, ProjectTexts.recipeInstructions),
+                        const InstructionInput(),
+
+                        //Image
+
+                        _headlineBox(context, ProjectTexts.image),
+                        //Will be added with image picker
+                        const AddImageButtons(),
+                        _headlineBox(context, ProjectTexts.youtubeLink),
+
+                        //Youtube Link
+                        BasicCustomField(
+                          controller: _youtubeController,
+                          hintText: ProjectTexts.youtubeInput,
+                        ),
+
+                        //Source Link
+                        _headlineBox(context, ProjectTexts.source),
+                        const SourceField(),
+
+                        //Submit Button
+                        const SendButton(),
+                      ],
+                    ),
                   ),
                 ),
               ),

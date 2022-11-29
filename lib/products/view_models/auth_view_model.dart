@@ -12,6 +12,7 @@ import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/hive_constants.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/components/loading.dart';
 import 'package:thefood/products/models/user.dart';
 import 'package:thefood/products/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/products/views/auth/bloc/sign_up/sign_up_cubit.dart';
@@ -274,7 +275,12 @@ class LoginButton extends StatelessWidget {
       child: BlocBuilder<LoginCubit, LoginState>(
         builder: (context, state) {
           return state.status.isSubmissionInProgress
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: CustomLottieLoading(
+                    path: AssetsPath.progression,
+                    onLoaded: (composition) {},
+                  ),
+                )
               : ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ProjectColors.yellow,
@@ -383,7 +389,12 @@ class RegisterButton extends StatelessWidget {
         child: BlocBuilder<SignUpCubit, SignUpState>(
           builder: (context, state) {
             return state.status.isSubmissionInProgress
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CustomLottieLoading(
+                      path: AssetsPath.progression,
+                      onLoaded: (composition) {},
+                    ),
+                  )
                 : ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ProjectColors.yellow,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/paddings.dart';
@@ -77,36 +78,39 @@ class _ProfileViewState extends State<ProfileView> {
               create: (context) => ProfileCubit(),
               child: Padding(
                 padding: ProjectPaddings.pageLarge,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const UserImage(),
-                        SizedBox(
-                          width: context.dynamicWidth(0.04),
+                child: SizedBox(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        child: Row(
+                          children: [
+                            const UserImage(),
+                            SizedBox(
+                              width: context.dynamicWidth(0.04),
+                            ),
+                            const UserInfo(),
+                            UpdateUserProfile(
+                              nameController: _nameController,
+                              emailController: _emailController,
+                              verifyEmailController: _verifyEmailController,
+                              verifyPasswordController: _verifyPasswordController,
+                              newPasswordController: _newPasswordController,
+                            ),
+                          ],
                         ),
-                        const UserInfo(),
-                        const Spacer(),
-                        UpdateUserProfile(
-                          nameController: _nameController,
-                          emailController: _emailController,
-                          verifyEmailController: _verifyEmailController,
-                          verifyPasswordController: _verifyPasswordController,
-                          newPasswordController: _newPasswordController,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: context.dynamicHeight(0.03),
-                    ),
-                    const Text(
-                      ProjectTexts.myRecipe,
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    FutureUserRecipe(getUserRecipe: getUserRecipe),
-                    // I have planned to add follow and fallowed list
-                  ],
+                      ),
+                      SizedBox(
+                        height: context.dynamicHeight(0.03),
+                      ),
+                      const Text(
+                        ProjectTexts.myRecipe,
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      FutureUserRecipe(getUserRecipe: getUserRecipe),
+                      // I have planned to add follow and followed list
+                    ],
+                  ),
                 ),
               ),
             ),

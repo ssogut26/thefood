@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kartal/kartal.dart';
+import 'package:thefood/core/constants/paddings.dart';
 
 class AlertWidgets {
   AlertWidgets._();
@@ -49,7 +49,7 @@ class AlertWidgets {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        contentPadding: context.paddingLow,
+        contentPadding: ProjectPaddings.pageLarge,
         scrollable: true,
         insetPadding: const EdgeInsets.all(16),
         title: Text(

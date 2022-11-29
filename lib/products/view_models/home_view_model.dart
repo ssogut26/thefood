@@ -268,10 +268,16 @@ class _CategoryMealsState extends State<CategoryMeals> {
                       borderRadius: context.lowBorderRadius,
                     ),
                     color: ProjectColors.secondWhite,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
+                    child: Center(
+                      child: CustomLottieLoading(
+                        path: AssetsPath.progression,
+                        onLoaded: (composition) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+                      ),
+                    ))
                 : SizedBox(
                     height: context.dynamicHeight(0.27),
                     child: Stack(
@@ -610,6 +616,7 @@ class RandomMealImage extends StatelessWidget {
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width * 0.40,
       child: CachedNetworkImage(
+        filterQuality: FilterQuality.low,
         imageUrl: data?.strMealThumb ?? '',
         fit: BoxFit.fill,
       ),
@@ -724,8 +731,10 @@ class _StreamUserRecipesState extends State<StreamUserRecipes> {
           if (snapshot.hasData) {
             return UserRecipeList(data: data);
           }
-          return CustomLottieLoading(
-            onLoaded: (controller) {},
+          return Center(
+            child: CustomLottieLoading(
+              onLoaded: (controller) {},
+            ),
           );
         }
       },
@@ -842,19 +851,19 @@ class _Drawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
+            decoration: BoxDecoration(
+              color: ProjectColors.yellow,
             ),
             child: Text(
               _auth.currentUser?.displayName ?? 'User',
-              style: context.textTheme.headline6,
+              style: context.textTheme.headline1,
             ),
           ),
           ListTile(
             title: const Text('Sign Out'),
-            onTap: () {
-              _auth.signOut();
-              context.go('/login');
+            onTap: () async {
+              await _auth.signOut();
+              GoRouter.of(context).goNamed('login');
             },
           ),
         ],
