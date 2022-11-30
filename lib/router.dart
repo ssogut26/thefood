@@ -77,6 +77,13 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/onboard',
+      name: 'onboard',
+      builder: (BuildContext context, GoRouterState state) {
+        return const OnboardView();
+      },
+    ),
+    GoRoute(
       path: '/details/:id/:name/:image',
       name: 'details',
       builder: (BuildContext context, GoRouterState state) {

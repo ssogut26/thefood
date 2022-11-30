@@ -24,6 +24,7 @@ import 'package:thefood/products/views/favorites/cubit/favorite_cubit.dart';
 import 'package:thefood/products/views/favorites/favorite_view.dart';
 import 'package:thefood/products/views/home/cubit/bloc/home_cubit.dart';
 import 'package:thefood/products/views/home/home_view.dart';
+import 'package:thefood/products/views/onboard/onboard_view.dart';
 import 'package:thefood/products/views/page_loading/page_loading_view.dart';
 import 'package:thefood/products/views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/views/profile/profile_view.dart';

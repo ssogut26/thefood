@@ -64,7 +64,7 @@ class RecipeImage extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            GoRouter.of(context).pop();
+            context.goNamed('/');
           },
         ),
       ),
@@ -114,16 +114,19 @@ class AllDetailsView extends StatelessWidget {
           children: [
             if (connected && isUserRecipe == false)
               _MealDetails(
+                isUserRecipe: isUserRecipe,
                 items: state.meal,
                 favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
               )
             else if (connected == false)
               _MealDetails(
+                isUserRecipe: isUserRecipe,
                 items: state.favoriteMealDetail,
                 favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
               )
             else if (connected && isUserRecipe)
               _MealDetails(
+                isUserRecipe: isUserRecipe,
                 items: state.favoriteMealDetail,
                 favoriteCacheManager: context.read<DetailsCubit>().favoriteCacheManager,
               )
@@ -168,11 +171,13 @@ class NoConnectionView extends StatelessWidget {
 
 class _MealDetails extends StatefulWidget {
   const _MealDetails({
+    required this.isUserRecipe,
     required this.items,
     required this.favoriteCacheManager,
   });
   final Meal? items;
   final ICacheManager<Meal>? favoriteCacheManager;
+  final bool isUserRecipe;
   @override
   State<_MealDetails> createState() => _MealDetailsState();
 }
@@ -197,7 +202,6 @@ class _MealDetailsState extends State<_MealDetails> {
           itemCount: state.favoriteMealDetail?.meals?.length ?? 0,
           itemBuilder: (context, index) {
             final meals = state.favoriteMealDetail?.meals?[index];
-
             // Function one is for list from api other is from firestore
             final ingredientList = meals?.strIngredients ?? meals?.getIngredients() ?? [];
             final measureList = meals?.strMeasures ?? meals?.getMeasures() ?? [];
@@ -224,6 +228,7 @@ class _MealDetailsState extends State<_MealDetails> {
                       ],
                     ),
                     ComponentAndGuide(
+                      isUserRecipe: widget.isUserRecipe,
                       selectedIndex: selectedIndex,
                       meals: meals,
                       ingredientList: ingredientList,
@@ -267,11 +272,13 @@ class ComponentAndGuide extends StatefulWidget {
     required this.ingredientList,
     required this.measureList,
     required this.meals,
+    required this.isUserRecipe,
   });
 
   late int selectedIndex;
   List<String?> ingredientList;
   List<String?> measureList;
+  final bool isUserRecipe;
   final Meals? meals;
 
   @override
@@ -291,9 +298,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
       case 0:
         return _ingredientListBody();
       case 1:
-        return Instructions(
-          meals: widget.meals,
-        );
+        return Instructions(meals: widget.meals, isUserRecipe: widget.isUserRecipe);
       case 2:
         return Column(
           children: [
@@ -314,7 +319,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                         shrinkWrap: true,
                         itemCount: data.length,
                         itemBuilder: (context, index) {
-                          final review = data[index] as Map;
+                          final review = data[index] as Map<String, dynamic>;
                           final timestamp = review['review_time'] as Timestamp;
                           return UserReviewCard(review: review, timestamp: timestamp);
                         },
@@ -361,92 +366,103 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
                 );
               },
             ),
+            SizedBox(
+              height: context.dynamicHeight(0.02),
+            ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: ElevatedButton(
-                onPressed: () {
-                  AlertWidgets.showActionDialog(
-                      context,
-                      'Add Review',
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            RatingBar(
-                              itemSize: context.dynamicWidth(0.1),
-                              glow: false,
-                              ratingWidget: RatingWidget(
-                                full: const Icon(Icons.star, color: Colors.amber),
-                                half: const Icon(Icons.star_half, color: Colors.amber),
-                                empty: const Icon(Icons.star_border, color: Colors.amber),
-                              ),
-                              onRatingUpdate: (rating) {
-                                userRating = rating;
-                              },
-                              allowHalfRating: true,
-                            ),
-                            SizedBox(height: context.dynamicHeight(0.03)),
-                            SizedBox(
-                              height: context.dynamicHeight(0.10),
-                              width: context.dynamicWidth(0.6),
-                              child: TextFormField(
-                                style: context.textTheme.headline4,
-                                validator: (value) {
-                                  if (value?.isEmpty ?? true) {
-                                    return 'Please enter a title';
-                                  }
-                                  return null;
+              child: SizedBox(
+                height: context.dynamicHeight(0.06),
+                width: context.dynamicWidth(0.6),
+                child: ElevatedButton(
+                  onPressed: () {
+                    AlertWidgets.showActionDialog(
+                        context,
+                        'Add Review',
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              RatingBar(
+                                itemSize: context.dynamicWidth(0.1),
+                                glow: false,
+                                ratingWidget: RatingWidget(
+                                  full: const Icon(Icons.star, color: Colors.amber),
+                                  half: const Icon(Icons.star_half, color: Colors.amber),
+                                  empty:
+                                      const Icon(Icons.star_border, color: Colors.amber),
+                                ),
+                                onRatingUpdate: (rating) {
+                                  userRating = rating;
                                 },
-                                controller: _titleController,
-                                decoration: const InputDecoration(
-                                  hintText: 'Title',
-                                  border: OutlineInputBorder(),
+                                allowHalfRating: true,
+                              ),
+                              SizedBox(height: context.dynamicHeight(0.03)),
+                              SizedBox(
+                                height: context.dynamicHeight(0.10),
+                                width: context.dynamicWidth(0.6),
+                                child: TextFormField(
+                                  style: context.textTheme.headline4,
+                                  validator: (value) {
+                                    if (value?.isEmpty ?? true) {
+                                      return 'Please enter a title';
+                                    }
+                                    return null;
+                                  },
+                                  controller: _titleController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Title',
+                                    border: OutlineInputBorder(),
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: context.dynamicHeight(0.01)),
-                            SizedBox(
-                              height: context.dynamicHeight(0.15),
-                              width: context.dynamicWidth(0.6),
-                              child: TextFormField(
-                                style: context.textTheme.headline4,
-                                validator: (value) {
-                                  if (value?.isEmpty ?? true) {
-                                    return 'Please enter a review';
-                                  }
-                                  return null;
-                                },
-                                controller: _reviewController,
-                                maxLines: 5,
-                                decoration: const InputDecoration(
-                                  hintText: 'Add your comment',
-                                  border: OutlineInputBorder(),
+                              SizedBox(height: context.dynamicHeight(0.01)),
+                              SizedBox(
+                                height: context.dynamicHeight(0.15),
+                                width: context.dynamicWidth(0.6),
+                                child: TextFormField(
+                                  style: context.textTheme.headline4,
+                                  validator: (value) {
+                                    if (value?.isEmpty ?? true) {
+                                      return 'Please enter a review';
+                                    }
+                                    return null;
+                                  },
+                                  controller: _reviewController,
+                                  maxLines: 5,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Add your comment',
+                                    border: OutlineInputBorder(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _titleController.clear();
-                            _reviewController.clear();
-                          },
-                          child: const Text('Cancel'),
-                        ),
-                        _SendReviewToDb(
-                          formKey: _formKey,
-                          widget: widget,
-                          titleController: _titleController,
-                          reviewController: _reviewController,
-                          userRating: userRating,
-                          context: context,
-                        )
-                      ]);
-                },
-                child: const Text('Add Review'),
+                        [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).pop();
+                              _titleController.clear();
+                              _reviewController.clear();
+                            },
+                            child: Text('Cancel', style: context.textTheme.bodyText2),
+                          ),
+                          _SendReviewToDb(
+                            formKey: _formKey,
+                            widget: widget,
+                            titleController: _titleController,
+                            reviewController: _reviewController,
+                            userRating: userRating,
+                            context: context,
+                          )
+                        ]);
+                  },
+                  child: Text(
+                    'Add Review',
+                    style: context.textTheme.headline3,
+                  ),
+                ),
               ),
             ),
           ],
@@ -604,7 +620,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
 
 class _SendReviewToDb extends StatelessWidget {
   const _SendReviewToDb({
-    Key? key,
+    super.key,
     required GlobalKey<FormState> formKey,
     required this.widget,
     required TextEditingController titleController,
@@ -613,8 +629,7 @@ class _SendReviewToDb extends StatelessWidget {
     required this.context,
   })  : _formKey = formKey,
         _titleController = titleController,
-        _reviewController = reviewController,
-        super(key: key);
+        _reviewController = reviewController;
 
   final GlobalKey<FormState> _formKey;
   final ComponentAndGuide widget;
@@ -627,6 +642,8 @@ class _SendReviewToDb extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () async {
+        // I tried to check if the user added review and add but i didn't figure out
+        // in update deleted all the reviews and added new one
         if (_formKey.currentState?.validate() ?? false) {
           final reviewData = <Map<String, dynamic>>[
             {
@@ -660,19 +677,19 @@ class _SendReviewToDb extends StatelessWidget {
           _reviewController.clear();
         }
       },
-      child: const Text('Send'),
+      child: Text('Send', style: context.textTheme.bodyText2),
     );
   }
 }
 
 class UserReviewCard extends StatelessWidget {
   const UserReviewCard({
-    Key? key,
+    super.key,
     required this.review,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
-  final Map review;
+  final Map<String, dynamic> review;
   final Timestamp timestamp;
 
   @override
@@ -701,7 +718,10 @@ class UserReviewCard extends StatelessWidget {
                           children: [
                             Text(
                               '${review['user_name']}'.replaceRange(
-                                  2, '${review['user_name']}'.length, "*******"),
+                                2,
+                                '${review['user_name']}'.length,
+                                '*******',
+                              ),
                               style: context.textTheme.bodyText2?.copyWith(
                                 fontSize: 15,
                               ),
@@ -883,9 +903,11 @@ class Instructions extends StatelessWidget {
   const Instructions({
     super.key,
     required this.meals,
+    required this.isUserRecipe,
   });
 
   final Meals? meals;
+  final bool isUserRecipe;
 
   @override
   Widget build(BuildContext context) {
@@ -893,10 +915,11 @@ class Instructions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(meals?.strInstructions ?? ''),
+        // They are opening twice idk why
         GoToYoutube(
           meals: meals,
         ),
-        GoToSource(meals: meals),
+        GoToSource(meals: meals, isUserRecipe: isUserRecipe),
       ],
     );
   }
@@ -945,8 +968,10 @@ class GoToSource extends StatefulWidget {
   const GoToSource({
     required this.meals,
     super.key,
+    required this.isUserRecipe,
   });
   final Meals? meals;
+  final bool isUserRecipe;
 
   @override
   State<GoToSource> createState() => _GoToSourceState();
@@ -961,21 +986,83 @@ class _GoToSourceState extends State<GoToSource> {
         ),
       );
     } else {
-      await launchUrl(url, mode: LaunchMode.externalNonBrowserApplication);
+      await launchUrl(url, mode: LaunchMode.inAppWebView);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        launch(
-          Uri.parse(
-            widget.meals?.strSource ?? '',
-          ),
-        );
-      },
-      child: const Text('Source'),
+    return Row(
+      children: [
+        TextButton(
+          onPressed: () {
+            launch(
+              Uri.parse(
+                widget.meals?.strSource ?? '',
+              ),
+            );
+          },
+          child: const Text('Source'),
+        ),
+        const Spacer(),
+        if (widget.isUserRecipe)
+          FutureBuilder(
+            future: FirebaseFirestore.instance
+                .collection('recipes')
+                .where('idMeal', isEqualTo: widget.meals?.idMeal)
+                .get(),
+            builder: (context, snapshot) {
+              final data = snapshot.data?.docs;
+              return TextButton(
+                child: Text('Added by ${data?.first.data()['name']}'),
+                onPressed: () async {
+                  final user = FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(data?.first.data()['userId'] as String)
+                      .get();
+
+                  final userName = await user
+                      .then((value) => value.data()?['name'].toString().split(' ')[0]);
+                  final userPhoto = await user.then((value) => value.data()?['photoURL']);
+                  final userCountry =
+                      await user.then((value) => value.data()?['country']);
+                  final userRecipes = await user.then((value) => value.data());
+                  await AlertWidgets.showActionDialog(
+                    context,
+                    "$userName 's Profile",
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundColor: Colors.transparent,
+                          backgroundImage: AssetImage(userPhoto as String),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          '$userName is from $userCountry',
+                        ),
+                      ],
+                    ),
+                    [
+                      // i will try to add later
+                      TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'To see all recipes he/she added, click here',
+                            style: context.textTheme.headline4,
+                          )),
+                    ],
+                  );
+                },
+              );
+            },
+          )
+        else
+          const SizedBox.shrink()
+      ],
     );
   }
 }

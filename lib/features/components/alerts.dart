@@ -23,11 +23,17 @@ class AlertWidgets {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        contentPadding: ProjectPaddings.pageLarge,
         title: Text(
           title,
           style: Theme.of(context).textTheme.headline2,
         ),
-        content: Text(message),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          softWrap: true,
+        ),
         actions: [
           TextButton(
             onPressed: () {

@@ -66,6 +66,7 @@ class _HomeViewState extends State<HomeView> {
         return isLoading
             ? Center(
                 child: CustomLottieLoading(
+                  path: AssetsPath.progression,
                   onLoaded: (composition) {
                     isLoading = false;
                   },

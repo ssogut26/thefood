@@ -38,61 +38,71 @@ class _AddRecipeState extends State<AddRecipe> {
   int index = 1;
   // it have bug
   Future<void> addIngredientField() async {
-    setState(() {
-      _ingredientControllers?.add(TextEditingController());
-      _measureControllers?.add(TextEditingController());
-      widgetList.insert(
-        index,
-        Padding(
-          padding: ProjectPaddings.cardMedium,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: IngredientName(
-                  ingredientController:
-                      _ingredientControllers?[index] ?? TextEditingController(),
-                ),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                flex: 3,
-                child: TextFormField(
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'Please enter a value';
-                    }
-                    return null;
-                  },
-                  controller: _measureControllers?[index],
-                  decoration: InputDecoration(
-                    hintText: 'Measure',
-                    suffixIcon: IconButton(
-                      iconSize: 20,
-                      onPressed: () {
-                        setState(() {
-                          index--;
-                          widgetList.removeAt(index);
-                          _ingredientControllers?.removeAt(index);
-                          _measureControllers?.removeAt(index);
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.black,
-                      ),
-                    ).toVisible(index > 0),
+    if (mounted) {
+      setState(() {
+        _ingredientControllers?.add(TextEditingController());
+        _measureControllers?.add(TextEditingController());
+        widgetList.insert(
+          index,
+          Padding(
+            padding: ProjectPaddings.cardMedium,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: IngredientName(
+                    ingredientController:
+                        _ingredientControllers?[index] ?? TextEditingController(),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                  flex: 3,
+                  child: TextFormField(
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) {
+                        return 'Please enter a value';
+                      }
+                      return null;
+                    },
+                    controller: _measureControllers?[index],
+                    decoration: InputDecoration(
+                      hintText: 'Measure',
+                      hintStyle: const TextStyle(
+                        overflow: TextOverflow.visible,
+                      ),
+                      suffixIcon: IconButton(
+                        constraints: const BoxConstraints(
+                          maxWidth: 15,
+                        ),
+                        iconSize: 20,
+                        onPressed: () {
+                          if (mounted) {
+                            setState(() {
+                              index--;
+                              widgetList.removeAt(index);
+                              _ingredientControllers?.removeAt(index);
+                              _measureControllers?.removeAt(index);
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.black,
+                        ),
+                      ).toVisible(index > 0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
-    index++;
+        );
+      });
+      index++;
+    }
   }
 
   @override
@@ -103,7 +113,6 @@ class _AddRecipeState extends State<AddRecipe> {
     _sourceController = TextEditingController();
     _ingredientControllers = <TextEditingController>[];
     _measureControllers = <TextEditingController>[];
-    widgetList.add(initialIngredient());
     if (widgetList.length != 1) {
       widgetList.clear();
       _ingredientControllers?.clear();
@@ -114,6 +123,9 @@ class _AddRecipeState extends State<AddRecipe> {
       _youtubeController.clear();
       _sourceController.clear();
       _imageController.clear();
+      widgetList.add(initialIngredient());
+    } else if (widgetList.length == 1) {
+      return;
     }
 
     super.initState();
@@ -128,6 +140,7 @@ class _AddRecipeState extends State<AddRecipe> {
         body: BlocBuilder<AddRecipeCubit, AddRecipeState>(
           builder: (context, state) {
             return WillPopScope(
+              key: UniqueKey(),
               onWillPop: () async {
                 var isPop = false;
                 await AlertWidgets.showActionDialog(
@@ -137,15 +150,23 @@ class _AddRecipeState extends State<AddRecipe> {
                   [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context, isPop = false);
+                        Navigator.of(
+                          context,
+                        ).pop(isPop = false);
                       },
-                      child: const Text('Cancel'),
+                      child: Text(
+                        ProjectTexts.cancel,
+                        style: context.textTheme.bodyText2,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context, isPop = true);
                       },
-                      child: const Text('Yes'),
+                      child: Text(
+                        ProjectTexts.yes,
+                        style: context.textTheme.bodyText2,
+                      ),
                     ),
                   ],
                 );
@@ -184,7 +205,10 @@ class _AddRecipeState extends State<AddRecipe> {
                           padding: ProjectPaddings.cardMedium,
                           child: ElevatedButton(
                             onPressed: addIngredientField,
-                            child: const Icon(Icons.add),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                         //Instructions

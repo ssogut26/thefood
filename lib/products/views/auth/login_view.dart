@@ -46,90 +46,109 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Padding(
-        padding: context.horizontalPaddingMedium,
-        child: BlocListener<LoginCubit, LoginState>(
-          listener: (context, state) {
-            if (state.status.isSubmissionFailure) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text(state.errorMessage ?? 'Authentication Failure'),
-                  ),
-                );
-            }
-          },
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                AnimatedContainer(
-                  duration: context.durationLow,
-                  height: context.isKeyBoardOpen ? 0 : context.dynamicHeight(0.10),
-                  width: context.dynamicWidth(0.3),
-                ),
-                Text(
-                  ProjectTexts.appName,
-                  style: context.textTheme.headline1,
-                ),
-                SizedBox(
-                  height: context.dynamicHeight(0.08),
-                ),
-                BlocBuilder<LoginCubit, LoginState>(
-                  builder: (context, state) {
-                    context.read<LoginCubit>().emailChanged(_emailController);
-                    return EmailField(
-                      controller: _emailController,
-                      onChanged: (_) {
-                        context.read<LoginCubit>().emailChanged(_emailController);
-                      },
-                    );
-                  },
-                ),
-                BlocBuilder<LoginCubit, LoginState>(
-                  buildWhen: (previous, current) => previous.password != current.password,
-                  builder: (context, state) {
-                    return PasswordField(
-                      onChanged: (password) =>
-                          context.read<LoginCubit>().passwordChanged(password),
-                      passwordController: _passwordController,
-                    );
-                  },
-                ),
-                CheckBoxAndLoginButton(
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  isChecked: isChecked,
-                ),
-                SizedBox(
-                  height: context.dynamicHeight(0.02),
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.pushNamed('forgot');
-                  },
-                  child: const Text(ProjectTexts.forgotPassword),
-                ),
-                SizedBox(
-                  height: context.dynamicHeight(0.16),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(ProjectTexts.dontHaveAccount),
-                    TextButton(
-                      onPressed: () {
-                        context.goNamed('singup');
-                      },
-                      child: const Text(ProjectTexts.register),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            opacity: 0.15,
+            image: AssetImage('assets/images/background.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Padding(
+          padding: context.horizontalPaddingMedium,
+          child: BlocListener<LoginCubit, LoginState>(
+            listener: (context, state) {
+              if (state.status.isSubmissionFailure) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage ?? 'Authentication Failure'),
                     ),
-                  ],
-                ),
-                SizedBox(
-                  height: context.dynamicHeight(0.02),
-                ),
-              ],
+                  );
+              }
+            },
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: context.durationLow,
+                    height: context.isKeyBoardOpen
+                        ? context.dynamicHeight(0.1)
+                        : context.dynamicHeight(0.2),
+                    width: context.dynamicWidth(0.3),
+                  ),
+                  Text(
+                    ProjectTexts.appName,
+                    style: context.textTheme.headline1,
+                  ),
+                  SizedBox(
+                    height: context.dynamicHeight(0.08),
+                  ),
+                  BlocBuilder<LoginCubit, LoginState>(
+                    builder: (context, state) {
+                      context.read<LoginCubit>().emailChanged(_emailController);
+                      return EmailField(
+                        controller: _emailController,
+                        onChanged: (_) {
+                          context.read<LoginCubit>().emailChanged(_emailController);
+                        },
+                      );
+                    },
+                  ),
+                  BlocBuilder<LoginCubit, LoginState>(
+                    buildWhen: (previous, current) =>
+                        previous.password != current.password,
+                    builder: (context, state) {
+                      return PasswordField(
+                        onChanged: (password) =>
+                            context.read<LoginCubit>().passwordChanged(password),
+                        passwordController: _passwordController,
+                      );
+                    },
+                  ),
+                  CheckBoxAndLoginButton(
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    isChecked: isChecked,
+                  ),
+                  SizedBox(
+                    height: context.dynamicHeight(0.02),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.pushNamed('forgot');
+                    },
+                    child: Text(
+                      ProjectTexts.forgotPassword,
+                      style: context.textTheme.headline3,
+                    ),
+                  ),
+                  SizedBox(
+                    height: context.dynamicHeight(0.16),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        ProjectTexts.dontHaveAccount,
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          context.goNamed('singup');
+                        },
+                        child: Text(
+                          ProjectTexts.register,
+                          style: context.textTheme.headline3,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: context.dynamicHeight(0.02),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

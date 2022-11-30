@@ -38,6 +38,7 @@ class _FavoriteViewState extends State<FavoriteView> {
 
   @override
   Widget build(BuildContext context) {
+    // In second account old favorites not deleted shows all time.
     return isLoading
         ? Center(
             child: CustomLottieLoading(

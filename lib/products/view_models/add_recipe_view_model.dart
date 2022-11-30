@@ -150,41 +150,47 @@ class _SendButtonState extends State<SendButton> {
   Widget build(BuildContext context) {
     return BlocBuilder<AddRecipeCubit, AddRecipeState>(
       builder: (context, state) {
-        return ElevatedButton(
-          onPressed: () async {
-            if (_formKey.currentState?.validate() ?? false) {
-              setState(() {
-                context.read<AddRecipeCubit>().addValue(
-                      _ingredientControllers
-                          ?.map((e) => e?.text ?? '')
-                          .toList()
-                          .cast<String>(),
-                      _measureControllers
-                          ?.map((e) => e?.text ?? '')
-                          .toList()
-                          .cast<String>(),
-                    );
-              });
-              final recipe = Meals().copyWith(
-                idMeal: id.toString(),
-                strMeal: _nameController.text,
-                strArea: state.recipeArea,
-                strCategory: state.recipeCategory,
-                strIngredients: state.ingredientList?.cast<String?>(),
-                strMeasures: state.measureList?.cast<String?>(),
-                strInstructions: _instructionController.text,
-                strMealThumb: _imageController.text,
-                strSource: _sourceController.text,
-                strYoutube: _youtubeController.text,
-              );
-              final user = UserModels(
-                userId: FirebaseAuth.instance.currentUser?.uid,
-                name: FirebaseAuth.instance.currentUser?.displayName,
-              );
-              checkName(recipe.toJson(), user.toJson(), recipe.toJson());
-            }
-          },
-          child: const Text(ProjectTexts.send),
+        return SizedBox(
+          width: context.width * 0.6,
+          height: context.height * 0.06,
+          child: ElevatedButton(
+            onPressed: () async {
+              if (_formKey.currentState?.validate() ?? false) {
+                if (mounted) {
+                  setState(() {
+                    context.read<AddRecipeCubit>().addValue(
+                          _ingredientControllers
+                              ?.map((e) => e?.text ?? '')
+                              .toList()
+                              .cast<String>(),
+                          _measureControllers
+                              ?.map((e) => e?.text ?? '')
+                              .toList()
+                              .cast<String>(),
+                        );
+                  });
+                  final recipe = Meals().copyWith(
+                    idMeal: id.toString(),
+                    strMeal: _nameController.text,
+                    strArea: state.recipeArea,
+                    strCategory: state.recipeCategory,
+                    strIngredients: state.ingredientList?.cast<String?>(),
+                    strMeasures: state.measureList?.cast<String?>(),
+                    strInstructions: _instructionController.text,
+                    strMealThumb: _imageController.text,
+                    strSource: _sourceController.text,
+                    strYoutube: _youtubeController.text,
+                  );
+                  final user = UserModels(
+                    userId: FirebaseAuth.instance.currentUser?.uid,
+                    name: FirebaseAuth.instance.currentUser?.displayName,
+                  );
+                  checkName(recipe.toJson(), user.toJson(), recipe.toJson());
+                }
+              }
+            },
+            child: Text(ProjectTexts.send, style: context.textTheme.headline3),
+          ),
         );
       },
     );
@@ -301,7 +307,7 @@ class InstructionInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(12),
+      padding: ProjectPaddings.cardMedium,
       height: context.dynamicHeight(0.15),
       child: TextFormField(
         decoration: const InputDecoration(
@@ -338,7 +344,7 @@ class _MeasureFieldState extends State<MeasureField> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      flex: 3,
+      flex: 4,
       child: TextFormField(
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -527,6 +533,12 @@ class _AreaDropdownState extends State<AreaDropdown> {
       child: BlocBuilder<AddRecipeCubit, AddRecipeState>(
         builder: (context, state) {
           return DropdownButtonFormField(
+            validator: (value) {
+              if (value == null) {
+                return 'Please select an area';
+              }
+              return null;
+            },
             hint: const Text(ProjectTexts.selectArea),
             items: [
               for (var index = 0; index < countryFlagMap.length; index++)
@@ -592,6 +604,12 @@ class _CategoryDropDownState extends State<CategoryDropDown> {
               if (snapshot.hasData && snapshot.data.isNotNullOrEmpty) {
                 final data = snapshot.data;
                 return DropdownButtonFormField(
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select a category';
+                    }
+                    return null;
+                  },
                   hint: const Text(ProjectTexts.selectCategory),
                   items: [
                     for (var index = 0; index < data!.length; index++)

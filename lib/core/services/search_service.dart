@@ -23,7 +23,11 @@ class SearchService extends ISearchService {
         return Ingredients.fromJson(ingredients)
             .meals
             ?.toList()
-            .where((element) => element.strIngredient?.contains(key ?? '') ?? false)
+            .where(
+              (element) =>
+                  (element.strIngredient?.contains(key ?? '') ?? false) &&
+                  (element.strIngredient?.startsWith(key ?? '') ?? false),
+            )
             .toList();
       }
     }

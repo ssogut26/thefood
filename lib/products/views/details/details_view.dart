@@ -56,9 +56,8 @@ class _DetailsViewState extends State<DetailsView> {
 
   @override
   void initState() {
-    isLoading = changeLoading();
-
     isUserRecipe = checkUserRecipe();
+    isLoading = changeLoading();
     super.initState();
   }
 

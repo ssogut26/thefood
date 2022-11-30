@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/assets_path.dart';
-import 'package:thefood/core/constants/colors.dart';
 import 'package:thefood/core/constants/flags.dart';
 import 'package:thefood/core/constants/hive_constants.dart';
 import 'package:thefood/core/constants/texts.dart';
@@ -282,12 +281,6 @@ class LoginButton extends StatelessWidget {
                   ),
                 )
               : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ProjectColors.yellow,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: context.normalBorderRadius,
-                    ),
-                  ),
                   onPressed: () async {
                     if (state.status.isValid) {
                       await context.read<LoginCubit>().logInWithCredentials();
@@ -306,7 +299,7 @@ class LoginButton extends StatelessWidget {
                   },
                   child: Text(
                     ProjectTexts.login,
-                    style: context.textTheme.bodyText2,
+                    style: context.textTheme.headline3,
                   ),
                 );
         },
@@ -396,12 +389,6 @@ class RegisterButton extends StatelessWidget {
                     ),
                   )
                 : ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ProjectColors.yellow,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: context.normalBorderRadius,
-                      ),
-                    ),
                     onPressed: () async {
                       if (state.status.isValid) {
                         await context.read<SignUpCubit>().signUpFormSubmitted();
@@ -434,7 +421,7 @@ class RegisterButton extends StatelessWidget {
                     },
                     child: Text(
                       ProjectTexts.register,
-                      style: context.textTheme.bodyText2,
+                      style: context.textTheme.headline3,
                     ),
                   );
           },

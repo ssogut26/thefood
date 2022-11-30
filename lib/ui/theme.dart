@@ -15,10 +15,10 @@ class ProjectTheme {
       backgroundColor: ProjectColors.mainWhite,
       systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
-    cardTheme: const CardTheme(
+    cardTheme: CardTheme(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: BorderRadius.all(Radius.circular(cardAndTextButtonBorderValue)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -27,9 +27,64 @@ class ProjectTheme {
           color: ProjectColors.black,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(cardAndTextButtonBorderValue),
         ),
       ),
     ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        textStyle: ProjectTextStyles().textTheme.headline3,
+        backgroundColor: ProjectColors.yellow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(elevatedButtonBorderValue),
+        ),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderValue),
+        borderSide: const BorderSide(
+          width: 1.5,
+          color: ProjectColors.black,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderValue),
+        borderSide: const BorderSide(
+          width: 2,
+          color: ProjectColors.black,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderValue),
+        borderSide: const BorderSide(
+          width: 1.5,
+          color: ProjectColors.black,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderValue),
+        borderSide: const BorderSide(
+          width: 1.5,
+          color: Colors.red,
+        ),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderValue),
+        borderSide: const BorderSide(
+          width: 1.5,
+          color: Colors.red,
+        ),
+      ),
+      labelStyle: ProjectTextStyles().textTheme.bodyText2,
+      hintStyle: ProjectTextStyles().textTheme.bodyText1,
+      errorStyle: ProjectTextStyles().textTheme.bodyText1,
+    ),
   );
 }
+
+double get cardAndTextButtonBorderValue => 10;
+
+double get elevatedButtonBorderValue => 15;
+
+double get inputBorderValue => 5;

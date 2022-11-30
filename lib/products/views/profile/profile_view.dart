@@ -13,6 +13,7 @@ import 'package:thefood/core/constants/paddings.dart';
 import 'package:thefood/core/constants/texts.dart';
 import 'package:thefood/features/components/alerts.dart';
 import 'package:thefood/features/components/loading.dart';
+import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products//views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/models/user.dart';
 
@@ -76,41 +77,40 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             body: BlocProvider(
               create: (context) => ProfileCubit(),
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: ProjectPaddings.pageLarge,
-                child: SizedBox(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        child: Row(
-                          children: [
-                            const UserImage(),
-                            SizedBox(
-                              width: context.dynamicWidth(0.04),
-                            ),
-                            const UserInfo(),
-                            UpdateUserProfile(
-                              nameController: _nameController,
-                              emailController: _emailController,
-                              verifyEmailController: _verifyEmailController,
-                              verifyPasswordController: _verifyPasswordController,
-                              newPasswordController: _newPasswordController,
-                            ),
-                          ],
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      child: Row(
+                        children: [
+                          const UserImage(),
+                          SizedBox(
+                            width: context.dynamicWidth(0.04),
+                          ),
+                          const UserInfo(),
+                          const Spacer(),
+                          UpdateUserProfile(
+                            nameController: _nameController,
+                            emailController: _emailController,
+                            verifyEmailController: _verifyEmailController,
+                            verifyPasswordController: _verifyPasswordController,
+                            newPasswordController: _newPasswordController,
+                          ),
+                        ],
                       ),
-                      SizedBox(
-                        height: context.dynamicHeight(0.03),
-                      ),
-                      const Text(
-                        ProjectTexts.myRecipe,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      FutureUserRecipe(getUserRecipe: getUserRecipe),
-                      // I have planned to add follow and followed list
-                    ],
-                  ),
+                    ),
+                    SizedBox(
+                      height: context.dynamicHeight(0.03),
+                    ),
+                    const Text(
+                      ProjectTexts.myRecipe,
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    FutureUserRecipe(getUserRecipe: getUserRecipe),
+                    // I have planned to add follow and followed list
+                  ],
                 ),
               ),
             ),

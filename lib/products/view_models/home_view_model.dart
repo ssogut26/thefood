@@ -277,7 +277,8 @@ class _CategoryMealsState extends State<CategoryMeals> {
                           });
                         },
                       ),
-                    ))
+                    ),
+                  )
                 : SizedBox(
                     height: context.dynamicHeight(0.27),
                     child: Stack(
@@ -616,7 +617,6 @@ class RandomMealImage extends StatelessWidget {
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width * 0.40,
       child: CachedNetworkImage(
-        filterQuality: FilterQuality.low,
         imageUrl: data?.strMealThumb ?? '',
         fit: BoxFit.fill,
       ),
@@ -825,7 +825,7 @@ class UserRecipeCard extends StatelessWidget {
               ),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return snapshot.data as Widget;
+                  return snapshot.data ?? const SizedBox();
                 }
                 return const SizedBox();
               },
@@ -851,7 +851,7 @@ class _Drawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: ProjectColors.yellow,
             ),
             child: Text(

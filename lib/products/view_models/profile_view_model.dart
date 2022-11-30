@@ -89,9 +89,9 @@ class UserImage extends StatelessWidget {
               if (snapshot.hasData) {
                 return Image.asset(
                   snapshot.data ?? '',
-                  width: context.dynamicWidth(0.22),
+                  width: context.dynamicWidth(0.16),
                   height: context.dynamicHeight(0.1),
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 );
               }
               if (snapshot.hasError) {
@@ -103,9 +103,7 @@ class UserImage extends StatelessWidget {
                   height: context.dynamicHeight(0.04),
                   child: CustomLottieLoading(
                     path: AssetsPath.progression,
-                    onLoaded: (composition) {
-                      context.read<ProfileCubit>().getUserImage();
-                    },
+                    onLoaded: (composition) {},
                   ),
                 );
               }
@@ -170,7 +168,7 @@ class NoRecipeCard extends StatelessWidget {
   }
 }
 
-class UserRecipesCard extends StatelessWidget {
+class UserRecipesCard extends StatefulWidget {
   const UserRecipesCard({
     super.key,
     required this.data,
@@ -179,34 +177,66 @@ class UserRecipesCard extends StatelessWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>?>>? data;
 
   @override
+  State<UserRecipesCard> createState() => _UserRecipesCardState();
+}
+
+class _UserRecipesCardState extends State<UserRecipesCard> {
+  List<double> ratings = [];
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: context.dynamicHeight(0.25),
-      width: context.dynamicWidth(1),
+      width: context.dynamicWidth(0.9),
       child: ListView.builder(
-        itemCount: data?.length,
-        shrinkWrap: true,
+        itemCount: widget.data?.length,
         scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
         itemBuilder: (context, index) {
+          final mealName = '${widget.data?[index]['strMeal']}\n';
+          final mealThumb = '${widget.data?[index]['strMealThumb']}';
+          final mealId = '${widget.data?[index]['idMeal']}';
+          final mealCategory = '${widget.data?[index]['strCategory']}';
           return Card(
-            child: Column(
+            elevation: 2,
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              alignment: Alignment.topCenter,
               children: [
                 SizedBox(
-                  height: context.dynamicHeight(0.12),
+                  height: context.dynamicHeight(0.16),
                   width: context.dynamicWidth(0.4),
                   child: Image.network(
                     fit: BoxFit.cover,
-                    "${data?[index]['strMealThumb']}",
+                    mealThumb,
                   ),
                 ),
-                Padding(
-                  padding: ProjectPaddings.textHorizontalMedium,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('${data?[index]['strMeal']}\n'),
-                      Text('${data?[index]['strCategory']}'),
-                    ],
+                Align(
+                  alignment: const Alignment(0, 0.7),
+                  child: Padding(
+                    padding: ProjectPaddings.textVerticalMedium,
+                    child: Text(
+                      mealName,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                ),
+                Align(alignment: const Alignment(0, 0.8), child: Text(mealCategory)),
+                Align(
+                  alignment: const Alignment(0, 0.98),
+                  child: FutureBuilder(
+                    future: ProjectWidgets.getRatings(
+                      index,
+                      ratings,
+                      context,
+                      mealId,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data ?? const SizedBox();
+                      }
+                      return const SizedBox();
+                    },
                   ),
                 ),
               ],
@@ -268,139 +298,122 @@ class _UpdateUserProfileState extends State<UpdateUserProfile> {
       create: (_) => ProfileCubit(),
       child: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
+          final currentUser = FirebaseAuth.instance.currentUser;
           return IconButton(
             onPressed: () {
-              showDialog<AlertDialog>(
-                context: context,
-                builder: (context) => Center(
-                  child: AlertDialog(
-                    scrollable: true,
-                    title: Text(
-                      'Update Profile',
-                      style: context.textTheme.headline1,
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: ProjectPaddings.cardLarge,
-                          child: CircleAvatar(
-                            backgroundColor: ProjectColors.white,
-                            radius: 35,
-                            backgroundImage: AssetImage(
-                              FirebaseAuth.instance.currentUser?.photoURL ?? '',
-                            ),
-                          ),
+              AlertWidgets.showActionDialog(
+                context,
+                'Update Profile',
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: ProjectPaddings.cardLarge,
+                      child: CircleAvatar(
+                        backgroundColor: ProjectColors.white,
+                        radius: 35,
+                        backgroundImage: AssetImage(
+                          currentUser?.photoURL ?? '',
                         ),
-                        UpdateName(nameController: widget._nameController),
-                        UpdateEmail(emailController: widget._emailController),
-                      ],
+                      ),
                     ),
-                    actions: [
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: () async {
-                              await showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text(
-                                      "Verify it's you",
-                                      style: context.textTheme.headline1,
-                                    ),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Padding(
-                                          padding: ProjectPaddings.cardMedium,
-                                          child: TextFormField(
-                                            controller: widget._verifyEmailController,
-                                            decoration: const InputDecoration(
-                                              border: OutlineInputBorder(),
-                                              labelText: 'Email',
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: ProjectPaddings.cardMedium,
-                                          child: TextFormField(
-                                            controller: widget._verifyPasswordController,
-                                            decoration: const InputDecoration(
-                                              border: OutlineInputBorder(),
-                                              labelText: 'Password',
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: ProjectPaddings.cardMedium,
-                                          child: TextFormField(
-                                            controller: widget._newPasswordController,
-                                            decoration: const InputDecoration(
-                                              border: OutlineInputBorder(),
-                                              labelText: 'New Password',
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text(
-                                          'Cancel',
-                                          style: context.textTheme.headline4,
-                                        ),
-                                      ),
-                                      UpdatePassword(
-                                        verifyEmailController:
-                                            widget._verifyEmailController,
-                                        verifyPasswordController:
-                                            widget._verifyPasswordController,
-                                        newPasswordController:
-                                            widget._newPasswordController,
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(
-                              'Change\npassword',
-                              style: context.textTheme.headline4,
-                            ),
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              'Cancel',
-                              style: context.textTheme.headline4,
-                            ),
-                          ),
-                          BlocProvider(
-                            create: (context) => ProfileCubit(),
-                            child: BlocBuilder<ProfileCubit, ProfileState>(
-                              builder: (context, state) {
-                                return UpdateProfile(
-                                  verifyPasswordController:
-                                      widget._verifyPasswordController,
-                                  verifyEmailController: widget._verifyEmailController,
-                                  nameController: widget._nameController,
-                                  emailController: widget._emailController,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
+                    UpdateName(nameController: widget._nameController),
+                    UpdateEmail(emailController: widget._emailController),
+                  ],
                 ),
+                [
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          AlertWidgets.showActionDialog(
+                            context,
+                            "Verify it's you",
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: ProjectPaddings.cardMedium,
+                                  child: TextFormField(
+                                    controller: widget._verifyEmailController,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: ProjectTexts.email,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: ProjectPaddings.cardMedium,
+                                  child: TextFormField(
+                                    controller: widget._verifyPasswordController,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: ProjectTexts.password,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: ProjectPaddings.cardMedium,
+                                  child: TextFormField(
+                                    controller: widget._newPasswordController,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: ProjectTexts.newPassword,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true).pop();
+                                },
+                                child: Text(
+                                  ProjectTexts.cancel,
+                                  style: context.textTheme.headline4,
+                                ),
+                              ),
+                              UpdatePassword(
+                                verifyEmailController: widget._verifyEmailController,
+                                verifyPasswordController:
+                                    widget._verifyPasswordController,
+                                newPasswordController: widget._newPasswordController,
+                              ),
+                            ],
+                          );
+                        },
+                        child: Text(
+                          ProjectTexts.changePassword,
+                          style: context.textTheme.headline4,
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        },
+                        child: Text(
+                          ProjectTexts.cancel,
+                          style: context.textTheme.headline4,
+                        ),
+                      ),
+                      BlocProvider(
+                        create: (context) => ProfileCubit(),
+                        child: BlocBuilder<ProfileCubit, ProfileState>(
+                          builder: (context, state) {
+                            return UpdateProfile(
+                              verifyPasswordController: widget._verifyPasswordController,
+                              verifyEmailController: widget._verifyEmailController,
+                              nameController: widget._nameController,
+                              emailController: widget._emailController,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                ],
               );
             },
             icon: const Icon(Icons.edit),
@@ -598,10 +611,10 @@ class UpdateProfile extends StatelessWidget {
                 [
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context, rootNavigator: true).pop();
                     },
                     child: Text(
-                      'Cancel',
+                      ProjectTexts.cancel,
                       style: context.textTheme.headline4,
                     ),
                   ),
@@ -622,11 +635,13 @@ class UpdateProfile extends StatelessWidget {
                         );
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'wrong-password') {
-                          print(
+                          AlertWidgets.showSnackBar(
+                            context,
                             'Wrong password provided for that user.',
                           );
                         } else if (e.code == 'user-not-found') {
-                          print(
+                          AlertWidgets.showSnackBar(
+                            context,
                             'No user found for that email.',
                           );
                         }
@@ -638,86 +653,6 @@ class UpdateProfile extends StatelessWidget {
                     ),
                   ),
                 ],
-              );
-              await showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(
-                      "Verify it's you",
-                      style: context.textTheme.headline1,
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: ProjectPaddings.cardMedium,
-                          child: TextFormField(
-                            controller: _verifyEmailController,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Email',
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: ProjectPaddings.cardMedium,
-                          child: TextFormField(
-                            controller: _verifyPasswordController,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Password',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          'Cancel',
-                          style: context.textTheme.headline4,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          try {
-                            await FirebaseAuth.instance.currentUser
-                                ?.reauthenticateWithCredential(
-                              EmailAuthProvider.credential(
-                                email: currentUser?.email ?? '',
-                                password: _verifyPasswordController.text,
-                              ),
-                            );
-
-                            await AlertWidgets.showMessageDialog(
-                              context,
-                              'Success',
-                              'You have successfully updated your profile',
-                            );
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'wrong-password') {
-                              print(
-                                'Wrong password provided for that user.',
-                              );
-                            } else if (e.code == 'user-not-found') {
-                              print(
-                                'No user found for that email.',
-                              );
-                            }
-                          }
-                        },
-                        child: Text(
-                          'Verify',
-                          style: context.textTheme.headline4,
-                        ),
-                      ),
-                    ],
-                  );
-                },
               );
             } else {
               try {
@@ -731,7 +666,6 @@ class UpdateProfile extends StatelessWidget {
                     photoURL: currentUser?.photoURL,
                     userId: currentUser?.uid,
                   );
-
                   await ref.update(userData.toJson());
                   await AlertWidgets.showMessageDialog(
                     context,

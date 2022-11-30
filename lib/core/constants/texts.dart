@@ -9,11 +9,15 @@ class ProjectTexts {
   static const searchText = 'Find recipe';
   static const questionText = 'Ready To Cook?';
   static const helloText = 'Hello';
+  static const yes = 'Yes';
   static const recipiesFor = 'Here is the recipies for';
   static const appName = 'theFood';
   static const email = 'Email';
   static const send = 'Send';
+  static const cancel = 'Cancel';
   static const password = 'Password';
+  static const changePassword = 'Change\npassword';
+  static const newPassword = 'New Password';
   static const login = 'Login';
   static const register = 'Register';
   static const forgotPassword = 'Forgot Password?';

@@ -9,6 +9,7 @@ class AssetsPath {
   static const String level = 'assets/icons/ic_level.svg';
   static const String noConnectionImage = 'assets/images/no_connection.png';
   static const String splash = 'assets/animations/loading_anim.json';
+  static const String background = 'assets/images/background.jpg';
   static const String defaultUserImage = 'assets/images/default_user_image.png';
   static const String progression = 'assets/animations/circular_progression.json';
 }
