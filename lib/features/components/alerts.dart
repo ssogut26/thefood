@@ -30,9 +30,9 @@ class AlertWidgets {
         ),
         content: Text(
           message,
-          textAlign: TextAlign.center,
+          textAlign: TextAlign.start,
+          maxLines: 4,
           overflow: TextOverflow.ellipsis,
-          softWrap: true,
         ),
         actions: [
           TextButton(
@@ -54,16 +54,19 @@ class AlertWidgets {
   ) {
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        contentPadding: ProjectPaddings.pageLarge,
-        scrollable: true,
-        insetPadding: const EdgeInsets.all(16),
-        title: Text(
-          title,
-          style: Theme.of(context).textTheme.headline1,
+      builder: (context) => SizedBox(
+        width: MediaQuery.of(context).size.width * 0.5,
+        child: AlertDialog(
+          contentPadding: ProjectPaddings.pageLarge,
+          scrollable: true,
+          insetPadding: const EdgeInsets.all(16),
+          title: Text(
+            title,
+            style: Theme.of(context).textTheme.headline1,
+          ),
+          content: content,
+          actions: actions,
         ),
-        content: content,
-        actions: actions,
       ),
     );
   }

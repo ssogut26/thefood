@@ -17,8 +17,8 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   void addValue(List<String?>? ingredientList, List<String?>? measureList) {
     emit(
       state.copyWith(
-        ingredientList: ingredientList ?? [],
-        measureList: measureList ?? [],
+        ingredientList: ingredientList,
+        measureList: measureList,
       ),
     );
   }

@@ -210,6 +210,19 @@ class _UserRecipesCardState extends State<UserRecipesCard> {
                     mealThumb,
                   ),
                 ),
+                Positioned(
+                    left: context.dynamicWidth(0.30),
+                    child: IconButton(
+                      onPressed: () {
+                        context.pushNamed(
+                          'add',
+                          params: {
+                            'id': mealId,
+                          },
+                        );
+                      },
+                      icon: Icon(Icons.edit, color: ProjectColors.black, size: 25),
+                    )),
                 Align(
                   alignment: const Alignment(0, 0.7),
                   child: Padding(
@@ -529,11 +542,13 @@ class UpdatePassword extends StatelessWidget {
           Navigator.of(context).pop();
         } on FirebaseAuthException catch (e) {
           if (e.code == 'wrong-password') {
-            print(
+            AlertWidgets.showSnackBar(
+              context,
               'Wrong password provided for that user.',
             );
           } else if (e.code == 'user-not-found') {
-            print(
+            AlertWidgets.showSnackBar(
+              context,
               'No user found for that email.',
             );
           }
@@ -577,6 +592,13 @@ class UpdateProfile extends StatelessWidget {
             if (_nameController.text.isEmpty) {
               _nameController.text = currentUser?.displayName ?? '';
             }
+            final country = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(
+                  currentUser?.uid,
+                )
+                .get()
+                .then((value) => value.data()?['country']);
 
             final checkEmail = _emailController.text == currentUser?.email;
             if (checkEmail == false) {
@@ -664,6 +686,7 @@ class UpdateProfile extends StatelessWidget {
                     name: _nameController.text,
                     email: _emailController.text,
                     photoURL: currentUser?.photoURL,
+                    country: country as String,
                     userId: currentUser?.uid,
                   );
                   await ref.update(userData.toJson());
@@ -680,6 +703,7 @@ class UpdateProfile extends StatelessWidget {
                   final userData = UserModels(
                     photoURL: currentUser?.photoURL,
                     name: _nameController.text,
+                    country: country as String,
                     email: _emailController.text,
                     userId: currentUser?.uid,
                   );

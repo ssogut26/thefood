@@ -10,7 +10,7 @@ int itemLength() {
   return 4;
 }
 
-List<double> ratings = <double>[];
+List<double> ratings = [];
 Future<Widget> getRatings(int index, BuildContext context, String mealId) async {
   ratings = <double>[];
   final ref = FirebaseFirestore.instance.collection('reviews').doc(mealId).get();
@@ -825,7 +825,7 @@ class UserRecipeCard extends StatelessWidget {
               ),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return snapshot.data ?? const SizedBox();
+                  return snapshot.data as Widget;
                 }
                 return const SizedBox();
               },
@@ -912,6 +912,7 @@ class _SearchBarState extends State<_SearchBar> {
       builder: (context, state) {
         return Padding(
           padding: ProjectPaddings.cardMedium,
+          // It can't show as starts with
           child: RawAutocomplete<Meals>(
             textEditingController: _controller,
             focusNode: FocusNode(),
@@ -927,28 +928,35 @@ class _SearchBarState extends State<_SearchBar> {
               _controller.clear();
             },
             optionsViewBuilder: (context, onSelected, options) {
-              return Material(
-                elevation: 4,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: ProjectPaddings.textHorizontalMedium,
-                  itemCount: options.length,
-                  itemBuilder: (context, index) {
-                    final meals = options.elementAt(index);
-                    return InkWell(
-                      onTap: () async {
-                        onSelected(meals);
-                      },
-                      child: ListTile(
-                        title: Text(meals.strMeal ?? ''),
-                        leading: CachedNetworkImage(
-                          imageUrl: meals.strMealThumb ?? '',
-                          height: context.dynamicHeight(0.08),
-                          width: context.dynamicWidth(0.08),
-                        ),
+              return Padding(
+                padding: ProjectPaddings.cardMedium,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    child: SizedBox(
+                      width: context.dynamicWidth(0.87),
+                      height: context.dynamicHeight(0.3),
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(),
+                        padding: ProjectPaddings.textHorizontalMedium,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final meals = options.elementAt(index);
+                          return ListTile(
+                            onTap: () async {
+                              onSelected(meals);
+                            },
+                            title: Text(meals.strMeal ?? ''),
+                            leading: CachedNetworkImage(
+                              imageUrl: meals.strMealThumb ?? '',
+                              height: context.dynamicHeight(0.08),
+                              width: context.dynamicWidth(0.08),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               );
             },

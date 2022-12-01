@@ -132,10 +132,16 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/add',
+      path: '/add/:id',
       name: 'add',
       builder: (BuildContext context, GoRouterState state) {
-        return const AddRecipe();
+        final id = int.parse(state.params['id'] ?? '');
+        return BlocProvider(
+          create: (context) => AddRecipeCubit(),
+          child: AddRecipe(
+            id: id,
+          ),
+        );
       },
     ),
     GoRoute(
@@ -149,4 +155,19 @@ final GoRouter _router = GoRouter(
       },
     ),
   ],
+  errorPageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    child: Scaffold(
+      body: Center(
+        child: TextButton(
+          onPressed: () {
+            _router.goNamed('/');
+          },
+          child: const Text(
+            ProjectTexts.errorPage,
+          ),
+        ),
+      ),
+    ),
+  ),
 );

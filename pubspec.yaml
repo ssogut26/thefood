@@ -56,6 +56,9 @@ dependencies:
   hive_flutter: ^1.1.0
   path_provider: ^2.0.11
   provider: ^6.0.4
+  riverpod: ^2.1.1
+  flutter_riverpod: ^2.1.1
+  flutter_native_splash: ^2.2.16
   # google_mobile_ads: ^2.3.0
 
 
@@ -67,6 +70,31 @@ dev_dependencies:
   json_serializable: ^6.5.4
   hive_generator: ^2.0.0
   json_annotation: ^4.7.0
+  flutter_launcher_icons: "^0.11.0"
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/app_logo.jpg
+  color_dark: "#121212"
+  image_dark: assets/images/app_logo.jpg
+  branding_dark: assets/images/app_logo.jpg
+
+  android_12:
+    image: assets/images/app_logo.jpg
+    icon_background_color: "#ffffff"
+    image_dark: assets/images/app_logo.jpg
+    icon_background_color_dark: "#121212"
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_logo.jpg"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/app_logo.jpg"
+    background_color: "#000000"
+    theme_color: "#000000"
 
 
 flutter:

@@ -40,7 +40,7 @@ class SearchService extends ISearchService {
       final response =
           await _manager.get<Map<String, dynamic>>(EndPoints.searchByName + key);
       final response2 =
-          FirebaseFirestore.instance.collection('recipes').orderBy('strMeal').get();
+          FirebaseFirestore.instance.collection('recipes').where('strMeal').get();
       final result = await response2
           .then((value) => value.docs.map((e) => Meals.fromJson(e.data())).toList());
       if (response.statusCode == 200) {

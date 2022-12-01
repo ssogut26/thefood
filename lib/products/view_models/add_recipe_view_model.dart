@@ -11,6 +11,7 @@ late List<TextEditingController?>? _measureControllers;
 final _formKey = GlobalKey<FormState>();
 
 int index = 1;
+int id = 0;
 
 Widget initialIngredient() {
   const initialIndex = 0;
@@ -102,6 +103,7 @@ class _SendButtonState extends State<SendButton> {
     Map<String, dynamic> recipe,
     Map<String, dynamic> user,
     Map<String, dynamic> userDocData,
+    String idMeal,
   ) async {
     final result = await FirebaseFirestore.instance
         .collection('recipes')
@@ -126,7 +128,7 @@ class _SendButtonState extends State<SendButton> {
             .collection(
               'recipes',
             )
-            .doc();
+            .doc(idMeal);
         await goRecipeDocument.set(recipe);
         await goRecipeDocument.update(user);
         if (result == false) {
@@ -155,6 +157,12 @@ class _SendButtonState extends State<SendButton> {
           height: context.height * 0.06,
           child: ElevatedButton(
             onPressed: () async {
+              final userCountry = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .get()
+                  .then((value) => value.data()?['country']);
+              final currentUser = FirebaseAuth.instance.currentUser;
               if (_formKey.currentState?.validate() ?? false) {
                 if (mounted) {
                   setState(() {
@@ -169,6 +177,12 @@ class _SendButtonState extends State<SendButton> {
                               .cast<String>(),
                         );
                   });
+                  if (state.ingredientList?.isEmpty ?? true) {
+                    AlertWidgets.showSnackBar(
+                      context,
+                      'A problem occurred, please send again',
+                    );
+                  }
                   final recipe = Meals().copyWith(
                     idMeal: id.toString(),
                     strMeal: _nameController.text,
@@ -182,10 +196,18 @@ class _SendButtonState extends State<SendButton> {
                     strYoutube: _youtubeController.text,
                   );
                   final user = UserModels(
-                    userId: FirebaseAuth.instance.currentUser?.uid,
-                    name: FirebaseAuth.instance.currentUser?.displayName,
+                    userId: currentUser?.uid,
+                    name: currentUser?.displayName,
+                    email: currentUser?.email,
+                    country: userCountry as String?,
+                    photoURL: currentUser?.photoURL,
                   );
-                  checkName(recipe.toJson(), user.toJson(), recipe.toJson());
+                  checkName(
+                    recipe.toJson(),
+                    user.toJson(),
+                    recipe.toJson(),
+                    id.toString(),
+                  );
                 }
               }
             },
@@ -216,7 +238,7 @@ class SourceField extends StatelessWidget {
   }
 }
 
-class BasicCustomField extends StatelessWidget {
+class BasicCustomField extends ConsumerWidget {
   const BasicCustomField({
     super.key,
     required TextEditingController controller,
@@ -227,7 +249,7 @@ class BasicCustomField extends StatelessWidget {
   final String _hintText;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextFormField(
@@ -237,10 +259,16 @@ class BasicCustomField extends StatelessWidget {
           }
           return null;
         },
-        controller: _controller,
+        controller: ref.watch(isEditProvider) ? _controller : null,
         decoration: InputDecoration(
           hintText: _hintText,
         ),
+        initialValue: ref.watch(isEditProvider)
+            ? ref
+                .read(getRecipeValues)
+                .then((value) => value[index].data()['strMeal'].toString())
+                .toString()
+            : null,
       ),
     );
   }
@@ -429,48 +457,58 @@ class _IngredientNameState extends State<IngredientName> {
               );
             },
             optionsViewBuilder: (context, onSelected, options) {
-              return Material(
-                elevation: 4,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: ProjectPaddings.textHorizontalMedium,
-                  itemCount: options.length,
-                  itemBuilder: (context, index) {
-                    final ingredient = options.elementAt(index);
-                    return InkWell(
-                      onTap: () async {
-                        onSelected(ingredient);
-                      },
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: ProjectPaddings.textHorizontalMedium,
-                              child: CachedNetworkImage(
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                                progressIndicatorBuilder:
-                                    (context, url, downloadProgress) => Center(
-                                  child: CustomLottieLoading(
-                                    path: AssetsPath.progression,
-                                    onLoaded: (composition) {
-                                      downloadProgress.progress;
-                                    },
+              return Padding(
+                padding: ProjectPaddings.cardMedium,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    child: SizedBox(
+                      width: context.dynamicWidth(0.87),
+                      height: context.dynamicHeight(0.3),
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(),
+                        shrinkWrap: true,
+                        padding: ProjectPaddings.textHorizontalMedium,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final ingredient = options.elementAt(index);
+                          return InkWell(
+                            onTap: () async {
+                              onSelected(ingredient);
+                            },
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: ProjectPaddings.textHorizontalMedium,
+                                    child: CachedNetworkImage(
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                      progressIndicatorBuilder:
+                                          (context, url, downloadProgress) => Center(
+                                        child: CustomLottieLoading(
+                                          path: AssetsPath.progression,
+                                          onLoaded: (composition) {
+                                            downloadProgress.progress;
+                                          },
+                                        ),
+                                      ),
+                                      imageUrl:
+                                          '${'${EndPoints.ingredientsImages}${ingredient.strIngredient}'}-small.png',
+                                    ),
                                   ),
                                 ),
-                                imageUrl:
-                                    '${'${EndPoints.ingredientsImages}${ingredient.strIngredient}'}-small.png',
-                              ),
+                                Expanded(
+                                  flex: 5,
+                                  child: Text(ingredient.strIngredient ?? ''),
+                                ),
+                              ],
                             ),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Text(ingredient.strIngredient ?? ''),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               );
             },

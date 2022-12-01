@@ -2,6 +2,7 @@ import 'package:authentication_repository/authentication_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:navigator/navigator.dart';
@@ -12,6 +13,7 @@ import 'package:thefood/core/services/home_service.dart';
 import 'package:thefood/core/services/managers/network_manager.dart';
 import 'package:thefood/firebase_options.dart';
 import 'package:thefood/products/views/add_recipe/add_recipe_view.dart';
+import 'package:thefood/products/views/add_recipe/cubit/add_recipe_cubit.dart';
 import 'package:thefood/products/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/products/views/auth/bloc/sign_up/sign_up_cubit.dart';
 import 'package:thefood/products/views/auth/forgot_password_view.dart';
@@ -29,13 +31,11 @@ import 'package:thefood/products/views/page_loading/page_loading_view.dart';
 import 'package:thefood/products/views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/views/profile/profile_view.dart';
 import 'package:thefood/ui/theme.dart';
-import 'package:thefood/utility/providers.dart';
 
 part 'router.dart';
 
 Future<void> main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-
+  WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -47,7 +47,7 @@ Future<void> main() async {
   final authenticationRepository = AuthenticationRepository();
   await authenticationRepository.user.first;
   runApp(
-    const Providers(child: TheFood()),
+    const ProviderScope(child: TheFood()),
   );
 }
 

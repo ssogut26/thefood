@@ -18,7 +18,7 @@ class _SplashViewState extends State<SplashView> {
       body: Center(
         child: CustomLottieLoading(
           onLoaded: (composition) {
-            _auth.currentUser != null ? context.goNamed('/') : context.goNamed('login');
+            _auth.currentUser != null ? context.goNamed('/') : context.goNamed('onboard');
           },
         ),
       ),

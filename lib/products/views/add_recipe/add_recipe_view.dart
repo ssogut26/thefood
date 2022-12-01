@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/colors.dart';
@@ -27,9 +28,24 @@ import 'package:thefood/products/views/add_recipe/cubit/add_recipe_cubit.dart';
 
 part '../../view_models/add_recipe_view_model.dart';
 
-class AddRecipe extends StatefulWidget {
-  const AddRecipe({super.key});
+Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getRecipe() async {
+  final recipe = await FirebaseFirestore.instance
+      .collection('recipes')
+      .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+      .get();
+  return recipe.docs;
+}
 
+StateProvider<bool> isEditProvider = StateProvider<bool>((ref) => false);
+final getRecipeValues =
+    StateProvider<Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>>(
+  (ref) => getRecipe(),
+);
+
+class AddRecipe extends StatefulWidget {
+  // ignore: avoid_unused_constructor_parameters
+  AddRecipe({super.key, required int id});
+  int id = 0;
   @override
   State<AddRecipe> createState() => _AddRecipeState();
 }
@@ -127,7 +143,9 @@ class _AddRecipeState extends State<AddRecipe> {
     } else if (widgetList.length == 1) {
       return;
     }
-
+    if (id != widget.id) {
+      isEditProvider = StateProvider<bool>((ref) => true);
+    }
     super.initState();
   }
 

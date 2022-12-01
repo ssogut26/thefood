@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:thefood/utility/secret.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -47,7 +48,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBNnUNY_IbO6RiwQKRc8u6aKVWLyoRv1B4',
+    apiKey: ApiKeys.webApiKey,
     appId: '1:651831056889:web:0a2d2893788b26d3d90528',
     messagingSenderId: '651831056889',
     projectId: 'thefood-6e177',
@@ -57,7 +58,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCCc5RIH-RN02TMAP7dSXvnXfIgQxUN3lU',
+    apiKey: ApiKeys.androidApiKey,
     appId: '1:651831056889:android:1f8a511b0eb5ec51d90528',
     messagingSenderId: '651831056889',
     projectId: 'thefood-6e177',
@@ -65,7 +66,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBLYJ3hFHGE7vrQLxL8ELranwZC8upZVhE',
+    apiKey: ApiKeys.iosApiKey,
     appId: '1:651831056889:ios:455ff88f81536325d90528',
     messagingSenderId: '651831056889',
     projectId: 'thefood-6e177',

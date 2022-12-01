@@ -70,4 +70,6 @@ class ProjectTexts {
   static const somethingWentWrong = 'Something went wrong';
   static const account = 'Account';
   static const offline = 'You are offline';
+  static const errorPage =
+      'We are sorry, there is no page for this route, press to go home';
 }
