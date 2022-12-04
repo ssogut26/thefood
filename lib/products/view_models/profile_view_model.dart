@@ -168,7 +168,11 @@ class NoRecipeCard extends StatelessWidget {
   }
 }
 
-class UserRecipesCard extends StatefulWidget {
+StateProvider<String> idMeal = StateProvider<String>((ref) {
+  return '';
+});
+
+class UserRecipesCard extends ConsumerStatefulWidget {
   const UserRecipesCard({
     super.key,
     required this.data,
@@ -177,13 +181,14 @@ class UserRecipesCard extends StatefulWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>?>>? data;
 
   @override
-  State<UserRecipesCard> createState() => _UserRecipesCardState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _UserRecipesCardState();
 }
 
-class _UserRecipesCardState extends State<UserRecipesCard> {
+class _UserRecipesCardState extends ConsumerState<UserRecipesCard> {
   List<double> ratings = [];
   @override
   Widget build(BuildContext context) {
+    var meal = ref.watch(idMeal.notifier).state;
     return SizedBox(
       height: context.dynamicHeight(0.25),
       width: context.dynamicWidth(0.9),
@@ -210,19 +215,6 @@ class _UserRecipesCardState extends State<UserRecipesCard> {
                     mealThumb,
                   ),
                 ),
-                Positioned(
-                    left: context.dynamicWidth(0.30),
-                    child: IconButton(
-                      onPressed: () {
-                        context.pushNamed(
-                          'add',
-                          params: {
-                            'id': mealId,
-                          },
-                        );
-                      },
-                      icon: Icon(Icons.edit, color: ProjectColors.black, size: 25),
-                    )),
                 Align(
                   alignment: const Alignment(0, 0.7),
                   child: Padding(

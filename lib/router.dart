@@ -132,14 +132,25 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/add/:id',
+      path: '/add',
       name: 'add',
       builder: (BuildContext context, GoRouterState state) {
-        final id = int.parse(state.params['id'] ?? '');
         return BlocProvider(
           create: (context) => AddRecipeCubit(),
-          child: AddRecipe(
-            id: id,
+          child: const AddRecipe(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/edit',
+      name: 'edit',
+      builder: (BuildContext context, GoRouterState state) {
+        QueryDocumentSnapshot<Map<String, dynamic>> ref =
+            state.extra as QueryDocumentSnapshot<Map<String, dynamic>>;
+        return BlocProvider(
+          create: (context) => AddRecipeCubit(),
+          child: EditRecipeView(
+            ref: ref,
           ),
         );
       },

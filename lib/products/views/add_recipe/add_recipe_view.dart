@@ -28,24 +28,9 @@ import 'package:thefood/products/views/add_recipe/cubit/add_recipe_cubit.dart';
 
 part '../../view_models/add_recipe_view_model.dart';
 
-Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getRecipe() async {
-  final recipe = await FirebaseFirestore.instance
-      .collection('recipes')
-      .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-      .get();
-  return recipe.docs;
-}
-
-StateProvider<bool> isEditProvider = StateProvider<bool>((ref) => false);
-final getRecipeValues =
-    StateProvider<Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>>(
-  (ref) => getRecipe(),
-);
-
 class AddRecipe extends StatefulWidget {
   // ignore: avoid_unused_constructor_parameters
-  AddRecipe({super.key, required int id});
-  int id = 0;
+  const AddRecipe({super.key});
   @override
   State<AddRecipe> createState() => _AddRecipeState();
 }
@@ -54,13 +39,15 @@ class _AddRecipeState extends State<AddRecipe> {
   int index = 1;
   // it have bug
   Future<void> addIngredientField() async {
+    ValueKey(index);
     if (mounted) {
       setState(() {
-        _ingredientControllers?.add(TextEditingController());
-        _measureControllers?.add(TextEditingController());
+        _ingredientControllers?.insert(index, TextEditingController());
+        _measureControllers?.insert(index, TextEditingController());
         widgetList.insert(
           index,
           Padding(
+            key: ValueKey(index),
             padding: ProjectPaddings.cardMedium,
             child: Row(
               children: [
@@ -75,7 +62,7 @@ class _AddRecipeState extends State<AddRecipe> {
                   width: 10,
                 ),
                 Expanded(
-                  flex: 3,
+                  flex: 4,
                   child: TextFormField(
                     validator: (value) {
                       if (value?.isEmpty ?? true) {
@@ -98,9 +85,12 @@ class _AddRecipeState extends State<AddRecipe> {
                           if (mounted) {
                             setState(() {
                               index--;
-                              widgetList.removeAt(index);
-                              _ingredientControllers?.removeAt(index);
-                              _measureControllers?.removeAt(index);
+                              widgetList.removeWhere(
+                                  (element) => element.key == ValueKey(index));
+                              _ingredientControllers
+                                  ?.removeWhere((element) => element == ValueKey(index));
+                              _measureControllers
+                                  ?.removeWhere((element) => element == index);
                             });
                           }
                         },
@@ -142,9 +132,6 @@ class _AddRecipeState extends State<AddRecipe> {
       widgetList.add(initialIngredient());
     } else if (widgetList.length == 1) {
       return;
-    }
-    if (id != widget.id) {
-      isEditProvider = StateProvider<bool>((ref) => true);
     }
     super.initState();
   }
@@ -242,14 +229,17 @@ class _AddRecipeState extends State<AddRecipe> {
                         _headlineBox(context, ProjectTexts.youtubeLink),
 
                         //Youtube Link
-                        BasicCustomField(
+                        YoutubeField(
                           controller: _youtubeController,
                           hintText: ProjectTexts.youtubeInput,
                         ),
 
                         //Source Link
                         _headlineBox(context, ProjectTexts.source),
-                        const SourceField(),
+                        SourceField(
+                          hintText: ProjectTexts.sourceInput,
+                          controller: _sourceController,
+                        ),
 
                         //Submit Button
                         const SendButton(),

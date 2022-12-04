@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
 import 'package:thefood/core/constants/assets_path.dart';
@@ -16,6 +17,7 @@ import 'package:thefood/features/components/loading.dart';
 import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products//views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/models/user.dart';
+import 'package:thefood/products/views/home/home_view.dart';
 
 part '../../view_models/profile_view_model.dart';
 

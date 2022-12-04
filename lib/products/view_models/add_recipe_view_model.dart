@@ -11,7 +11,6 @@ late List<TextEditingController?>? _measureControllers;
 final _formKey = GlobalKey<FormState>();
 
 int index = 1;
-int id = 0;
 
 Widget initialIngredient() {
   const initialIndex = 0;
@@ -65,16 +64,14 @@ Padding _headlineBox(BuildContext context, String text) {
   );
 }
 
-class SendButton extends StatefulWidget {
-  const SendButton({
-    super.key,
-  });
+class SendButton extends ConsumerStatefulWidget {
+  const SendButton({super.key});
 
   @override
-  State<SendButton> createState() => _SendButtonState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SendButtonState();
 }
 
-class _SendButtonState extends State<SendButton> {
+class _SendButtonState extends ConsumerState<SendButton> {
   int id = 0;
   Future<int> getRecipeId() async {
     final recipeId = FirebaseFirestore.instance.collection('recipes').get();
@@ -129,7 +126,9 @@ class _SendButtonState extends State<SendButton> {
               'recipes',
             )
             .doc(idMeal);
+
         await goRecipeDocument.set(recipe);
+
         await goRecipeDocument.update(user);
         if (result == false) {
           await userDoc.set(userDocData);
@@ -138,7 +137,6 @@ class _SendButtonState extends State<SendButton> {
           context,
           'Recipe added',
         );
-        Navigator.of(context).pop();
       } catch (e) {
         return AlertWidgets.showSnackBar(
           context,
@@ -146,6 +144,12 @@ class _SendButtonState extends State<SendButton> {
         );
       }
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getRecipeId();
   }
 
   @override
@@ -165,7 +169,7 @@ class _SendButtonState extends State<SendButton> {
               final currentUser = FirebaseAuth.instance.currentUser;
               if (_formKey.currentState?.validate() ?? false) {
                 if (mounted) {
-                  setState(() {
+                  try {
                     context.read<AddRecipeCubit>().addValue(
                           _ingredientControllers
                               ?.map((e) => e?.text ?? '')
@@ -176,8 +180,14 @@ class _SendButtonState extends State<SendButton> {
                               .toList()
                               .cast<String>(),
                         );
-                  });
-                  if (state.ingredientList?.isEmpty ?? true) {
+
+                    if (state.ingredientList?.isNotNullOrEmpty ?? true) {
+                      AlertWidgets.showSnackBar(
+                        context,
+                        'A problem occurred, please send again',
+                      );
+                    }
+                  } catch (e) {
                     AlertWidgets.showSnackBar(
                       context,
                       'A problem occurred, please send again',
@@ -222,7 +232,13 @@ class _SendButtonState extends State<SendButton> {
 class SourceField extends StatelessWidget {
   const SourceField({
     super.key,
-  });
+    required TextEditingController controller,
+    required String hintText,
+  })  : _controller = controller,
+        _hintText = hintText;
+
+  final TextEditingController _controller;
+  final String _hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +254,7 @@ class SourceField extends StatelessWidget {
   }
 }
 
-class BasicCustomField extends ConsumerWidget {
+class BasicCustomField extends StatelessWidget {
   const BasicCustomField({
     super.key,
     required TextEditingController controller,
@@ -249,7 +265,7 @@ class BasicCustomField extends ConsumerWidget {
   final String _hintText;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextFormField(
@@ -259,16 +275,10 @@ class BasicCustomField extends ConsumerWidget {
           }
           return null;
         },
-        controller: ref.watch(isEditProvider) ? _controller : null,
+        controller: _controller,
         decoration: InputDecoration(
           hintText: _hintText,
         ),
-        initialValue: ref.watch(isEditProvider)
-            ? ref
-                .read(getRecipeValues)
-                .then((value) => value[index].data()['strMeal'].toString())
-                .toString()
-            : null,
       ),
     );
   }
@@ -277,14 +287,22 @@ class BasicCustomField extends ConsumerWidget {
 class YoutubeField extends StatelessWidget {
   const YoutubeField({
     super.key,
-  });
+    required TextEditingController controller,
+    required String hintText,
+  })  : _controller = controller,
+        _hintText = hintText;
+  final TextEditingController _controller;
+  final String _hintText;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
       child: TextField(
-        controller: _youtubeController,
+        controller: _controller,
+        decoration: InputDecoration(
+          label: Text(_hintText),
+        ),
       ),
     );
   }

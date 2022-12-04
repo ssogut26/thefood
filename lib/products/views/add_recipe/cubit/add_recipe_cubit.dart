@@ -15,12 +15,21 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   TextEditingController ingredientAmountController = TextEditingController();
 
   void addValue(List<String?>? ingredientList, List<String?>? measureList) {
-    emit(
-      state.copyWith(
-        ingredientList: ingredientList,
-        measureList: measureList,
-      ),
-    );
+    if (ingredientList != null && measureList != null) {
+      emit(
+        state.copyWith(
+          ingredientList: ingredientList,
+          measureList: measureList,
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          ingredientList: [],
+          measureList: [],
+        ),
+      );
+    }
   }
 
   final List<TextEditingController> _ingredientControllers = [];
