@@ -17,7 +17,6 @@ import 'package:thefood/features/components/loading.dart';
 import 'package:thefood/features/components/widgets.dart';
 import 'package:thefood/products//views/profile/cubit/profile_cubit.dart';
 import 'package:thefood/products/models/user.dart';
-import 'package:thefood/products/views/home/home_view.dart';
 
 part '../../view_models/profile_view_model.dart';
 
@@ -29,10 +28,13 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
+  final fireStore = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
   final getUserRecipe = FirebaseFirestore.instance
       .collection('users')
       .doc(FirebaseAuth.instance.currentUser?.uid)
       .collection('recipes')
+      .orderBy('strMeal', descending: false)
       .get();
 
   final TextEditingController _nameController = TextEditingController();
@@ -60,13 +62,7 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Center(
-            child: CustomLottieLoading(
-              onLoaded: (composition) {
-                isLoading = false;
-              },
-            ),
-          )
+        ? _loading()
         : Scaffold(
             appBar: _appBar(context),
             // for adding recipes to firestore
@@ -85,37 +81,53 @@ class _ProfileViewState extends State<ProfileView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      child: Row(
-                        children: [
-                          const UserImage(),
-                          SizedBox(
-                            width: context.dynamicWidth(0.04),
-                          ),
-                          const UserInfo(),
-                          const Spacer(),
-                          UpdateUserProfile(
-                            nameController: _nameController,
-                            emailController: _emailController,
-                            verifyEmailController: _verifyEmailController,
-                            verifyPasswordController: _verifyPasswordController,
-                            newPasswordController: _newPasswordController,
-                          ),
-                        ],
-                      ),
+                      child: _user(context),
                     ),
                     SizedBox(
                       height: context.dynamicHeight(0.03),
                     ),
                     const Text(
                       ProjectTexts.myRecipe,
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 24),
                     ),
-                    FutureUserRecipe(getUserRecipe: getUserRecipe),
+                    _userRecipe(),
                     // I have planned to add follow and followed list
                   ],
                 ),
               ),
             ),
           );
+  }
+
+  FutureUserRecipe _userRecipe() => FutureUserRecipe(getUserRecipe: getUserRecipe);
+
+  Row _user(BuildContext context) {
+    return Row(
+      children: [
+        const UserImage(),
+        SizedBox(
+          width: context.dynamicWidth(0.04),
+        ),
+        const UserInfo(),
+        const Spacer(),
+        UpdateUserProfile(
+          nameController: _nameController,
+          emailController: _emailController,
+          verifyEmailController: _verifyEmailController,
+          verifyPasswordController: _verifyPasswordController,
+          newPasswordController: _newPasswordController,
+        ),
+      ],
+    );
+  }
+
+  Center _loading() {
+    return Center(
+      child: CustomLottieLoading(
+        onLoaded: (composition) {
+          isLoading = false;
+        },
+      ),
+    );
   }
 }

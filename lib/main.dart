@@ -18,7 +18,7 @@ import 'package:thefood/products/views/auth/bloc/login/login_cubit.dart';
 import 'package:thefood/products/views/auth/bloc/sign_up/sign_up_cubit.dart';
 import 'package:thefood/products/views/auth/forgot_password_view.dart';
 import 'package:thefood/products/views/auth/login_view.dart';
-import 'package:thefood/products/views/auth/singup_view.dart';
+import 'package:thefood/products/views/auth/signup_view.dart';
 import 'package:thefood/products/views/category_details/category_details_view.dart';
 import 'package:thefood/products/views/details/cubit/details_cubit.dart';
 import 'package:thefood/products/views/details/details_view.dart';

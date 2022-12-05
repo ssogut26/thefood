@@ -110,7 +110,7 @@ final GoRouter _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return BlocProvider(
           create: (context) => SignUpCubit(AuthenticationRepository()),
-          child: const SingUpView(),
+          child: const SignUpView(),
         );
       },
     ),
@@ -141,20 +141,7 @@ final GoRouter _router = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: '/edit',
-      name: 'edit',
-      builder: (BuildContext context, GoRouterState state) {
-        QueryDocumentSnapshot<Map<String, dynamic>> ref =
-            state.extra as QueryDocumentSnapshot<Map<String, dynamic>>;
-        return BlocProvider(
-          create: (context) => AddRecipeCubit(),
-          child: EditRecipeView(
-            ref: ref,
-          ),
-        );
-      },
-    ),
+    
     GoRoute(
       path: '/profile',
       name: 'profile',

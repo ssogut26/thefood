@@ -188,7 +188,6 @@ class _UserRecipesCardState extends ConsumerState<UserRecipesCard> {
   List<double> ratings = [];
   @override
   Widget build(BuildContext context) {
-    var meal = ref.watch(idMeal.notifier).state;
     return SizedBox(
       height: context.dynamicHeight(0.25),
       width: context.dynamicWidth(0.9),

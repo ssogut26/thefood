@@ -86,7 +86,8 @@ class _AddRecipeState extends State<AddRecipe> {
                             setState(() {
                               index--;
                               widgetList.removeWhere(
-                                  (element) => element.key == ValueKey(index));
+                                (element) => element.key == ValueKey(index),
+                              );
                               _ingredientControllers
                                   ?.removeWhere((element) => element == ValueKey(index));
                               _measureControllers
@@ -119,20 +120,8 @@ class _AddRecipeState extends State<AddRecipe> {
     _sourceController = TextEditingController();
     _ingredientControllers = <TextEditingController>[];
     _measureControllers = <TextEditingController>[];
-    if (widgetList.length != 1) {
-      widgetList.clear();
-      _ingredientControllers?.clear();
-      _measureControllers?.clear();
-      _nameController.clear();
-      _instructionController.clear();
-      _imageController.clear();
-      _youtubeController.clear();
-      _sourceController.clear();
-      _imageController.clear();
-      widgetList.add(initialIngredient());
-    } else if (widgetList.length == 1) {
-      return;
-    }
+    _imageController = TextEditingController();
+    widgetList.add(initialIngredient());
     super.initState();
   }
 
@@ -272,5 +261,19 @@ class _AddRecipeState extends State<AddRecipe> {
       ),
       title: const Text(ProjectTexts.addRecipe),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _instructionController.dispose();
+    _youtubeController.dispose();
+    _sourceController.dispose();
+    widgetList.clear();
+    _ingredientControllers?.forEach((element) => element?.dispose());
+    _measureControllers?.forEach((element) => element?.dispose());
+    _imageController.dispose();
+
+    super.dispose();
   }
 }

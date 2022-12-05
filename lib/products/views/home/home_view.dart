@@ -64,69 +64,12 @@ class _HomeViewState extends State<HomeView> {
       ) {
         final connected = connectivity != ConnectivityResult.none;
         return isLoading
-            ? Center(
-                child: CustomLottieLoading(
-                  path: AssetsPath.progression,
-                  onLoaded: (composition) {
-                    isLoading = false;
-                  },
-                ),
-              )
+            ? _loadingAnim(isLoading)
             : connected == true
-                ? BlocBuilder<HomeCubit, HomeState>(
-                    builder: (context, state) {
-                      return Scaffold(
-                        key: _key,
-                        appBar: _appBar(context),
-                        endDrawer: _Drawer(auth: _auth),
-                        body: SafeArea(
-                          child: SingleChildScrollView(
-                            child: Padding(
-                              padding: ProjectPaddings.pageLarge,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const _SearchBar(),
-                                  if (state.mealCategory.isNotNullOrEmpty)
-                                    const ChangeCategory()
-                                  else
-                                    const CategoryShimmer(),
-                                  if (state.mealsByCategory?.meals?.isNotNullOrEmpty ??
-                                      false)
-                                    const CategoryMeals()
-                                  else
-                                    const CategoryMealShimmer(
-                                      itemCount: 4,
-                                    ),
-                                  if (state.randomMeal?.meals.isNotNullOrEmpty ?? false)
-                                    const RandomMeal()
-                                  else
-                                    const RandomMealShimmer(),
-                                  const _AlignedText(text: ProjectTexts.userRecipes),
-                                  const StreamUserRecipes(),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Center(child: Image.asset(AssetsPath.noConnectionImage)),
-                      const Text(
-                        ProjectTexts.noConnection,
-                      ),
-                    ],
-                  );
+                ? _homeBody()
+                : _noConnection();
       },
-      child: const Scaffold(
-        body: Center(
-          child: Text(ProjectTexts.offline),
-        ),
-      ),
+      child: _noConnectionText(),
     );
   }
 }

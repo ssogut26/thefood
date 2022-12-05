@@ -15,7 +15,7 @@ class AddRecipeCubit extends Cubit<AddRecipeState> {
   TextEditingController ingredientAmountController = TextEditingController();
 
   void addValue(List<String?>? ingredientList, List<String?>? measureList) {
-    if (ingredientList != null && measureList != null) {
+    if (ingredientList.isNotNullOrEmpty && measureList.isNotNullOrEmpty) {
       emit(
         state.copyWith(
           ingredientList: ingredientList,

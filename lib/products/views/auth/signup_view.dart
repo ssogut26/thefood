@@ -35,7 +35,43 @@ class _SignUpViewState extends State<SignUpView> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 key: _formKey,
                 child: Column(
-                  children: _nameField(context),
+                  children: [
+                    const BodyContainer(),
+                    const _appName(),
+                    SizedBox(
+                      height: context.dynamicHeight(0.05),
+                    ),
+                    _nameField(),
+                    _emailField(),
+                    _passwordField(),
+                    _confirmPasswordField(),
+                    _areaSelection(),
+                    const RegisterButton(),
+                    SizedBox(
+                      height: context.dynamicHeight(0.07),
+                    ),
+                    Padding(
+                      padding: context.verticalPaddingLow,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(ProjectTexts.alreadyHaveAccount),
+                          TextButton(
+                            onPressed: () {
+                              context.goNamed('login');
+                            },
+                            child: Text(
+                              ProjectTexts.login,
+                              style: context.textTheme.headline3,
+                            ),
+                          ),
+                          SizedBox(
+                            height: context.dynamicHeight(0.02),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -45,89 +81,68 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
-  List<Widget> _nameField(BuildContext context) {
-    return [
-      const BodyContainer(),
-      const _appName(),
-      SizedBox(
-        height: context.dynamicHeight(0.05),
-      ),
-      BlocBuilder<SignUpCubit, SignUpState>(
-        builder: (context, state) {
-          return NameField(
-            nameController: _nameController,
-            onChanged: (name) {
-              context.read<SignUpCubit>().nameChanged(name ?? '');
-            },
-          );
+  BlocBuilder<SignUpCubit, SignUpState> _areaSelection() {
+    return BlocBuilder<SignUpCubit, SignUpState>(
+                    builder: (context, state) {
+                      return const AreaDropdown();
+                    },
+                  );
+  }
+
+  BlocBuilder<SignUpCubit, SignUpState> _confirmPasswordField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(
+                    builder: (context, state) {
+                      return ConfirmPasswordField(
+                        confirmPasswordController: _confirmPasswordController,
+                        passwordController: _passwordController,
+                        onChanged: (password) => context
+                            .read<SignUpCubit>()
+                            .confirmedPasswordChanged(password),
+                      );
+                    },
+                  );
+  }
+
+  BlocBuilder<SignUpCubit, SignUpState> _passwordField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(
+                    builder: (context, state) {
+                      return PasswordField(
+                        passwordController: _passwordController,
+                        onChanged: (password) =>
+                            context.read<SignUpCubit>().passwordChanged(password),
+                      );
+                    },
+                  );
+  }
+
+  BlocBuilder<SignUpCubit, SignUpState> _nameField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(
+    builder: (context, state) {
+      return NameField(
+        nameController: _nameController,
+        onChanged: (name) {
+          context.read<SignUpCubit>().nameChanged(name ?? '');
         },
-      ),
-      _emailField(),
-      BlocBuilder<SignUpCubit, SignUpState>(
-        builder: (context, state) {
-          return PasswordField(
-            passwordController: _passwordController,
-            onChanged: (password) =>
-                context.read<SignUpCubit>().passwordChanged(password),
-          );
-        },
-      ),
-      BlocBuilder<SignUpCubit, SignUpState>(
-        builder: (context, state) {
-          return ConfirmPasswordField(
-            confirmPasswordController: _confirmPasswordController,
-            passwordController: _passwordController,
-            onChanged: (password) =>
-                context.read<SignUpCubit>().confirmedPasswordChanged(password),
-          );
-        },
-      ),
-      BlocBuilder<SignUpCubit, SignUpState>(
-        builder: (context, state) {
-          return const AreaDropdown();
-        },
-      ),
-      const RegisterButton(),
-      SizedBox(
-        height: context.dynamicHeight(0.07),
-      ),
-      Padding(
-        padding: context.verticalPaddingLow,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(ProjectTexts.alreadyHaveAccount),
-            TextButton(
-              onPressed: () {
-                context.goNamed('login');
-              },
-              child: Text(
-                ProjectTexts.login,
-                style: context.textTheme.headline3,
-              ),
-            ),
-            SizedBox(
-              height: context.dynamicHeight(0.02),
-            )
-          ],
-        ),
-      ),
-    ];
+      );
+    },
+  );
   }
 
   BlocBuilder<SignUpCubit, SignUpState> _emailField() {
     return BlocBuilder<SignUpCubit, SignUpState>(
-      builder: (context, state) {
-        return EmailField(
-          onChanged: (email) {
-            context.read<SignUpCubit>().emailChanged(email ?? '');
-          },
-          controller: _emailController,
-        );
-      },
-    );
+                    builder: (context, state) {
+                      return EmailField(
+                        onChanged: (email) {
+                          context.read<SignUpCubit>().emailChanged(email ?? '');
+                        },
+                        controller: _emailController,
+                      );
+                    },
+                  );
   }
 }
+
+
 
 class _appName extends StatelessWidget {
   const _appName();

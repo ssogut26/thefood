@@ -39,14 +39,32 @@ class SearchService extends ISearchService {
     if (key != null) {
       final response =
           await _manager.get<Map<String, dynamic>>(EndPoints.searchByName + key);
-      final response2 =
-          FirebaseFirestore.instance.collection('recipes').where('strMeal').get();
+      final response2 = FirebaseFirestore.instance
+          .collection('recipes')
+          .where(
+            'strMeal',
+            isGreaterThanOrEqualTo: key,
+            isLessThanOrEqualTo: '$key\uf8ff',
+          )
+          .get();
       final result = await response2
           .then((value) => value.docs.map((e) => Meals.fromJson(e.data())).toList());
       if (response.statusCode == 200) {
         final meals = response.data;
         if (meals is Map<String, dynamic>) {
-          final results = [Meal.fromJson(meals).meals ?? <Meals>[], result];
+          final results = [
+            Meal.fromJson(meals)
+                    .meals
+                    ?.toList()
+                    .where(
+                      (e) =>
+                          (e.strMeal?.contains(key) ?? false) &&
+                          (e.strMeal?.startsWith(key) ?? false),
+                    )
+                    .toList() ??
+                <Meals>[],
+            result
+          ];
           return results.expand((element) => element).toList();
         }
       }

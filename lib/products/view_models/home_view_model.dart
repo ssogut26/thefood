@@ -345,6 +345,78 @@ class _CategoryMealsState extends State<CategoryMeals> {
   }
 }
 
+Scaffold _noConnectionText() {
+  return const Scaffold(
+    body: Center(
+      child: Text(ProjectTexts.offline),
+    ),
+  );
+}
+
+Center _loadingAnim(isLoading) {
+  return Center(
+    child: CustomLottieLoading(
+      path: AssetsPath.progression,
+      onLoaded: (composition) {
+        isLoading = false;
+      },
+    ),
+  );
+}
+
+Column _noConnection() {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Center(child: Image.asset(AssetsPath.noConnectionImage)),
+      const Text(
+        ProjectTexts.noConnection,
+      ),
+    ],
+  );
+}
+
+BlocBuilder<HomeCubit, HomeState> _homeBody() {
+  return BlocBuilder<HomeCubit, HomeState>(
+    builder: (context, state) {
+      return Scaffold(
+        key: _key,
+        appBar: _appBar(context),
+        endDrawer: _Drawer(auth: _auth),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: ProjectPaddings.pageLarge,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const _SearchBar(),
+                  if (state.mealCategory.isNotNullOrEmpty)
+                    const ChangeCategory()
+                  else
+                    const CategoryShimmer(),
+                  if (state.mealsByCategory?.meals?.isNotNullOrEmpty ?? false)
+                    const CategoryMeals()
+                  else
+                    const CategoryMealShimmer(
+                      itemCount: 4,
+                    ),
+                  if (state.randomMeal?.meals.isNotNullOrEmpty ?? false)
+                    const RandomMeal()
+                  else
+                    const RandomMealShimmer(),
+                  const _AlignedText(text: ProjectTexts.userRecipes),
+                  const StreamUserRecipes(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class CategoryMealCard extends StatefulWidget {
   const CategoryMealCard({
     super.key,
@@ -900,7 +972,7 @@ class _SearchBarState extends State<_SearchBar> {
     );
     var meals = <Meals>[];
     await _operation?.value.whenComplete(() async {
-      meals = await _searchService.searchMeals(key);
+      meals = await _searchService.searchMeals(key.toCapitalized());
     });
 
     return meals;

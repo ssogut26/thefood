@@ -5,7 +5,7 @@ late TextEditingController _nameController;
 late TextEditingController _youtubeController;
 late TextEditingController _sourceController;
 late TextEditingController _instructionController;
-final TextEditingController _imageController = TextEditingController();
+late TextEditingController _imageController;
 late List<TextEditingController?>? _ingredientControllers;
 late List<TextEditingController?>? _measureControllers;
 final _formKey = GlobalKey<FormState>();
@@ -100,6 +100,7 @@ class _SendButtonState extends ConsumerState<SendButton> {
     Map<String, dynamic> recipe,
     Map<String, dynamic> user,
     Map<String, dynamic> userDocData,
+    bool checkNull,
     String idMeal,
   ) async {
     final result = await FirebaseFirestore.instance
@@ -114,6 +115,13 @@ class _SendButtonState extends ConsumerState<SendButton> {
       return AlertWidgets.showSnackBar(
         context,
         'Recipe already exists',
+      );
+
+      // it has a bug only sends to firestore after second time user sended.
+    } else if (checkNull == false) {
+      return AlertWidgets.showSnackBar(
+        context,
+        'Ingredient or measure cannot be empty',
       );
     } else {
       try {
@@ -137,6 +145,7 @@ class _SendButtonState extends ConsumerState<SendButton> {
           context,
           'Recipe added',
         );
+        Navigator.pop(context);
       } catch (e) {
         return AlertWidgets.showSnackBar(
           context,
@@ -168,57 +177,40 @@ class _SendButtonState extends ConsumerState<SendButton> {
                   .then((value) => value.data()?['country']);
               final currentUser = FirebaseAuth.instance.currentUser;
               if (_formKey.currentState?.validate() ?? false) {
-                if (mounted) {
-                  try {
-                    context.read<AddRecipeCubit>().addValue(
-                          _ingredientControllers
-                              ?.map((e) => e?.text ?? '')
-                              .toList()
-                              .cast<String>(),
-                          _measureControllers
-                              ?.map((e) => e?.text ?? '')
-                              .toList()
-                              .cast<String>(),
-                        );
-
-                    if (state.ingredientList?.isNotNullOrEmpty ?? true) {
-                      AlertWidgets.showSnackBar(
-                        context,
-                        'A problem occurred, please send again',
-                      );
-                    }
-                  } catch (e) {
-                    AlertWidgets.showSnackBar(
-                      context,
-                      'A problem occurred, please send again',
+                context.read<AddRecipeCubit>().addValue(
+                      _ingredientControllers
+                          ?.map((e) => e?.text.toString() ?? '')
+                          .toList(),
+                      _measureControllers?.map((e) => e?.text.toString() ?? '').toList(),
                     );
-                  }
-                  final recipe = Meals().copyWith(
-                    idMeal: id.toString(),
-                    strMeal: _nameController.text,
-                    strArea: state.recipeArea,
-                    strCategory: state.recipeCategory,
-                    strIngredients: state.ingredientList?.cast<String?>(),
-                    strMeasures: state.measureList?.cast<String?>(),
-                    strInstructions: _instructionController.text,
-                    strMealThumb: _imageController.text,
-                    strSource: _sourceController.text,
-                    strYoutube: _youtubeController.text,
-                  );
-                  final user = UserModels(
-                    userId: currentUser?.uid,
-                    name: currentUser?.displayName,
-                    email: currentUser?.email,
-                    country: userCountry as String?,
-                    photoURL: currentUser?.photoURL,
-                  );
-                  checkName(
-                    recipe.toJson(),
-                    user.toJson(),
-                    recipe.toJson(),
-                    id.toString(),
-                  );
-                }
+
+                final recipe = Meals().copyWith(
+                  idMeal: id.toString(),
+                  strMeal: _nameController.text,
+                  strArea: state.recipeArea,
+                  strCategory: state.recipeCategory,
+                  strIngredients: state.ingredientList,
+                  strMeasures: state.measureList,
+                  strInstructions: _instructionController.text,
+                  strMealThumb: _imageController.text,
+                  strSource: _sourceController.text,
+                  strYoutube: _youtubeController.text,
+                  dateModified: DateTime.now().toString(),
+                );
+                final user = UserModels(
+                  userId: currentUser?.uid,
+                  name: currentUser?.displayName,
+                  email: currentUser?.email,
+                  country: userCountry as String?,
+                  photoURL: currentUser?.photoURL,
+                );
+                checkName(
+                  recipe.toJson(),
+                  user.toJson(),
+                  recipe.toJson(),
+                  state.ingredientList?.isNotNullOrEmpty ?? false,
+                  id.toString(),
+                );
               }
             },
             child: Text(ProjectTexts.send, style: context.textTheme.headline3),
