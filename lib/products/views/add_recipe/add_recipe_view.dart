@@ -25,6 +25,7 @@ import 'package:thefood/products/models/ingredients.dart';
 import 'package:thefood/products/models/meals.dart';
 import 'package:thefood/products/models/user.dart';
 import 'package:thefood/products/views/add_recipe/cubit/add_recipe_cubit.dart';
+import 'package:validators/validators.dart';
 
 part '../../view_models/add_recipe_view_model.dart';
 
@@ -214,7 +215,7 @@ class _AddRecipeState extends State<AddRecipe> {
 
                         _headlineBox(context, ProjectTexts.image),
                         //Will be added with image picker
-                        const AddImageButtons(),
+                        const AddImageField(),
                         _headlineBox(context, ProjectTexts.youtubeLink),
 
                         //Youtube Link

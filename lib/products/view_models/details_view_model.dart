@@ -290,10 +290,10 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
   final _reviewController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  double userRating = 0;
 
   Widget bodyChanger() {
     // ignore: omit_local_variable_types
-    double userRating = 0;
     switch (widget.selectedIndex) {
       case 0:
         return _ingredientListBody();
@@ -597,6 +597,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
               child: Text(
                 '${widget.ingredientList[index]}'.capitalize(),
                 overflow: TextOverflow.ellipsis,
+                maxLines: 2,
                 style: Theme.of(context).textTheme.headline3,
               ).toVisible(
                 widget.ingredientList[index] != null,
@@ -604,9 +605,10 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
             ),
           ),
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               '${widget.measureList[index]}',
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ).toVisible(
               widget.measureList[index] != null,
@@ -618,7 +620,7 @@ class _ComponentAndGuideState extends State<ComponentAndGuide> {
   }
 }
 
-class _SendReviewToDb extends StatelessWidget {
+class _SendReviewToDb extends StatefulWidget {
   const _SendReviewToDb({
     super.key,
     required GlobalKey<FormState> formKey,
@@ -629,6 +631,7 @@ class _SendReviewToDb extends StatelessWidget {
     required this.context,
   })  : _formKey = formKey,
         _titleController = titleController,
+        // _userRating = userRating,
         _reviewController = reviewController;
 
   final GlobalKey<FormState> _formKey;
@@ -639,27 +642,32 @@ class _SendReviewToDb extends StatelessWidget {
   final BuildContext context;
 
   @override
+  State<_SendReviewToDb> createState() => _SendReviewToDbState();
+}
+
+class _SendReviewToDbState extends State<_SendReviewToDb> {
+  @override
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () async {
         // I tried to check if the user added review and add but i didn't figure out
         // in update deleted all the reviews and added new one
-        if (_formKey.currentState?.validate() ?? false) {
+        if (widget._formKey.currentState?.validate() ?? false) {
           final reviewData = <Map<String, dynamic>>[
             {
-              'idMeal': widget.meals?.idMeal ?? '',
+              'idMeal': widget.widget.meals?.idMeal ?? '',
               'user_id': FirebaseAuth.instance.currentUser?.uid,
               'user_name': FirebaseAuth.instance.currentUser?.displayName,
               'photoURL': FirebaseAuth.instance.currentUser?.photoURL,
-              'title': _titleController.text,
-              'review': _reviewController.text,
-              'rating': userRating,
+              'title': widget._titleController.text,
+              'review': widget._reviewController.text,
+              'rating': widget.userRating,
               'review_time': Timestamp.now(),
             }
           ];
           await FirebaseFirestore.instance
               .collection('reviews')
-              .doc(widget.meals?.idMeal)
+              .doc(widget.widget.meals?.idMeal)
               .set(
             {
               'review': FieldValue.arrayUnion(reviewData),
@@ -673,8 +681,8 @@ class _SendReviewToDb extends StatelessWidget {
             ),
           );
           Navigator.pop(context);
-          _titleController.clear();
-          _reviewController.clear();
+          widget._titleController.clear();
+          widget._reviewController.clear();
         }
       },
       child: Text('Send', style: context.textTheme.bodyText2),

@@ -40,7 +40,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  //web error
+  // final pathProvider = PathProvider();
   // final directory = await pathProvider.getApplicationDocumentsDirectory();
   // Hive.init(directory.path);
   await Hive.openBox<String>(HiveConstants.loginCredentials);

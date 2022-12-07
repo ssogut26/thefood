@@ -20,24 +20,24 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool isChecked = false;
-  late Box<String> rememberCrendentialBox;
+  late Box<String> rememberCredentialBox;
 
   @override
   void initState() {
     super.initState();
-    rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
+    rememberCredentialBox = Hive.box<String>(HiveConstants.loginCredentials);
     createOpenBox();
   }
 
   Future<void> createOpenBox() async {
-    rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
+    rememberCredentialBox = Hive.box<String>(HiveConstants.loginCredentials);
     await getdata();
   }
 
   Future<void> getdata() async {
-    if (rememberCrendentialBox.get('email') != null) {
+    if (rememberCredentialBox.get('email') != null) {
       setState(() {
-        _emailController.text = rememberCrendentialBox.get('email')!;
+        _emailController.text = rememberCredentialBox.get('email')!;
       });
       isChecked = true;
     }

@@ -236,7 +236,19 @@ class SourceField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
-      child: TextField(
+      child: TextFormField(
+        validator: (value) {
+          if ((value?.isNotEmpty == true) &&
+              isURL(
+                    value,
+                    requireProtocol: true,
+                    protocols: ['http', 'https'],
+                  ) ==
+                  false) {
+            return 'Please enter a valid url it should start with http or https';
+          }
+          return null;
+        },
         decoration: const InputDecoration(
           label: Text(ProjectTexts.sourceInput),
         ),
@@ -290,7 +302,19 @@ class YoutubeField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: ProjectPaddings.cardMedium,
-      child: TextField(
+      child: TextFormField(
+        validator: (value) {
+          if ((value?.isNotEmpty == true) &&
+              isURL(
+                    value,
+                    requireProtocol: true,
+                    protocols: ['http', 'https'],
+                  ) ==
+                  false) {
+            return 'Please enter a valid url it should start with http or https';
+          }
+          return null;
+        },
         controller: _controller,
         decoration: InputDecoration(
           label: Text(_hintText),
@@ -300,8 +324,8 @@ class YoutubeField extends StatelessWidget {
   }
 }
 
-class AddImageButtons extends StatelessWidget {
-  const AddImageButtons({
+class AddImageField extends StatelessWidget {
+  const AddImageField({
     super.key,
   });
 
@@ -313,10 +337,18 @@ class AddImageButtons extends StatelessWidget {
         children: [
           TextFormField(
             validator: (value) {
-              if (value == null || value.isEmpty) {
+              if (value.isNullOrEmpty) {
                 return 'Please enter an image url';
+              } else if (isURL(
+                    value,
+                    requireProtocol: true,
+                    protocols: ['http', 'https'],
+                  ) ==
+                  false) {
+                return 'Please enter a valid url it should start with http or https';
+              } else {
+                return null;
               }
-              return null;
             },
             controller: _imageController,
             decoration: const InputDecoration(

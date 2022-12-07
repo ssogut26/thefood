@@ -1007,7 +1007,7 @@ class _SearchBarState extends State<_SearchBar> {
                   child: Material(
                     child: SizedBox(
                       width: context.dynamicWidth(0.87),
-                      height: context.dynamicHeight(0.3),
+                      height: context.dynamicHeight(0.33),
                       child: ListView.separated(
                         separatorBuilder: (context, index) => const Divider(),
                         padding: ProjectPaddings.textHorizontalMedium,

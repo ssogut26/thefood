@@ -26,9 +26,11 @@ dependencies:
   # State Management
   flutter_bloc: ^8.1.1
   equatable: ^2.0.5
+  flutter_riverpod: ^2.1.1
 
   # Firebase
   firebase_auth: ^3.11.2
+  firebase_messaging: ^13.1.0
   firebase_core: ^1.24.0
   cloud_firestore: ^3.5.1
 
@@ -42,6 +44,8 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   lottie: ^2.0.0
   timeago: ^3.3.0
+  flutter_native_splash: ^2.2.16
+  validators: ^3.0.0
 
   # Navigation
   go_router: ^5.1.6
@@ -55,10 +59,10 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.0.11
-  provider: ^6.0.4
-  riverpod: ^2.1.1
-  flutter_riverpod: ^2.1.1
-  flutter_native_splash: ^2.2.16
+
+
+
+
   # google_mobile_ads: ^2.3.0
 
 

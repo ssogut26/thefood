@@ -1,8 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kartal/kartal.dart';
-import 'package:thefood/core/constants/colors.dart';
+import 'package:thefood/core/constants/assets_path.dart';
 import 'package:thefood/core/constants/texts.dart';
+import 'package:thefood/features/components/alerts.dart';
+import 'package:thefood/features/components/loading.dart';
+import 'package:thefood/products/view_models/auth_view_model.dart';
 
 class ForgotPassView extends StatefulWidget {
   const ForgotPassView({super.key});
@@ -14,85 +18,117 @@ class ForgotPassView extends StatefulWidget {
 class _ForgotPassViewState extends State<ForgotPassView> {
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            opacity: 0.15,
+            image: AssetImage('assets/images/background.jpg'),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      body: Padding(
-        padding: context.horizontalPaddingMedium,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                AnimatedContainer(
-                  duration: context.durationLow,
-                  height: context.isKeyBoardOpen ? 0 : context.dynamicHeight(0.10),
-                  width: context.dynamicWidth(0.3),
-                ),
-                Text(
+        child: Padding(
+          padding: context.horizontalPaddingMedium,
+          child: Stack(
+            children: [
+              AnimatedContainer(
+                duration: context.durationLow,
+                height: context.isKeyBoardOpen
+                    ? context.dynamicHeight(0.1)
+                    : context.dynamicHeight(0.2),
+                width: context.dynamicWidth(0.3),
+              ),
+              Align(
+                alignment: const Alignment(0, -0.5),
+                child: Text(
                   ProjectTexts.appName,
                   style: context.textTheme.headline1,
                 ),
-                SizedBox(
-                  height: context.dynamicHeight(0.08),
+              ),
+              Align(
+                child: EmailField(
+                  controller: _emailController,
+                  onChanged: (value) {
+                    value = _emailController.text;
+                  },
                 ),
-                Padding(
-                  padding: context.verticalPaddingLow,
+              ),
+              SizedBox(
+                height: context.dynamicHeight(0.02),
+              ),
+              if (isLoading)
+                Align(
+                  alignment: const Alignment(0, 0.2),
+                  child: Center(
+                    child: CustomLottieLoading(
+                      path: AssetsPath.progression,
+                      onLoaded: (composition) {},
+                    ),
+                  ),
+                )
+              else
+                Align(
+                  alignment: context.isKeyBoardOpen
+                      ? const Alignment(0, 0.30)
+                      : const Alignment(0, 0.25),
                   child: SizedBox(
-                    width: context.dynamicWidth(0.8),
-                    height: context.dynamicHeight(0.08),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: ProjectTexts.email,
-                      ),
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return ProjectTexts.emailError;
+                    height: context.dynamicHeight(0.06),
+                    width: context.dynamicWidth(0.6),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          await FirebaseAuth.instance
+                              .sendPasswordResetEmail(email: _emailController.text)
+                              .whenComplete(
+                                () => AlertWidgets.showMessageDialog(
+                                  context,
+                                  'Success',
+                                  'Please check your email to reset your password.',
+                                ),
+                              );
                         }
-                        return null;
                       },
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: context.dynamicHeight(0.06),
-                  width: context.dynamicWidth(0.6),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ProjectColors.yellow,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: context.normalBorderRadius,
+                      child: Text(
+                        ProjectTexts.send,
+                        style: context.textTheme.headline3,
                       ),
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await FirebaseAuth.instance.sendPasswordResetEmail(
-                          email: _emailController.text,
-                        );
-                      }
-                    },
-                    child: Text(
-                      ProjectTexts.send,
-                      style: context.textTheme.bodyText2,
-                    ),
                   ),
                 ),
-                SizedBox(
-                  height: context.dynamicHeight(0.02),
+              SizedBox(
+                height: context.dynamicHeight(0.4),
+              ),
+              Align(
+                alignment: const Alignment(0, 0.95),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Press login back to',
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context.goNamed('login');
+                      },
+                      child: Text(
+                        ProjectTexts.login,
+                        style: context.textTheme.headline3,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              SizedBox(
+                height: context.dynamicHeight(0.16),
+              ),
+              SizedBox(
+                height: context.dynamicHeight(0.02),
+              ),
+            ],
           ),
         ),
       ),

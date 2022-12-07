@@ -256,13 +256,13 @@ class LoginButton extends StatelessWidget {
   final TextEditingController _passwordController;
   late final bool _isChecked;
 
-  Box<String> rememberCrendentialBox = Hive.box<String>(HiveConstants.loginCredentials);
+  Box<String> rememberCredentialBox = Hive.box<String>(HiveConstants.loginCredentials);
 
   Future<void> login() async {
     if (_isChecked) {
-      await rememberCrendentialBox.put('email', _emailController.text);
+      await rememberCredentialBox.put('email', _emailController.text);
     } else {
-      await rememberCrendentialBox.delete('email');
+      await rememberCredentialBox.delete('email');
     }
   }
 
